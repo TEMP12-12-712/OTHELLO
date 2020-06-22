@@ -1,205 +1,898 @@
-//ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã®ã‚¤ãƒ³ãƒãƒ¼ãƒˆ
-import java.awt.Container;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+// ƒpƒbƒP[ƒW‚ÌƒCƒ“ƒ|[ƒg
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.net.*;
+import java.io.*;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 
+// ƒNƒ‰ƒX’è‹`
 public class Client extends JFrame implements MouseListener {
-	private JButton buttonArray[];//ã‚ªã‚»ãƒ­ç›¤ç”¨ã®ãƒœã‚¿ãƒ³é…åˆ—
-	private JButton stop, pass; //åœæ­¢ã€ã‚¹ã‚­ãƒƒãƒ—ç”¨ãƒœã‚¿ãƒ³
-	private JLabel colorLabel; // è‰²è¡¨ç¤ºç”¨ãƒ©ãƒ™ãƒ«
-	private JLabel turnLabel; // æ‰‹ç•ªè¡¨ç¤ºç”¨ãƒ©ãƒ™ãƒ«
-	private Container c; // ã‚³ãƒ³ãƒ†ãƒŠ
-	private ImageIcon blackIcon, whiteIcon, boardIcon; //ã‚¢ã‚¤ã‚³ãƒ³
-	private PrintWriter out;//ãƒ‡ãƒ¼ã‚¿é€ä¿¡ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
-	private Receiver receiver; //ãƒ‡ãƒ¼ã‚¿å—ä¿¡ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
-	private Othello game; //Othelloã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
-
-	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
-	public Client(Othello game) { //Othelloã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å¼•æ•°ã¨ã™ã‚‹
-		this.game = game; //å¼•æ•°ã®Othelloã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æ¸¡ã™
-		String [] grids = game.getGrids(); //getGridãƒ¡ã‚½ãƒƒãƒ‰ã«ã‚ˆã‚Šå±€é¢æƒ…å ±ã‚’å–å¾—
-		int row = game.getRow(); //getRowãƒ¡ã‚½ãƒƒãƒ‰ã«ã‚ˆã‚Šã‚ªã‚»ãƒ­ç›¤ã®ç¸¦æ¨ªãƒã‚¹ã®æ•°ã‚’å–å¾—
-		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦è¨­å®š
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ã‚‹å ´åˆã®å‡¦ç†
-		setTitle("ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯å¯¾æˆ¦å‹ã‚ªã‚»ãƒ­ã‚²ãƒ¼ãƒ ");//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«
-		setSize(row * 45 + 10, row * 45 + 200);//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚µã‚¤ã‚ºã‚’è¨­å®š
-		c = getContentPane();//ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãƒšã‚¤ãƒ³ã‚’å–å¾—
-		//ã‚¢ã‚¤ã‚³ãƒ³è¨­å®š(ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚¢ã‚¤ã‚³ãƒ³ã¨ã—ã¦ä½¿ã†)
+	// ‹¤’Ê‚µ‚Ä—p‚¢‚éƒtƒB[ƒ‹ƒh //////////////////////////////////////////////////////////////////////////////////////////////////
+	//ŠÖ˜A‚·‚éƒNƒ‰ƒX
+	private Player player;							//ƒvƒŒƒCƒ„
+	private Othello othello;						//ƒIƒZƒ
+	//•\¦ŠÖ˜A
+	final private int WIDTH = 400, HEIGHT = 400;	//ƒEƒBƒ“ƒhƒE‚Ì‘å‚«‚³
+	final private int FIELD_W = 200, FIELD_H = 30;	//ƒeƒLƒXƒgƒtƒB[ƒ‹ƒh‚Ì‘å‚«‚³
+	final private String RULE = "";					//—V‚Ñ•û
+	final private String TITLE[] = {				//ƒ^ƒCƒgƒ‹ˆê——
+		"‚æ‚¤‚±‚»","ƒƒOƒCƒ“","V‹K“o˜^","ƒƒjƒ…[",
+		"‘Î‹Ç","‘Î‹Ç","‘Î‹Ç","‘Î‹Ç","‘Î‹Ç","‘Î‹Ç","‘Î‹Ç","‘Î‹Ç",
+		"ŠÏí","ŠÏí",
+		"‹L˜^","‹L˜^","‹L˜^","‹L˜^",
+		"—V‚Ñ•û"
+	};
+	private Container pane;							//ƒRƒ“ƒeƒi
+	private String operation;						//ƒIƒyƒŒ[ƒVƒ‡ƒ“
+	private JPanel[] panel = new JPanel[19];		//ƒpƒlƒ‹
+	private JPanel subpanel9,subpanel12;			//ƒŠƒXƒg•\¦—pƒpƒlƒ‹
+	private JLabel label1_3, label2_3, label15, label17;//ƒ‰ƒxƒ‹
+	private JTextField field1, field2, field16;		//ƒtƒB[ƒ‹ƒh
+	private JPasswordField passfield1, passfield2, passfield10;//ƒpƒXƒ[ƒhƒtƒB[ƒ‹ƒh
+	private JRadioButton rb71,rb72;					//ƒ‰ƒWƒIƒ{ƒ^ƒ“
+	private JComboBox<String> box7;
+	ImageIcon whiteIcon, blackIcon, boardIcon;		//ƒAƒCƒRƒ“
+	private JButton buttonArray[];					//ƒIƒZƒ”Õ
+	// ID
+	private int panelID;													//‰æ–ÊID
+	private HashMap<String,String> dataID = new HashMap<String,String>(20);	//ƒRƒ}ƒ“ƒh-ƒf[ƒ^‘Î‰•\
+	{dataID.put("Register","0");
+	dataID.put("Login","1");
+	dataID.put("RandomMatch","2");
+	dataID.put("Table","21");
+	//dataID.put("Log","22");
+	dataID.put("Giveup","23");
+	dataID.put("Finish","24");
+	dataID.put("Chat","25");
+	dataID.put("TotalRecord","3");
+	dataID.put("IdRecord","4");
+	dataID.put("MakeKeyroom","5");
+	dataID.put("DeleteKeyroom","6");
+	dataID.put("KeyroomList","7");
+	dataID.put("EnterKeyroom","8");
+	dataID.put("WatchroomList","9");
+	dataID.put("EnterWatchroom","91");
+	dataID.put("Reaction","92");
+	dataID.put("Logout","100");}
+	//ƒXƒgƒŠ[ƒ€
+	private PrintWriter out;						//‘—M—p
+	private BufferedReader in;						//óM—p
+	private Receiver receiver;						//ƒXƒŒƒbƒh
+	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	public Client() {
+		player = new Player();					//ƒvƒŒƒCƒ„¶¬
+		othello = new Othello();				//ƒIƒZƒ¶¬
+		//ƒtƒŒ[ƒ€İ’è
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(WIDTH, HEIGHT);
+		//ƒyƒCƒ“Šl“¾
+		pane = getContentPane();
+		pane.setLayout(null);
+		//ƒAƒCƒRƒ“İ’è
 		whiteIcon = new ImageIcon("White.jpg");
 		blackIcon = new ImageIcon("Black.jpg");
 		boardIcon = new ImageIcon("GreenFrame.jpg");
-		c.setLayout(null);//
-		//ã‚ªã‚»ãƒ­ç›¤ã®ç”Ÿæˆ
-		buttonArray = new JButton[row * row];//ãƒœã‚¿ãƒ³ã®é…åˆ—ã‚’ä½œæˆ
+		/* ƒpƒlƒ‹ƒfƒUƒCƒ“ *****************************************************************/
+		panel = new JPanel[19];
+		//ƒ^ƒCƒgƒ‹‰æ–Ê
+		JButton b01 = new JButton("ƒƒOƒCƒ“");
+		b01.setSize(100,50);
+		b01.setActionCommand("Switch,1");
+		b01.addMouseListener(this);
+		JButton b02 = new JButton("V‹K“o˜^");
+		b02.setSize(100,50);
+		b02.setActionCommand("Switch,2");
+		b02.addMouseListener(this);
+		panel[0] = new JPanel();
+		panel[0].setSize(WIDTH,HEIGHT);
+		panel[0].add(b01);
+		panel[0].add(b02);
+		//ƒƒOƒCƒ“‰æ–Ê
+		JLabel label1_1 = new JLabel("ƒvƒŒƒCƒ„–¼");
+		field1 = new JTextField(20);
+		JLabel label1_2 = new JLabel("ƒpƒXƒ[ƒh");
+		passfield1 = new JPasswordField(20);
+		label1_3 = new JLabel(" ");
+		label1_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		JButton b11 = new JButton("OK");
+		b11.setActionCommand("Login,-1");
+		b11.addMouseListener(this);
+		JButton b12 = new JButton("–ß‚é");
+		b12.setActionCommand("Switch,0");
+		b12.addMouseListener(this);
+		JPanel panel1_1 = new JPanel();
+		panel1_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel1_1.add(label1_1);
+		panel1_1.add(field1);
+		JPanel panel1_2 = new JPanel();
+		panel1_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel1_2.add(label1_2);
+		panel1_2.add(passfield1);
+		JPanel panel1_3 = new JPanel();
+		panel1_3.setMaximumSize(new Dimension(WIDTH,FIELD_H));
+		panel1_3.add(b11);
+		panel1_3.add(b12);
+		panel[1] = new JPanel();
+		panel[1].setSize(WIDTH,HEIGHT);
+		panel[1].setLayout(new BoxLayout(panel[1], BoxLayout.Y_AXIS));
+		panel[1].add(panel1_1);
+		panel[1].add(panel1_2);
+		panel[1].add(label1_3);
+		panel[1].add(panel1_3);
+		//V‹K“o˜^‰æ–Ê
+		JLabel label2_1 = new JLabel("ƒvƒŒƒCƒ„–¼");
+		field2 = new JTextField(20);
+		JLabel label2_2 = new JLabel("ƒpƒXƒ[ƒh");
+		passfield2 = new JPasswordField(20);
+		label2_3 = new JLabel(" ");
+		label2_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		JButton b21 = new JButton("OK");
+		b21.setActionCommand("Register,-1");
+		b21.addMouseListener(this);
+		JButton b22 = new JButton("–ß‚é");
+		b22.setActionCommand("Switch,0");
+		b22.addMouseListener(this);
+		JPanel panel2_1 = new JPanel();
+		panel2_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel2_1.add(label2_1);
+		panel2_1.add(field2);
+		JPanel panel2_2 = new JPanel();
+		panel2_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel2_2.add(label2_2);
+		panel2_2.add(passfield2);
+		JPanel panel2_3 = new JPanel();
+		panel2_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel2_3.add(b21);
+		panel2_3.add(b22);
+		panel[2] = new JPanel();
+		panel[2].setSize(WIDTH,HEIGHT);
+		panel[2].setLayout(new BoxLayout(panel[2], BoxLayout.Y_AXIS));
+		panel[2].add(panel2_1);
+		panel[2].add(panel2_2);
+		panel[2].add(label2_3);
+		panel[2].add(panel2_3);
+		//ƒƒjƒ…[‰æ–Ê
+		JButton b31 = new JButton("‘Î‹Ç‚·‚é");
+		b31.setMaximumSize(new Dimension(150, 50));
+		b31.setActionCommand("Switch,4");
+		b31.addMouseListener(this);
+		JButton b32 = new JButton("ŠÏí‚·‚é");
+		b32.setMaximumSize(new Dimension(150, 50));
+		b32.setActionCommand("WatchroomList,-1");
+		b32.addMouseListener(this);
+		JButton b33 = new JButton("‹L˜^‚ğŒ©‚é");
+		b33.setMaximumSize(new Dimension(150, 50));
+		b33.setActionCommand("Switch,14");
+		b33.addMouseListener(this);
+		JButton b34 = new JButton("—V‚Ñ•û");
+		b34.setMaximumSize(new Dimension(150, 50));
+		b34.setActionCommand("Switch,18");
+		b34.addMouseListener(this);
+		JButton b35 = new JButton("ƒƒOƒAƒEƒg");
+		b35.setMaximumSize(new Dimension(150, 50));
+		b35.setActionCommand("Logout,-1");
+		b35.addMouseListener(this);
+		panel[3] = new JPanel();
+		panel[3].setSize(WIDTH,HEIGHT);
+		panel[3].setLayout(new BoxLayout(panel[3], BoxLayout.Y_AXIS));
+		panel[3].add(b31);
+		panel[3].add(b32);
+		panel[3].add(b33);
+		panel[3].add(b34);
+		panel[3].add(b35);
+		//ƒ‰ƒ“ƒ_ƒ€Eƒvƒ‰ƒCƒx[ƒg‘I‘ğ‰æ–Ê
+		JButton b41 = new JButton("ƒ‰ƒ“ƒ_ƒ€ƒ}ƒbƒ`");
+		b41.setMaximumSize(new Dimension(150, 50));
+		b41.setActionCommand("RandomMatch,-1");
+		b41.addMouseListener(this);
+		JButton b42 = new JButton("ƒvƒ‰ƒCƒx[ƒgƒ}ƒbƒ`");
+		b42.setMaximumSize(new Dimension(150, 50));
+		b42.setActionCommand("Switch,6");
+		b42.addMouseListener(this);
+		JButton b43 = new JButton("–ß‚é");
+		b43.setMaximumSize(new Dimension(150, 50));
+		b43.setActionCommand("Switch,3");
+		b43.addMouseListener(this);
+		panel[4] = new JPanel();
+		panel[4].setSize(WIDTH,HEIGHT);
+		panel[4].setLayout(new BoxLayout(panel[4], BoxLayout.Y_AXIS));
+		panel[4].add(b41);
+		panel[4].add(b42);
+		panel[4].add(b43);
+		//ƒ}ƒbƒ`ƒ“ƒO‘Ò‹@‰æ–Ê
+		JLabel label5 = new JLabel("‘Îí‘Šè‚ğ’T‚µ‚Ä‚¢‚Ü‚·B‚µ‚Î‚ç‚­‚¨‘Ò‚¿‚­‚¾‚³‚¢B");
+		JButton b51 = new JButton("–ß‚é");
+		b51.setSize(100,50);
+		b51.setActionCommand("CancelMatch,-1");
+		b51.addMouseListener(this);
+		panel[5] = new JPanel();
+		panel[5].setSize(WIDTH,HEIGHT);
+		panel[5].add(label5);
+		panel[5].add(b51);
+		//•”‰®‚Ìì¬E“üº‘I‘ğ‰æ–Ê
+		JButton b61 = new JButton("•”‰®‚ğì‚é");
+		b61.setMaximumSize(new Dimension(150, 50));
+		b61.setActionCommand("Switch,7");
+		b61.addMouseListener(this);
+		JButton b62 = new JButton("•”‰®‚É“ü‚é");
+		b62.setMaximumSize(new Dimension(150, 50));
+		b62.setActionCommand("KeyroomList,-1");
+		b62.addMouseListener(this);
+		JButton b63 = new JButton("–ß‚é");
+		b63.setMaximumSize(new Dimension(150, 50));
+		b63.setActionCommand("Switch,4");
+		b63.addMouseListener(this);
+		panel[6] = new JPanel();
+		panel[6].setSize(WIDTH,HEIGHT);
+		panel[6].setLayout(new BoxLayout(panel[6], BoxLayout.Y_AXIS));
+		panel[6].add(b61);
+		panel[6].add(b62);
+		panel[6].add(b63);
+		//•”‰®‚Ìİ’è‰æ–Ê
+		JLabel label7_1 = new JLabel("•”‰®‚Ìİ’è‚ğŒˆ‚ß‚Ä‚­‚¾‚³‚¢");
+		JLabel label7_2 = new JLabel("ƒ`ƒƒƒbƒg");
+		rb71 = new JRadioButton("ON",true);
+		rb72 = new JRadioButton("OFF",false);
+		ButtonGroup group = new ButtonGroup();
+		group.add(rb71);
+		group.add(rb72);
+		JLabel label7_3 = new JLabel("§ŒÀŠÔ");
+		String[] time = {"1","3","5"};
+		box7 = new JComboBox<String>(time);
+		JLabel label7_4 = new JLabel("•ª");
+		JButton b71 = new JButton("Œˆ’è");
+		b71.setSize(100,50);
+		b71.setActionCommand("MakeKeyroom,-1");
+		b71.addMouseListener(this);
+		JButton b72 = new JButton("–ß‚é");
+		b72.setSize(100,50);
+		b72.setActionCommand("Switch,6");
+		b72.addMouseListener(this);
+		panel[7] = new JPanel();
+		panel[7].setSize(WIDTH,HEIGHT);
+		panel[7].setLayout(new BoxLayout(panel[7], BoxLayout.Y_AXIS));
+		JPanel panel7_1 = new JPanel();
+		panel7_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_1.setAlignmentX(1.0f);
+		panel7_1.add(label7_1);
+		JPanel panel7_2 = new JPanel();
+		panel7_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_2.setAlignmentX(1.0f);
+		panel7_2.add(label7_2);
+		panel7_2.add(rb71);
+		panel7_2.add(rb72);
+		JPanel panel7_3 = new JPanel();
+		panel7_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_3.setAlignmentX(1.0f);
+		panel7_3.add(label7_3);
+		panel7_3.add(box7);
+		panel7_3.add(label7_4);
+		JPanel panel7_4 = new JPanel();
+		panel7_4.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_4.setAlignmentX(0.0f);
+		panel7_4.add(b71);
+		panel7_4.add(b72);
+		panel[7].add(panel7_1);
+		panel[7].add(panel7_2);
+		panel[7].add(panel7_3);
+		panel[7].add(panel7_4);
+		//‘Šè‚Ì“üº‘Ò‹@‰æ–Ê
+		JLabel label8 = new JLabel("‘Îí‘Šè‚Ì“üº‚ğ‘Ò‚Á‚Ä‚¢‚Ü‚·B‚µ‚Î‚ç‚­‚¨‘Ò‚¿‚­‚¾‚³‚¢B");
+		JButton b81 = new JButton("–ß‚é");
+		b81.setSize(100,50);
+		b81.setActionCommand("DeleteKeyroom,-1");
+		b81.addMouseListener(this);
+		panel[8] = new JPanel();
+		panel[8].setSize(WIDTH,HEIGHT);
+		panel[8].add(label8);
+		panel[8].add(b81);
+		//Œ®•”‰®‘I‘ğ‰æ–Ê
+		subpanel9 = new JPanel();
+		JButton b91 = new JButton("–ß‚é");
+		b91.setActionCommand("Switch,6");
+		b91.addMouseListener(this);
+		panel[9] = new JPanel();
+		panel[9].setSize(WIDTH,HEIGHT);
+		panel[9].add(subpanel9);
+		panel[9].add(b91);
+		//ƒpƒXƒ[ƒh“ü—Í‰æ–Ê
+		JLabel label10_1 = new JLabel("ƒpƒXƒ[ƒh");
+		passfield10 = new JPasswordField(20);
+		JButton b101 = new JButton("OK");
+		b101.setSize(100,50);
+		b101.setActionCommand("EnterKeyroom,-1");
+		b101.addMouseListener(this);
+		JButton b102 = new JButton("–ß‚é");
+		b102.setSize(100,50);
+		b102.setActionCommand("Switch,9");
+		b102.addMouseListener(this);
+		panel[10] = new JPanel();
+		panel[10].setSize(WIDTH,HEIGHT);
+		panel[10].setLayout(new BoxLayout(panel[10], BoxLayout.Y_AXIS));
+		JPanel panel10_1 = new JPanel();
+		panel10_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel10_1.add(label10_1);
+		panel10_1.add(passfield10);
+		JPanel panel10_2 = new JPanel();
+		panel10_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel10_2.add(b101);
+		panel10_2.add(b102);
+		panel[10].add(panel10_1);
+		panel[10].add(panel10_2);
+		//‘Î‹Ç‰æ–Ê
+		JLabel label11 = new JLabel("‘Î‹Ç‰æ–Ê");
+		panel[11] = new JPanel();
+		panel[11].setSize(WIDTH,HEIGHT);
+		panel[11].add(label11);
+		//ŠÏí•”‰®‘I‘ğ‰æ–Ê
+		subpanel12 = new JPanel();
+		JButton b121 = new JButton("–ß‚é");
+		b121.setSize(100,50);
+		b121.setActionCommand("Switch,3");
+		b121.addMouseListener(this);
+		panel[12] = new JPanel();
+		panel[12].setSize(WIDTH,HEIGHT);
+		panel[12].add(subpanel12);
+		panel[12].add(b121);
+		//ŠÏí‰æ–Ê
+		JLabel label13 = new JLabel("ŠÏí‰æ–Ê");
+		panel[13] = new JPanel();
+		panel[13].setSize(WIDTH,HEIGHT);
+		panel[13].add(label13);
+		//‹L˜^‘I‘ğ‰æ–Ê
+		JButton b141 = new JButton("‘‡íÑ");
+		b141.setSize(100,50);
+		b141.setActionCommand("TotalRecord,-1");
+		b141.addMouseListener(this);
+		JButton b142 = new JButton("‘ÎlíÑ");
+		b142.setSize(100,50);
+		b142.setActionCommand("Switch,16");
+		b142.addMouseListener(this);
+		JButton b143 = new JButton("–ß‚é");
+		b143.setSize(100,50);
+		b143.setActionCommand("Switch,3");
+		b143.addMouseListener(this);
+		panel[14] = new JPanel();
+		panel[14].setSize(WIDTH,HEIGHT);
+		panel[14].add(b141);
+		panel[14].add(b142);
+		panel[14].add(b143);
+		//‘‡¬Ñ‰æ–Ê
+		label15 = new JLabel("");
+		label15.setMaximumSize(new Dimension(300, 100));
+		JButton b151 = new JButton("OK");
+		b151.setSize(100,50);
+		b151.setActionCommand("Switch,14");
+		b151.addMouseListener(this);
+		panel[15] = new JPanel();
+		panel[15].setSize(WIDTH,HEIGHT);
+		panel[15].add(label15);
+		panel[15].add(b151);
+		//‘Šè–¼“ü—Í‰æ–Ê
+		field16 = new JTextField("opponent");
+		field16.setMaximumSize(new Dimension(FIELD_W, FIELD_H));
+		JButton b161 = new JButton("OK");
+		b161.setSize(100,50);
+		b161.setActionCommand("IdRecord,-1");
+		b161.addMouseListener(this);
+		JButton b162 = new JButton("–ß‚é");
+		b162.setSize(100,50);
+		b162.setActionCommand("Switch,14");
+		b162.addMouseListener(this);
+		panel[16] = new JPanel();
+		panel[16].setSize(WIDTH,HEIGHT);
+		panel[16].add(field16);
+		panel[16].add(b161);
+		panel[16].add(b162);
+		//‘Šè•ÊíÑ‰æ–Ê
+		label17 = new JLabel("");
+		label17.setMaximumSize(new Dimension(300, 100));
+		JButton b171 = new JButton("OK");
+		b171.setSize(100,50);
+		b171.setActionCommand("Switch,16");
+		b171.addMouseListener(this);
+		panel[17] = new JPanel();
+		panel[17].setSize(WIDTH,HEIGHT);
+		panel[17].add(label17);
+		panel[17].add(b171);
+		//—V‚Ñ•û•\¦‰æ–Ê
+		JLabel label18 = new JLabel(RULE);
+		JButton b181 = new JButton("OK");
+		b181.setSize(100,50);
+		b181.setActionCommand("Switch,3");
+		b181.addMouseListener(this);
+		panel[18] = new JPanel();
+		panel[18].setSize(WIDTH,HEIGHT);
+		panel[18].add(label18);
+		panel[18].add(b181);
+		/**********************************************************************************/
+		//‰Šú‰æ–Ê•`‰æ
+		panelID = 0;
+		switchDisplay();
+
+
+		//String [] grids = game.getGrids(); //‹Ç–Êî•ñ‚ğæ“¾
+		//int row = game.getRow(); //ƒIƒZƒ”Õ‚Ìc‰¡ƒ}ƒX‚Ì”‚ğæ“¾
+		//ƒIƒZƒ”Õ‚Ì¶¬
+		/*
+		buttonArray = new JButton[row * row];//ƒ{ƒ^ƒ“‚Ì”z—ñ‚ğì¬
 		for(int i = 0 ; i < row * row ; i++){
-			if(grids[i].equals("black")){ buttonArray[i] = new JButton(blackIcon);}//ç›¤é¢çŠ¶æ…‹ã«å¿œã˜ãŸã‚¢ã‚¤ã‚³ãƒ³ã‚’è¨­å®š
-			if(grids[i].equals("white")){ buttonArray[i] = new JButton(whiteIcon);}//ç›¤é¢çŠ¶æ…‹ã«å¿œã˜ãŸã‚¢ã‚¤ã‚³ãƒ³ã‚’è¨­å®š
-			if(grids[i].equals("board")){ buttonArray[i] = new JButton(boardIcon);}//ç›¤é¢çŠ¶æ…‹ã«å¿œã˜ãŸã‚¢ã‚¤ã‚³ãƒ³ã‚’è¨­å®š
-			c.add(buttonArray[i]);//ãƒœã‚¿ãƒ³ã®é…åˆ—ã‚’ãƒšã‚¤ãƒ³ã«è²¼ã‚Šä»˜ã‘
-			// ãƒœã‚¿ãƒ³ã‚’é…ç½®ã™ã‚‹
+			if(grids[i].equals("black")){ buttonArray[i] = new JButton(blackIcon);}//”Õ–Êó‘Ô‚É‰‚¶‚½ƒAƒCƒRƒ“‚ğİ’è
+			if(grids[i].equals("white")){ buttonArray[i] = new JButton(whiteIcon);}//”Õ–Êó‘Ô‚É‰‚¶‚½ƒAƒCƒRƒ“‚ğİ’è
+			if(grids[i].equals("board")){ buttonArray[i] = new JButton(boardIcon);}//”Õ–Êó‘Ô‚É‰‚¶‚½ƒAƒCƒRƒ“‚ğİ’è
+			c.add(buttonArray[i]);//ƒ{ƒ^ƒ“‚Ì”z—ñ‚ğƒyƒCƒ“‚É“\‚è•t‚¯
+			// ƒ{ƒ^ƒ“‚ğ”z’u‚·‚é
 			int x = (i % row) * 45;
 			int y = (int) (i / row) * 45;
-			buttonArray[i].setBounds(x, y, 45, 45);//ãƒœã‚¿ãƒ³ã®å¤§ãã•ã¨ä½ç½®ã‚’è¨­å®šã™ã‚‹ï¼
-			buttonArray[i].addMouseListener(this);//ãƒã‚¦ã‚¹æ“ä½œã‚’èªè­˜ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
-			buttonArray[i].setActionCommand(Integer.toString(i));//ãƒœã‚¿ãƒ³ã‚’è­˜åˆ¥ã™ã‚‹ãŸã‚ã®åå‰(ç•ªå·)ã‚’ä»˜åŠ ã™ã‚‹
+			buttonArray[i].setBounds(x, y, 45, 45);//ƒ{ƒ^ƒ“‚Ì‘å‚«‚³‚ÆˆÊ’u‚ğİ’è‚·‚éD
+			buttonArray[i].addMouseListener(this);//ƒ}ƒEƒX‘€ì‚ğ”F¯‚Å‚«‚é‚æ‚¤‚É‚·‚é
+			buttonArray[i].setActionCommand(Integer.toString(i));//ƒ{ƒ^ƒ“‚ğ¯•Ê‚·‚é‚½‚ß‚Ì–¼‘O(”Ô†)‚ğ•t‰Á‚·‚é
 		}
-		//çµ‚äº†ãƒœã‚¿ãƒ³
-		stop = new JButton("çµ‚äº†");//çµ‚äº†ãƒœã‚¿ãƒ³ã‚’ä½œæˆ
-		c.add(stop); //çµ‚äº†ãƒœã‚¿ãƒ³ã‚’ãƒšã‚¤ãƒ³ã«è²¼ã‚Šä»˜ã‘
-		stop.setBounds(0, row * 45 + 30, (row * 45 + 10) / 2, 30);//çµ‚äº†ãƒœã‚¿ãƒ³ã®å¢ƒç•Œã‚’è¨­å®š
-		stop.addMouseListener(this);//ãƒã‚¦ã‚¹æ“ä½œã‚’èªè­˜ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
-		stop.setActionCommand("stop");//ãƒœã‚¿ãƒ³ã‚’è­˜åˆ¥ã™ã‚‹ãŸã‚ã®åå‰ã‚’ä»˜åŠ ã™ã‚‹
-		//ãƒ‘ã‚¹ãƒœã‚¿ãƒ³
-		pass = new JButton("ãƒ‘ã‚¹");//ãƒ‘ã‚¹ãƒœã‚¿ãƒ³ã‚’ä½œæˆ
-		c.add(pass); //ãƒ‘ã‚¹ãƒœã‚¿ãƒ³ã‚’ãƒšã‚¤ãƒ³ã«è²¼ã‚Šä»˜ã‘
-		pass.setBounds((row * 45 + 10) / 2, row * 45 + 30, (row * 45 + 10 ) / 2, 30);//ãƒ‘ã‚¹ãƒœã‚¿ãƒ³ã®å¢ƒç•Œã‚’è¨­å®š
-		pass.addMouseListener(this);//ãƒã‚¦ã‚¹æ“ä½œã‚’èªè­˜ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
-		pass.setActionCommand("pass");//ãƒœã‚¿ãƒ³ã‚’è­˜åˆ¥ã™ã‚‹ãŸã‚ã®åå‰ã‚’ä»˜åŠ ã™ã‚‹
-		//è‰²è¡¨ç¤ºç”¨ãƒ©ãƒ™ãƒ«
-		colorLabel = new JLabel("é»’: " + game.getBlack() + "  ç™½: " + game.getWhite());//è‰²æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹ãŸã‚ã®ãƒ©ãƒ™ãƒ«ã‚’ä½œæˆ
-		colorLabel.setBounds(10, row * 45 + 60 , row * 45 + 10, 30);//å¢ƒç•Œã‚’è¨­å®š
-		c.add(colorLabel);//è‰²è¡¨ç¤ºç”¨ãƒ©ãƒ™ãƒ«ã‚’ãƒšã‚¤ãƒ³ã«è²¼ã‚Šä»˜ã‘
-		//æ‰‹ç•ªè¡¨ç¤ºç”¨ãƒ©ãƒ™ãƒ«
-		turnLabel = new JLabel("ä»Šã®æ‰‹ç•ªã¯" + game.getTurn() + "ã§ã™");//æ‰‹ç•ªæƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹ãŸã‚ã®ãƒ©ãƒ™ãƒ«ã‚’ä½œæˆ
-		turnLabel.setBounds(10, row * 45 + 120, row * 45 + 10, 30);//å¢ƒç•Œã‚’è¨­å®š
-		c.add(turnLabel);//æ‰‹ç•ªæƒ…å ±ãƒ©ãƒ™ãƒ«ã‚’ãƒšã‚¤ãƒ³ã«è²¼ã‚Šä»˜ã‘
+		//I—¹ƒ{ƒ^ƒ“
+		stop = new JButton("I—¹");//I—¹ƒ{ƒ^ƒ“‚ğì¬
+		c.add(stop); //I—¹ƒ{ƒ^ƒ“‚ğƒyƒCƒ“‚É“\‚è•t‚¯
+		stop.setBounds(0, row * 45 + 30, (row * 45 + 10) / 2, 30);//I—¹ƒ{ƒ^ƒ“‚Ì‹«ŠE‚ğİ’è
+		stop.addMouseListener(this);//ƒ}ƒEƒX‘€ì‚ğ”F¯‚Å‚«‚é‚æ‚¤‚É‚·‚é
+		stop.setActionCommand("stop");//ƒ{ƒ^ƒ“‚ğ¯•Ê‚·‚é‚½‚ß‚Ì–¼‘O‚ğ•t‰Á‚·‚é
+		//ƒpƒXƒ{ƒ^ƒ“
+		pass = new JButton("ƒpƒX");//ƒpƒXƒ{ƒ^ƒ“‚ğì¬
+		c.add(pass); //ƒpƒXƒ{ƒ^ƒ“‚ğƒyƒCƒ“‚É“\‚è•t‚¯
+		pass.setBounds((row * 45 + 10) / 2, row * 45 + 30, (row * 45 + 10 ) / 2, 30);//ƒpƒXƒ{ƒ^ƒ“‚Ì‹«ŠE‚ğİ’è
+		pass.addMouseListener(this);//ƒ}ƒEƒX‘€ì‚ğ”F¯‚Å‚«‚é‚æ‚¤‚É‚·‚é
+		pass.setActionCommand("pass");//ƒ{ƒ^ƒ“‚ğ¯•Ê‚·‚é‚½‚ß‚Ì–¼‘O‚ğ•t‰Á‚·‚é
+		//F•\¦—pƒ‰ƒxƒ‹
+		String myName = player.getName();
+		colorLabel = new JLabel(myName + "‚³‚ñ‚ÌF‚Í–¢’è‚Å‚·");//Fî•ñ‚ğ•\¦‚·‚é‚½‚ß‚Ìƒ‰ƒxƒ‹‚ğì¬
+		colorLabel.setBounds(10, row * 45 + 60 , row * 45 + 10, 30);//‹«ŠE‚ğİ’è
+		c.add(colorLabel);//F•\¦—pƒ‰ƒxƒ‹‚ğƒyƒCƒ“‚É“\‚è•t‚¯
+		//è”Ô•\¦—pƒ‰ƒxƒ‹
+		turnLabel = new JLabel("è”Ô‚Í–¢’è‚Å‚·");//è”Ôî•ñ‚ğ•\¦‚·‚é‚½‚ß‚Ìƒ‰ƒxƒ‹‚ğì¬
+		turnLabel.setBounds(10, row * 45 + 120, row * 45 + 10, 30);//‹«ŠE‚ğİ’è
+		c.add(turnLabel);//è”Ôî•ñƒ‰ƒxƒ‹‚ğƒyƒCƒ“‚É“\‚è•t‚¯
+		*/
 	}
-
-	// ãƒ¡ã‚½ãƒƒãƒ‰
-	public void connectServer(String ipAddress, int port){	// ã‚µãƒ¼ãƒã«æ¥ç¶š
+	// ’ÊM //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//ƒT[ƒo‚ÉÚ‘±
+	public void connectServer(String ipAddress, int port){
 		Socket socket = null;
 		try {
-			socket = new Socket(ipAddress, port); //ã‚µãƒ¼ãƒ(ipAddress, port)ã«æ¥ç¶š
-			out = new PrintWriter(socket.getOutputStream(), true); //ãƒ‡ãƒ¼ã‚¿é€ä¿¡ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ç”¨æ„
-			receiver = new Receiver(socket); //å—ä¿¡ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®æº–å‚™
-			receiver.start();//å—ä¿¡ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(ã‚¹ãƒ¬ãƒƒãƒ‰)èµ·å‹•
-		} catch (UnknownHostException e) {
-			System.err.println("ãƒ›ã‚¹ãƒˆã®IPã‚¢ãƒ‰ãƒ¬ã‚¹ãŒåˆ¤å®šã§ãã¾ã›ã‚“: " + e);
+			socket = new Socket(ipAddress, port);				//Ú‘±
+			System.out.println("ƒT[ƒo‚ÆÚ‘±‚µ‚Ü‚µ‚½");
+			out = new PrintWriter(socket.getOutputStream());	//o—ÍƒXƒgƒŠ[ƒ€
+			receiver = new Receiver(socket);					//óMƒXƒŒƒbƒh
+			receiver.start();
+			sendMessage("dummy");								//’²®—pƒ_ƒ~[
+		}
+		catch (UnknownHostException e) {
+			System.err.println("ƒzƒXƒg‚ÌIPƒAƒhƒŒƒX‚ª”»’è‚Å‚«‚Ü‚¹‚ñ: " + e);
 			System.exit(-1);
-		} catch (IOException e) {
-			System.err.println("ã‚µãƒ¼ãƒæ¥ç¶šæ™‚ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸ: " + e);
+		}
+		catch (IOException e) {
+			System.err.println("ƒT[ƒoÚ‘±‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½: " + e);
 			System.exit(-1);
 		}
 	}
-
-	public void sendMessage(String msg){	// ã‚µãƒ¼ãƒã«æ“ä½œæƒ…å ±ã‚’é€ä¿¡
-		out.println(msg);//é€ä¿¡ãƒ‡ãƒ¼ã‚¿ã‚’ãƒãƒƒãƒ•ã‚¡ã«æ›¸ãå‡ºã™
-		out.flush();//é€ä¿¡ãƒ‡ãƒ¼ã‚¿ã‚’é€ã‚‹
-		System.out.println("ã‚µãƒ¼ãƒã«ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ " + msg + " ã‚’é€ä¿¡ã—ã¾ã—ãŸ"); //ãƒ†ã‚¹ãƒˆæ¨™æº–å‡ºåŠ›
+	//ƒf[ƒ^‚Ì‘—M
+	public void sendMessage(String msg){
+		out.println(msg);					//ƒoƒbƒtƒ@‚É‘‚«‚İ
+		out.flush();						//ƒf[ƒ^‘—M
+		System.out.println("‘—MF" +msg);	//ƒeƒXƒgo—Í
 	}
-
-	// ãƒ‡ãƒ¼ã‚¿å—ä¿¡ç”¨ã‚¹ãƒ¬ãƒƒãƒ‰(å†…éƒ¨ã‚¯ãƒ©ã‚¹)
+	//ƒf[ƒ^‚ÌóM
 	class Receiver extends Thread {
-		private InputStreamReader sisr; //å—ä¿¡ãƒ‡ãƒ¼ã‚¿ç”¨æ–‡å­—ã‚¹ãƒˆãƒªãƒ¼ãƒ 
-		private BufferedReader br; //æ–‡å­—ã‚¹ãƒˆãƒªãƒ¼ãƒ ç”¨ã®ãƒãƒƒãƒ•ã‚¡
-
-		// å†…éƒ¨ã‚¯ãƒ©ã‚¹Receiverã®ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 		Receiver (Socket socket){
 			try{
-				sisr = new InputStreamReader(socket.getInputStream()); //å—ä¿¡ã—ãŸãƒã‚¤ãƒˆãƒ‡ãƒ¼ã‚¿ã‚’æ–‡å­—ã‚¹ãƒˆãƒªãƒ¼ãƒ ã«
-				br = new BufferedReader(sisr);//æ–‡å­—ã‚¹ãƒˆãƒªãƒ¼ãƒ ã‚’ãƒãƒƒãƒ•ã‚¡ãƒªãƒ³ã‚°ã™ã‚‹
-			} catch (IOException e) {
-				System.err.println("ãƒ‡ãƒ¼ã‚¿å—ä¿¡æ™‚ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸ: " + e);
+				in = new BufferedReader(new InputStreamReader(socket.getInputStream())); //“ü—ÍƒXƒgƒŠ[ƒ€
+			}
+			catch (IOException e) {
+				System.err.println("ƒf[ƒ^óM‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½: " + e);
 			}
 		}
-		// å†…éƒ¨ã‚¯ãƒ©ã‚¹ Receiverã®ãƒ¡ã‚½ãƒƒãƒ‰
 		public void run(){
 			try{
-				while(true) {//ãƒ‡ãƒ¼ã‚¿ã‚’å—ä¿¡ã—ç¶šã‘ã‚‹
-					String inputLine = br.readLine();//å—ä¿¡ãƒ‡ãƒ¼ã‚¿ã‚’ä¸€è¡Œåˆ†èª­ã¿è¾¼ã‚€
-					if (inputLine != null){//ãƒ‡ãƒ¼ã‚¿ã‚’å—ä¿¡ã—ãŸã‚‰
-						receiveMessage(inputLine);//ãƒ‡ãƒ¼ã‚¿å—ä¿¡ç”¨ãƒ¡ã‚½ãƒƒãƒ‰ã‚’å‘¼ã³å‡ºã™
+				while(true) {
+					String inputLine = in.readLine();			//ƒoƒbƒtƒ@‚ğ“Ç‚İ‚İ
+					if (inputLine != null){						//ƒf[ƒ^óM
+						System.out.println("óMF" +inputLine);//ƒeƒXƒgo—Í
+						receiveMessage(inputLine);				//ˆ—
 					}
 				}
-			} catch (IOException e){
-				System.err.println("ãƒ‡ãƒ¼ã‚¿å—ä¿¡æ™‚ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸ: " + e);
+			}
+			catch (IOException e){
+				System.err.println("ƒf[ƒ^óM‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½: " + e);
 			}
 		}
 	}
-
-	public void receiveMessage(String msg){	// ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®å—ä¿¡
-		System.out.println("ã‚µãƒ¼ãƒã‹ã‚‰ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ " + msg + " ã‚’å—ä¿¡ã—ã¾ã—ãŸ"); //ãƒ†ã‚¹ãƒˆç”¨æ¨™æº–å‡ºåŠ›
-	}
-	public void updateDisp(){
-		//ç”»é¢ã®æ›´æ–°
-		String[] grids = game.getGrids();
-		for(int i = 0 ; i < game.getRow() * game.getRow() ; i++){
-			if(grids[i].equals("black")){ buttonArray[i] = new JButton(blackIcon);}//ç›¤é¢çŠ¶æ…‹ã«å¿œã˜ãŸã‚¢ã‚¤ã‚³ãƒ³ã‚’è¨­å®š
-			if(grids[i].equals("white")){ buttonArray[i] = new JButton(whiteIcon);}//ç›¤é¢çŠ¶æ…‹ã«å¿œã˜ãŸã‚¢ã‚¤ã‚³ãƒ³ã‚’è¨­å®š
-			if(grids[i].equals("board")){ buttonArray[i] = new JButton(boardIcon);}//ç›¤é¢çŠ¶æ…‹ã«å¿œã˜ãŸã‚¢ã‚¤ã‚³ãƒ³ã‚’è¨­å®š
-			c.add(buttonArray[i]);//ãƒœã‚¿ãƒ³ã®é…åˆ—ã‚’ãƒšã‚¤ãƒ³ã«è²¼ã‚Šä»˜ã‘
-			// ãƒœã‚¿ãƒ³ã‚’é…ç½®ã™ã‚‹
-			int x = (i % game.getRow()) * 45;
-			int y = (int) (i / game.getRow()) * 45;
-			buttonArray[i].setBounds(x, y, 45, 45);//ãƒœã‚¿ãƒ³ã®å¤§ãã•ã¨ä½ç½®ã‚’è¨­å®šã™ã‚‹ï¼
-			/*buttonArray[i].addMouseListener(this);//ãƒã‚¦ã‚¹æ“ä½œã‚’èªè­˜ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
-			buttonArray[i].setActionCommand(Integer.toString(i));//ãƒœã‚¿ãƒ³ã‚’è­˜åˆ¥ã™ã‚‹ãŸã‚ã®åå‰(ç•ªå·)ã‚’ä»˜åŠ ã™ã‚‹
-			*/
+	//óMƒf[ƒ^‚Ì”»•ÊEˆ—
+	public void receiveMessage(String msg){
+		String[] c = operation.split(",",2);	//ƒIƒyƒŒ[ƒVƒ‡ƒ“‚ğƒRƒ}ƒ“ƒh‚Æ•t‘®î•ñ‚É•ª‰ğ
+		String command = c[0];					//ƒRƒ}ƒ“ƒh
+		String subc = c[1];						//•t‘®î•ñ
+		//ƒƒOƒCƒ“Œ‹‰Ê
+		if(command.equals("Login")){
+			if(msg.equals("true")){					//ƒƒOƒCƒ“¬Œ÷
+				showDialog("ƒƒOƒCƒ“‚µ‚Ü‚µ‚½");		//ƒ_ƒCƒAƒƒO‚Ì•\¦
+				panelID = 3;						//ƒƒjƒ…[‰æ–Ê‚Ö
+				switchDisplay();					//‰æ–Ê‘JˆÚ
+			}
+			else{																				//ƒƒOƒCƒ“¸”s
+				if(msg.equals("name")) label1_3.setText("‚»‚Ì‚æ‚¤‚ÈƒvƒŒƒCƒ„–¼‚Í‘¶İ‚µ‚Ü‚¹‚ñ");	//ƒƒbƒZ[ƒW•\¦
+				if(msg.equals("pass")) label1_3.setText("ƒpƒXƒ[ƒh‚ªˆá‚¢‚Ü‚·");				//ƒƒbƒZ[ƒW•\¦
+/**/			player.setName(null);															//ƒvƒŒƒCƒ„–¼ƒŠƒZƒbƒg
+/**/			player.setPass(null);															//ƒpƒXƒ[ƒhƒŠƒZƒbƒg
+			}
 		}
-		colorLabel.setText("é»’: " + game.getBlack() + "  ç™½: " + game.getWhite());
-		turnLabel.setText("ä»Šã®æ‰‹ç•ªã¯" + game.getTurn() + "ã§ã™");
-	}
-
-	public void acceptOperation(String command){	// ãƒ—ãƒ¬ã‚¤ãƒ¤ã®æ“ä½œã‚’å—ä»˜
-	}
-
-  	//ãƒã‚¦ã‚¹ã‚¯ãƒªãƒƒã‚¯æ™‚ã®å‡¦ç†
-	public void mouseClicked(MouseEvent e) {
-		JButton theButton = (JButton)e.getComponent();//ã‚¯ãƒªãƒƒã‚¯ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å¾—ã‚‹ï¼ã‚­ãƒ£ã‚¹ãƒˆã‚’å¿˜ã‚Œãšã«
-		String command = theButton.getActionCommand();//ãƒœã‚¿ãƒ³ã®åå‰ã‚’å–ã‚Šå‡ºã™
-		System.out.println("ãƒã‚¦ã‚¹ãŒã‚¯ãƒªãƒƒã‚¯ã•ã‚Œã¾ã—ãŸã€‚æŠ¼ã•ã‚ŒãŸãƒœã‚¿ãƒ³ã¯ " + command + "ã§ã™ã€‚");//ãƒ†ã‚¹ãƒˆç”¨ã«æ¨™æº–å‡ºåŠ›
-		sendMessage(command); //ãƒ†ã‚¹ãƒˆç”¨ã«ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ä¿¡
-		//æ“ä½œã«å¿œã˜ãŸå‡¦ç†
-		switch(IsInteger(command)) {
-			case 1://ãƒã‚¹ãŒæŠ¼ã•ã‚ŒãŸã‚‰
-				//putStoneã‚’è©¦ã™
-				if(game.putStone(Integer.parseInt(command), game.getTurn(), true))	game.changeTurn();//trueãªã‚‰ç½®ã„ã¦changeTurn
-				updateDisp();//æ›´æ–°
-				break;
-			case 0://ãƒã‚¹ä»¥å¤–ã®ãƒœã‚¿ãƒ³ãªã‚‰
-				switch(command) {
-					case "pass"://passãªã‚‰changeTurn
-						game.changeTurn();
-						updateDisp();//æ›´æ–°
-						break;
-					case "stop"://stopæ™‚ç‚¹ã§checkWinner
-						colorLabel.setText("é»’: " + game.getBlack() + "  ç™½: " + game.getWhite() + " winner: " + game.checkWinner());
-						turnLabel.setText("è©¦åˆçµ‚äº†ã§ã™");
-						break;
+		//“o˜^Œ‹‰Ê
+		else if(command.equals("Register")){
+			if(msg.equals("true")){					//“o˜^‹–‰Â
+				showDialog("“o˜^‚µ‚Ü‚µ‚½");			//ƒ_ƒCƒAƒƒO‚Ì•\¦
+				operation = "Login,-1";				//ƒƒOƒCƒ“ƒIƒyƒŒ[ƒVƒ‡ƒ“Às
+/**/			sendMessage(dataID.get("Login")+","+player.getName()+","+player.getPass());
+			}
+			else{														//“o˜^¸”s
+				label2_3.setText("‚»‚ÌƒvƒŒƒCƒ„–¼‚ÍŠù‚Ég‚í‚ê‚Ä‚¢‚Ü‚·");	//ƒƒbƒZ[ƒW•\¦
+/**/			player.setName(null);									//ƒvƒŒƒCƒ„–¼ƒŠƒZƒbƒg
+/**/			player.setPass(null);									//ƒpƒXƒ[ƒhƒŠƒZƒbƒg
+			}
+		}
+		//ƒ‰ƒ“ƒ_ƒ€ƒ}ƒbƒ`ƒ“ƒOŒ‹‰Ê
+		else if(command.equals("RandomMatch")){
+			String[] info = msg.split(",",3);
+			if(info[0].equals("true")){						//ƒ}ƒbƒ`ƒ“ƒO¬Œ÷
+/**/			player.setColor(info[2]);					//è”Ôî•ñ•Û‘¶
+				if(info[2]=="0"){
+/**/				othello.setName0(player.getName());		//æè–¼•Û‘¶
+/**/				othello.setName1(info[1]);				//Œãè–¼•Û‘¶
 				}
+				if(info[2]=="1"){
+/**/				othello.setName0(info[1]);				//æè–¼•Û‘¶
+/**/				othello.setName1(player.getName());		//Œãè–¼•Û‘¶
+				}
+				panelID = 11;								//‘Î‹Ç‰æ–Ê‚Ö
+			}
+			if(info[0].equals("false")){					//ƒ}ƒbƒ`ƒ“ƒO¸”s
+				showDialog("ƒ}ƒbƒ`ƒ“ƒO‚É¸”s‚µ‚Ü‚µ‚½");		//ƒ_ƒCƒAƒƒO‚Ì•\¦
+				panelID = 4;								//ƒ‰ƒ“ƒ_ƒ€Eƒvƒ‰ƒCƒx[ƒg‘I‘ğ‰æ–Ê‚Ö
+			}
+			switchDisplay();								//‰æ–Ê‘JˆÚ
+		}
+		//Œ®•”‰®ƒ}ƒbƒ`ƒ“ƒOŒ‹‰Ê
+		else if(command.equals("MakeKeyroom")){
+			String[] info = msg.split(",",2);
+/**/		othello.setRoomID(Integer.parseInt(info[0]));	//•”‰®”Ô†•Û‘¶
+/**/		player.setColor("0");							//è”Ô•Û‘¶
+/**/		othello.setName0(player.getName());				//æè–¼•Û‘¶
+/**/		othello.setName1(info[1]);						//Œãè–¼•Û‘¶
+			//•”‰®•`‰æ
+			panelID = 11;
+			switchDisplay();								//‰æ–Ê‘JˆÚ
+		}
+		//Œ®•”‰®ƒŠƒXƒg
+		else if(command.equals("KeyroomList")){
+			String[] keyroom = msg.split(",",0);
+			String[] info;										//•”‰®î•ñ
+			String strchat;										//ƒ`ƒƒƒbƒg‚Ì—L–³
+			for(int i=0;i<keyroom.length;i++){					//‘I‘ğˆƒ{ƒ^ƒ“¶¬
+				info = keyroom[i].split(Pattern.quote("."),4);
+				if(info[2].equals("true")) strchat = "‚ ‚è";
+				else strchat = "‚È‚µ";
+				JButton bi = new JButton("ì¬ÒF"+info[1]+" ƒ`ƒƒƒbƒgF"+strchat+" §ŒÀŠÔF"+info[3]+"•ª");
+				bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
+				bi.addMouseListener(this);
+				subpanel9.add(bi);
+			}
+			panelID = 9;										//Œ®•”‰®ƒŠƒXƒg•\¦‰æ–Ê‚Ö
+			switchDisplay();									//‰æ–Ê‘JˆÚ
+		}
+		//Œ®•”‰®‚Ö‚Ì“üº
+		else if(command.equals("EnterKeyroom")){
+			String[] info = msg.split(",",3);
+			if(info[0].equals("true")){							//“üº‹–‰Â
+/**/			othello.setRoomID(Integer.parseInt(info[1]));	//•”‰®”Ô†•Û‘¶
+/**/			player.setColor("1");							//è”Ô•Û‘¶
+/**/			othello.setName0(info[2]);						//æè–¼•Û‘¶
+/**/			othello.setName1(player.getName());				//Œãè–¼•Û‘¶
+				//•”‰®•`‰æ
+				panelID = 11;									//‘Î‹Ç‰æ–Ê‚Ö
+			}
+			if(info[0].equals("false")){						//“üº¸”s
+/**/			player.setConfiguration("true,-1");				//İ’èî•ñƒŠƒZƒbƒg
+				showDialog("“üº‚É¸”s‚µ‚Ü‚µ‚½");				//ƒ_ƒCƒAƒƒO‚Ì•\¦
+				panelID = 3;									//ƒƒjƒ…[‰æ–Ê‚Ö
+			}
+			switchDisplay();									//‰æ–Ê‘JˆÚ
+		}
+		//ŠÏí•”‰®ƒŠƒXƒg
+		else if(command.equals("WatchroomList")){
+			String[] room = msg.split(",",0);
+			String[] info;							//•”‰®î•ñ
+			for(int i=0;i<room.length;i++){			//‘I‘ğˆƒ{ƒ^ƒ“¶¬
+				info = room[i].split(Pattern.quote("."),4);
+				System.out.println(info.length);
+				JButton bi = new JButton("æèF"+info[0]+" ŒãèF"+info[1]+" •ÎF"+info[2]+" ”’ÎF"+info[3]);
+				bi.setActionCommand("EnterWatchroom,-1");
+				bi.addMouseListener(this);
+				subpanel12.add(bi);
+			}
+			panelID = 12;							//ŠÏí•”‰®ƒŠƒXƒg•\¦‰æ–Ê‚Ö
+			switchDisplay();						//‰æ–Ê‘JˆÚ
+		}
+		//ŠÏí•”‰®‚Ö‚Ì“üº
+		else if(command.equals("EnterWatchroom")){
+			if(msg.equals("true")){					//“üº‹–‰Â
+				//•”‰®•`‰æ
+				panelID = 13;						//ŠÏí‰æ–Ê‚Ö
+			}
+			if(msg.equals("false")){				//“üº¸”s
+/**/			othello.setRoomID(-1);				//•”‰®”Ô†ƒŠƒZƒbƒg
+/**/			othello.setName0(null);				//æè–¼ƒŠƒZƒbƒg
+/**/			othello.setName1(null);				//Œãè–¼ƒŠƒZƒbƒg
+				showDialog("“üº‚É¸”s‚µ‚Ü‚µ‚½");	//ƒ_ƒCƒAƒƒO‚Ì•\¦
+				panelID = 3;						//ƒƒjƒ…[‰æ–Ê‚Ö
+			}
+			switchDisplay();						//‰æ–Ê‘JˆÚ
+		}
+		//‘‡‹L˜^
+		else if(command.equals("TotalRecord")){
+			label15.setText(msg);					//‹L˜^‘‚İ
+			panelID = 15;							//‘‡íÑ‰æ–Ê‚Ö
+			switchDisplay();						//‰æ–Ê‘JˆÚ
+		}
+		//‘Îl•Ê‹L˜^
+		else if(command.equals("IdRecord")){
+			label17.setText(msg);					//‹L˜^‘‚İ
+			panelID = 17;							//‘Šè•ÊíÑ‰æ–Ê‚Ö
+			switchDisplay();						//‰æ–Ê‘JˆÚ
+		}
+		//‘Î‹Çî•ñ
+		else if(panelID == 11){
+			String[] info = msg.split(",",0);		//ˆÈ‰ºAóM“à—e‚Åê‡•ª‚¯
+			//”Õ–ÊEƒƒOóM
+			if(info[0].equals(dataID.get("Table"))){
+				String table = info[1];				//”Õ–Ê•Û‘¶
+				String log = info[2];				//ƒƒO•Û‘¶
+				//”Õ–Ê”½‰f
+				//ƒƒO”½‰f
+			}
+			//“Š—¹óM
+			else if(info[0].equals(dataID.get("Giveup"))){
+/**/			othello.setRoomID(-1);						//•”‰®”Ô†ƒŠƒZƒbƒg
+/**/			player.setColor("-1");						//è”ÔƒŠƒZƒbƒg
+/**/			othello.setName0(null);						//æè–¼ƒŠƒZƒbƒg
+/**/			othello.setName1(null);						//Œãè–¼ƒŠƒZƒbƒg
+/**/			player.setConfiguration("true,-1");			//İ’èî•ñƒŠƒZƒbƒg
+				showDialog("‘Îí‘Šè‚ª“Š—¹‚µ‚Ü‚µ‚½");		//ƒ_ƒCƒAƒƒO•\¦
+				panelID = 3;								//ƒƒjƒ…[‰æ–Ê‚Ö
+				switchDisplay();							//‰æ–Ê‘JˆÚ
+			}
+			//ƒ`ƒƒƒbƒgóM
+			else if(info[0].equals(dataID.get("Chat"))){
+				String str = info[1];						//ƒ`ƒƒƒbƒg•Û‘¶
+				//ƒ`ƒƒƒbƒg”½‰f
+			}
+		}
+		//ŠÏíî•ñ
+		else if(panelID == 13){
+			//ŠÏí’†‚Ìˆ—
+		}
+	}
+	// ‘€ì //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//ƒ}ƒEƒXƒŠƒXƒi[
+	public void mouseClicked(MouseEvent e) {
+		JButton button = (JButton)e.getComponent();			//ƒ{ƒ^ƒ““Á’è
+		operation = button.getActionCommand();				//ƒIƒyƒŒ[ƒVƒ‡ƒ“Šm”F
+		System.out.println("ÀsF" +operation);			//ƒeƒXƒgo—Í
+		acceptOperation(operation);							//ˆ—
+	}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	//‘€ì‚Ìó•tEˆ—
+	public void acceptOperation(String operation){
+		String[] c = operation.split(",",2);	//ƒIƒyƒŒ[ƒVƒ‡ƒ“‚ğƒRƒ}ƒ“ƒh‚Æ•t‘®î•ñ‚É•ª‰ğ
+		String command = c[0];					//ƒRƒ}ƒ“ƒh
+		String subc = c[1];						//•t‘®î•ñ
+		switch(command){						//ˆÈ‰ºAƒRƒ}ƒ“ƒh‚Åê‡•ª‚¯
+			//‰æ–Ê‘JˆÚ‚Ì‚İ
+			case "Switch":
+				panelID = Integer.parseInt(subc);
+				switchDisplay();
+				break;
+			//ƒƒOƒCƒ“—v‹
+			case "Login":
+				String logname = field1.getText();						//ƒvƒŒƒCƒ„–¼“Ç‚İæ‚è
+				String logpass = new String(passfield1.getPassword());	//ƒpƒXƒ[ƒh“Ç‚İæ‚è
+				if(logname.equals("")) {
+					label1_3.setText("ƒvƒŒƒCƒ„–¼‚ª‹ó—“‚Å‚·");
+					break;
+				}
+				else if(logpass.equals("")) {
+					label1_3.setText("ƒpƒXƒ[ƒh‚ª‹ó—“‚Å‚·");
+					break;
+				}
+				player.setName(logname);									//ƒvƒŒƒCƒ„–¼•Û‘¶
+				player.setPass(logpass);									//ƒpƒXƒ[ƒh•Û‘¶
+				sendMessage(dataID.get(command)+","+logname+","+logpass);	//ƒT[ƒo‚Ö‘—M
+				break;
+			//V‹K“o˜^—v‹
+			case "Register":
+				String regname = field2.getText();						//ƒvƒŒƒCƒ„–¼“Ç‚İæ‚è
+				String regpass = new String(passfield2.getPassword());	//ƒpƒXƒ[ƒh“Ç‚İæ‚è
+				if(regname.equals("")) {
+					label2_3.setText("ƒvƒŒƒCƒ„–¼‚ª‹ó—“‚Å‚·");
+					break;
+				}
+				else if(regpass.equals("")) {
+					label2_3.setText("ƒpƒXƒ[ƒh‚ª‹ó—“‚Å‚·");
+					break;
+				}
+				player.setName(regname);									//ƒvƒŒƒCƒ„–¼•Û‘¶
+				player.setPass(regpass);									//ƒpƒXƒ[ƒh•Û‘¶
+				sendMessage(dataID.get(command)+","+regname+","+regpass);	//ƒT[ƒo‚Ö‘—M
+				break;
+			//ƒ‰ƒ“ƒ_ƒ€ƒ}ƒbƒ`ƒ“ƒO—v‹
+			case "RandomMatch":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+				panelID = 5;									//ƒ}ƒbƒ`ƒ“ƒO‘Ò‹@‰æ–Ê‚Ö
+				switchDisplay();
+				break;
+			//ƒ}ƒbƒ`ƒ“ƒOƒLƒƒƒ“ƒZƒ‹ˆ—
+			case "CancelMatch":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+				panelID = 4;									//ƒ‰ƒ“ƒ_ƒ€Eƒvƒ‰ƒCƒx[ƒg‘I‘ğ‰æ–Ê‚Ö
+				switchDisplay();
+				break;
+			//Î‚ğ’u‚­
+			case "Table":
+				sendMessage(dataID.get(command)+",”Õ–Ê,ƒƒO“à—e");	//ƒT[ƒo‚Ö‘—M
+				//”Õ–Ê”½‰f
+				//ƒƒO”½‰f
+				break;
+			//“Š—¹
+			case "Giveup":
+				sendMessage(dataID.get(command));	//ƒT[ƒo‚Ö‘—M
+/**/			othello.setRoomID(-1);				//•”‰®”Ô†ƒŠƒZƒbƒg
+/**/			player.setColor("-1");				//è”ÔƒŠƒZƒbƒg
+/**/			othello.setName0(null);				//æè–¼ƒŠƒZƒbƒg
+/**/			othello.setName1(null);				//Œãè–¼ƒŠƒZƒbƒg
+/**/			player.setConfiguration("true,-1");	//İ’èî•ñƒŠƒZƒbƒg
+				showDialog("“Š—¹‚µ‚Ü‚µ‚½");			//ƒ_ƒCƒAƒƒO•\¦
+				panelID = 3;						//ƒƒjƒ…[‰æ–Ê‚Ö
+				switchDisplay();					//‰æ–Ê‘JˆÚ
+
+				break;
+			//ƒ`ƒƒƒbƒg
+			case "Chat":
+				sendMessage(dataID.get(command)+",ƒ`ƒƒƒbƒg“à—e");	//ƒT[ƒo‚Ö‘—M
+				//ƒ`ƒƒƒbƒg”½‰f
+				break;
+			//‘‡‹L˜^—v‹
+			case "TotalRecord":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+				break;
+			//‘Îl•Ê‹L˜^—v‹
+			case "IdRecord":
+				sendMessage(dataID.get(command)+","+field16.getText());//ƒT[ƒo‚Ö‘—M
+				break;
+			//Œ®•”‰®ì¬—v‹
+			case "MakeKeyroom":
+				String chat = Boolean.toString(rb71.isSelected());		//ƒ`ƒƒƒbƒg‚Ì—L–³“Ç‚İæ‚è
+				String time = (String)box7.getSelectedItem();			//§ŒÀŠÔ“Ç‚İæ‚è
+/**/			player.setConfiguration(chat+","+time);					//İ’èî•ñ•Û‘¶
+				sendMessage(dataID.get(command)+","+chat+","+time);		//ƒT[ƒo‚Ö‘—M
+				panelID = 8;											//‘Šè‚Ì“üº‘Ò‹@‰æ–Ê
+				switchDisplay();
+				break;
+			//Œ®•”‰®íœ—v‹
+			case "DeleteKeyroom":
+/**/			player.setConfiguration("true,-1");		//İ’èî•ñƒŠƒZƒbƒg
+				sendMessage(dataID.get(command));		//ƒT[ƒo‚Ö‘—M
+				panelID = 4;							//ƒ‰ƒ“ƒ_ƒ€Eƒvƒ‰ƒCƒx[ƒg‘I‘ğ‰æ–Ê‚Ö
+				switchDisplay();						//‰æ–Ê‘JˆÚ
+				break;
+			//Œ®•”‰®ƒŠƒXƒg—v‹
+			case "KeyroomList":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+				break;
+			//Œ®•”‰®ƒŠƒXƒg‘I‘ğ
+			case "SelectKeyroom":
+				String[] info = subc.split(Pattern.quote("."),4);
+				player.setConfiguration(info[2]+","+info[3]);	//İ’èî•ñ•Û‘¶
+				panelID = 10;									//ƒpƒXƒ[ƒh“ü—Í‰æ–Ê‚Ö
+				switchDisplay();
+				break;
+			//Œ®•”‰®‚Ö‚Ì“üº—v‹
+			case "EnterKeyroom":
+/**/			sendMessage(dataID.get(command)+","+othello.getRoomID()+","+(new String(passfield10.getPassword())));//ƒT[ƒo‚Ö‘—M
+				break;
+			//ŠÏí•”‰®ƒŠƒXƒg—v‹
+			case "WatchroomList":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+				break;
+			//ŠÏí•”‰®‚Ö‚Ì“üº—v‹
+			case "EnterWatchroom":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+				break;
+			//ƒŠƒAƒNƒVƒ‡ƒ“
+			case "Reaction":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+				break;
+			//ƒƒOƒAƒEƒg
+			case "Logout":
+				sendMessage(dataID.get(command));				//ƒT[ƒo‚Ö‘—M
+/**/			player.setName(null);							//ƒvƒŒƒCƒ„–¼ƒŠƒZƒbƒg
+/**/			player.setPass(null);							//ƒpƒXƒ[ƒhƒŠƒZƒbƒg
+				panelID = 0;									//ƒ^ƒCƒgƒ‹‰æ–Ê‚Ö
+				switchDisplay();
+				break;
+			default:
 				break;
 		}
 	}
-	public void mouseEntered(MouseEvent e) {}//ãƒã‚¦ã‚¹ãŒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å…¥ã£ãŸã¨ãã®å‡¦ç†
-	public void mouseExited(MouseEvent e) {}//ãƒã‚¦ã‚¹ãŒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰å‡ºãŸã¨ãã®å‡¦ç†
-	public void mousePressed(MouseEvent e) {}//ãƒã‚¦ã‚¹ã§ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æŠ¼ã—ãŸã¨ãã®å‡¦ç†
-	public void mouseReleased(MouseEvent e) {}//ãƒã‚¦ã‚¹ã§æŠ¼ã—ã¦ã„ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’é›¢ã—ãŸã¨ãã®å‡¦ç†
-	//Stringå‹ãŒIntegerã®æ•´æ•°ã‹ã©ã†ã‹åˆ¤æ–­
-	public int IsInteger(String str) {
-		try {
-			Integer.parseInt(str);
-		}catch(NumberFormatException e) {
-			return 0;
+	// •\¦ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//‰æ–Ê‚Ì‘JˆÚE•`‰æ
+	public void switchDisplay(){
+		pane.removeAll();								//ƒpƒlƒ‹Á‹
+		setTitle(TITLE[panelID]);						//ƒ^ƒCƒgƒ‹•ÏX
+		pane.add(panel[panelID]);						//ƒpƒlƒ‹İ’u
+		System.out.println("‰æ–Ê" +panelID+ "‚ÖˆÚ“®");	//ƒeƒXƒgo—Í
+		pane.revalidate();								//ƒf[ƒ^”½‰f
+		pane.repaint();									//‰æ–ÊXV
+		return;
+	}
+	//ƒƒbƒZ[ƒWƒ_ƒCƒAƒƒO
+	class MessageDialog extends JDialog implements ActionListener{
+		public MessageDialog(JFrame mainframe,String message){
+			super(mainframe,"ƒƒbƒZ[ƒW",ModalityType.APPLICATION_MODAL);//ƒ‚[ƒ_ƒ‹‚Éİ’è
+			this.setSize(300, 150);
+			this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			this.setResizable(false);
+			JLabel label = new JLabel(message);
+			label.setMaximumSize(new Dimension(300,FIELD_H));
+			JButton button = new JButton("OK");
+			button.addActionListener(this);
+			JPanel subpanel = new JPanel();
+			subpanel.setMaximumSize(new Dimension(300,FIELD_H));
+			subpanel.add(button);
+			JPanel panel = new JPanel();
+			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+			panel.add(label);
+			panel.add(subpanel);
+			this.add(panel);
 		}
-		return 1;
+		public void actionPerformed(ActionEvent e) {
+			dispose();
+		}
+	}
+	//ƒ_ƒCƒAƒƒO‚Ì•\¦
+	public void showDialog(String str){
+		MessageDialog dialog = new MessageDialog(this,str);
+		dialog.setVisible(true);
+	}
+	// ƒƒCƒ“ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	public static void main(String args[]){
+
+		//String ipAddress = "192.168.1.11";	//IPƒAƒhƒŒƒX
+		//String ipAddress = "220.215.242.167";	//IPƒAƒhƒŒƒX
+		int port = 10000;
+
+		Client client = new Client();			//ƒNƒ‰ƒCƒAƒ“ƒg¶¬
+		client.setVisible(true);				//‰æ–Ê•\¦
+		client.connectServer("localhost", port);	//ƒT[ƒo‚ÉÚ‘±
 	}
 
-	//ãƒ†ã‚¹ãƒˆç”¨ã®main
-	public static void main(String args[]){
-		Othello game = new Othello(); //ã‚ªã‚»ãƒ­ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç”¨æ„
-		Client oclient = new Client(game); //å¼•æ•°ã¨ã—ã¦ã‚ªã‚»ãƒ­ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æ¸¡ã™
-		oclient.setVisible(true);
-		oclient.connectServer("localhost", 10000);
+	//•â•ŠÖ”(•¶š—ñ‚Ì•\‚·‚à‚Ì‚ğ”»’è‚·‚é)
+	public boolean isNumber(String str) {
+		try {
+		    Integer.parseInt(str);
+			return true;
+		}
+		catch (NumberFormatException e) {
+			return false;
+		}
 	}
 }
