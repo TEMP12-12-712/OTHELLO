@@ -542,12 +542,13 @@ public class Client extends JFrame implements MouseListener {
 		else if(command.equals("RandomMatch")){
 			String[] info = msg.split(",",3);
 			if(info[0].equals("true")){						//マッチング成功
-/**/			player.setColor(info[2]);					//手番情報保存
 				if(info[2]=="0"){
+/**/				player.setColor("black");				//手番保存
 /**/				othello.setName0(player.getName());		//先手名保存
 /**/				othello.setName1(info[1]);				//後手名保存
 				}
 				if(info[2]=="1"){
+/**/				player.setColor("white");				//手番保存
 /**/				othello.setName0(info[1]);				//先手名保存
 /**/				othello.setName1(player.getName());		//後手名保存
 				}
@@ -563,7 +564,7 @@ public class Client extends JFrame implements MouseListener {
 		else if(command.equals("MakeKeyroom")){
 			String[] info = msg.split(",",2);
 /**/		othello.setRoomID(Integer.parseInt(info[0]));	//部屋番号保存
-/**/		player.setColor("0");							//手番保存
+/**/		player.setColor("black");						//手番保存
 /**/		othello.setName0(player.getName());				//先手名保存
 /**/		othello.setName1(info[1]);						//後手名保存
 			//部屋描画
@@ -592,7 +593,7 @@ public class Client extends JFrame implements MouseListener {
 			String[] info = msg.split(",",3);
 			if(info[0].equals("true")){							//入室許可
 /**/			othello.setRoomID(Integer.parseInt(info[1]));	//部屋番号保存
-/**/			player.setColor("1");							//手番保存
+/**/			player.setColor("white");						//手番保存
 /**/			othello.setName0(info[2]);						//先手名保存
 /**/			othello.setName1(player.getName());				//後手名保存
 				//部屋描画
@@ -611,7 +612,6 @@ public class Client extends JFrame implements MouseListener {
 			String[] info;							//部屋情報
 			for(int i=0;i<room.length;i++){			//選択肢ボタン生成
 				info = room[i].split(Pattern.quote("."),4);
-				System.out.println(info.length);
 				JButton bi = new JButton("先手："+info[0]+" 後手："+info[1]+" 黒石："+info[2]+" 白石："+info[3]);
 				bi.setActionCommand("EnterWatchroom,-1");
 				bi.addMouseListener(this);
@@ -652,10 +652,10 @@ public class Client extends JFrame implements MouseListener {
 			String[] info = msg.split(",",0);		//以下、受信内容で場合分け
 			//盤面・ログ受信
 			if(info[0].equals(dataID.get("Table"))){
-				String table = info[1];				//盤面保存
-				String log = info[2];				//ログ保存
-				//盤面反映
-				//ログ反映
+				String table = info[1];																//盤面取得
+				String log = info[2];																//ログ取得
+				String[] grids = table.split(Pattern.quote("."),othello.getRow()*othello.getRow()); //盤面変換
+//				フィールド.setText(フィールド.getText()+"\n"+log);									//ログ反映
 			}
 			//投了受信
 			else if(info[0].equals(dataID.get("Giveup"))){
@@ -670,8 +670,8 @@ public class Client extends JFrame implements MouseListener {
 			}
 			//チャット受信
 			else if(info[0].equals(dataID.get("Chat"))){
-				String str = info[1];						//チャット保存
-				//チャット反映
+				String str = info[1];									//チャット保存
+//				フィールド.setText(フィールド.getText()+"\n"+str);		//チャット反映
 			}
 		}
 		//観戦情報
@@ -748,9 +748,27 @@ public class Client extends JFrame implements MouseListener {
 				break;
 			//石を置く
 			case "Table":
-				sendMessage(dataID.get(command)+",盤面,ログ内容");	//サーバへ送信
-				//盤面反映
-				//ログ反映
+/*				int grid = Integer.parseInt(subc);													//マス
+				String log;																			//ログ
+				StringBuffer table;																	//盤面
+				othello.putStone(grid,player.getColor());											//石を置く
+				String[] grids = othello.getGrids();												//盤面情報取得
+				for(int i=0;i<othello.getRow()*othello.getRow();i++){								//盤面情報変換
+					if(grids[i].equals("board")) table.append("0.");
+					if(grids[i].equals("black")) table.append("1.");
+					if(grids[i].equals("white")) table.append("2.");
+				}
+				if(player.getColor.equals("black")){												//ログ情報変換
+					log = "先手：("+Integer.toString(grid/8+1)+","+Integer.toString(grid%8)+")";
+				}
+				if(player.getColor.equals("white")){
+					log = "後手：("+Integer.toString(grid/8+1)+","+Integer.toString(grid%8)+")";
+				}
+				フィールド.setText(フィールド.getText()+"\n"+log);									//ログ反映
+				sendMessage(dataID.get(command)+","+盤面+","+log);									//サーバへ送信
+				othello.changeTurn();																//手番変更
+				ボタン.setEnable(false);															//ボタン無効化
+*/
 				break;
 			//投了
 			case "Giveup":
@@ -767,8 +785,9 @@ public class Client extends JFrame implements MouseListener {
 				break;
 			//チャット
 			case "Chat":
-				sendMessage(dataID.get(command)+",チャット内容");	//サーバへ送信
-				//チャット反映
+//				String chat = フィールド.getText();					//チャット内容読み取り
+//				フィールド.setText(フィールド.getText()+"\n"+chat);	//チャット内容反映
+//				sendMessage(dataID.get(command)+","+chat);			//サーバへ送信
 				break;
 			//総合記録要求
 			case "TotalRecord":
