@@ -4,10 +4,12 @@ import java.net.Socket;
 
 public class secretroom{
 
-	public secretroom(String PN1, Socket s, String Password) {
+	public secretroom(String PN1, Socket s, String Password, String Chatflag, String Timeflag) {
 		PlayerName1 = PN1;
 		socket1 = s;
 		pass = Password;
+		chatflag = Chatflag;
+		timeflag = Timeflag;
 	}
 
 
@@ -15,9 +17,20 @@ public class secretroom{
 	private String PlayerName1 = null, PlayerName2 = null;
 	private Socket socket1, socket2;
 	private String grids;
+	private String chatflag;		//チャットの有無
+	private String timeflag;		//時間
 
 	public String getpass() {
 		return pass;
+	}
+
+	//一度作られた部屋にプレイヤー１を入れる
+	public void set1P(String PN1, Socket s, String Password, String Chatflag, String Timeflag) {
+			PlayerName1 = PN1;
+			socket1 = s;
+			pass = Password;
+			chatflag = Chatflag;
+			timeflag = Timeflag;
 	}
 
 	public void set2P(String PN2, Socket s) {//プレイヤー２が決まる
@@ -62,6 +75,27 @@ public class secretroom{
 
 	}
 
+	public String getPN1() {
+		return PlayerName1;
+	}
+
+	public void deletePN1() {
+		PlayerName1 = null;
+	}
+
+	public String getPN2() {
+		return PlayerName2;
+	}
+
+	public void deletePN2() {
+		PlayerName2 = null;
+	}
+
+	public String getlistData() {
+		String str = PlayerName1 + "." + chatflag + "." + timeflag + ",";
+		return str;
+	}
+
 	public void setfield(String PN, String field) {//送信者と盤面を得て、相手に盤面を送信
 		grids = field;								//盤面を保持
 		if(PN.equals(PlayerName2)) {
@@ -76,6 +110,26 @@ public class secretroom{
 			try {
 				DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
 				out2.writeUTF("21" + grids);	//クライアントに失敗を送信
+				out2.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void setlog(String PN, String log) {//送信者と盤面を得て、相手に盤面を送信								//盤面を保持
+		if(PN.equals(PlayerName2)) {
+			try {
+				DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
+				out1.writeUTF("25" + log);	//クライアントに送信
+				out1.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}else {
+			try {
+				DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
+				out2.writeUTF("25" + log);	//クライアントに失敗を送信
 				out2.close();
 			}catch (IOException e) {
 				e.printStackTrace();
