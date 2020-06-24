@@ -24,9 +24,9 @@ public class Othello {
 
 	// メソッド
 	public String checkWinner(){	// 勝敗を判断
-		if(black > white) return "黒";
-		else if(black < white) return "白";
-		else return "引き分け";
+		if(black > white) return "black";
+		else if(black < white) return "white";
+		else return "draw";
 	}
 	public void setBlackName(String name) {
 		blackName = name;
@@ -48,6 +48,21 @@ public class Othello {
 	}
 	public String getTurn(){ // 手番情報を取得
 		return turn;
+	}
+	public void resetGrids() { //局面情報を初期化
+		turn = "black"; //クロが先手
+		for(int i = 0 ; i < row * row ; i++){
+			grids[i] = "board"; //始めは石が置かれていない
+			int center = row * row / 2;
+			grids[center - row / 2 - 1] = "black";
+			grids[center + row / 2    ] = "black";
+			grids[center - row / 2    ] = "white";
+			grids[center + row / 2 - 1] = "white";
+		}
+		canPutGrids(); //最初に黒が置けるマスを明示
+	}
+	public void setGrids(String[] setting) { //局面情報を入手
+		grids = setting;
 	}
 	public String [] getGrids(){ // 局面情報を取得
 		return grids;
