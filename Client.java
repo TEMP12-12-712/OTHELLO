@@ -37,7 +37,7 @@ public class Client extends JFrame implements MouseListener {
 	private JPanel tablePanel,playerPanel,reactPanel,logPanel,chatPanel;//盤面配置用パネル、対局者操作パネル、観戦者操作パネル、ログエリア表示パネル、チャット表示パネル
 	private JTextArea logArea;						//ログエリア
 	private JTextField chatField;					//チャットフィールド
-	private JButton b11_3;							//アシスト切替ボタン
+	private JButton b11_1,b11_3;					//パスボタン、アシスト切替ボタン
 	private JLabel label11_1,label11_2,label11_3,label11_4,label11_5,label11_6;//対局情報表示ラベル
 	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;		//アイコン
 	//処理関連
@@ -61,6 +61,7 @@ public class Client extends JFrame implements MouseListener {
 	dataID.put("WatchroomList","9");
 	dataID.put("EnterWatchroom","91");
 	dataID.put("Reaction","92");
+	dataID.put("GetoutWatchroom","93");
 	dataID.put("Logout","100");}
 	// 通信用ストリーム
 	private PrintWriter out;						//送信用
@@ -357,7 +358,7 @@ public class Client extends JFrame implements MouseListener {
 		infoPanel.add(infoPanel4);
 		playerPanel = new JPanel();//対局者操作パネル
 		playerPanel.setBounds(TABLE_W+20,170,200,100);
-		JButton b11_1 = new JButton("パス");
+		b11_1 = new JButton("パス");
 		b11_1.setActionCommand("Pass,-1");
 		b11_1.addMouseListener(this);
 		JButton b11_2 = new JButton("投了");
@@ -377,7 +378,26 @@ public class Client extends JFrame implements MouseListener {
 		playerPanel.add(playerPanel2);
 		reactPanel = new JPanel();//観戦者操作パネル
 		reactPanel.setBounds(TABLE_W+20,280,200,100);
-		
+		JButton b11_a = new JButton("いいね");
+		b11_a.setActionCommand("Reaction,さんがいいねしました");
+		b11_a.addMouseListener(this);
+		JButton b11_b = new JButton("拍手");
+		b11_b.setActionCommand("Reaction,さんが拍手を送りました");
+		b11_b.addMouseListener(this);
+		JButton b11_c = new JButton("？？");
+		b11_c.setActionCommand("Reaction,：？？");
+		b11_c.addMouseListener(this);
+		JButton b11_d = new JButton("！！");
+		b11_d.setActionCommand("Reaction,：！！");
+		b11_d.addMouseListener(this);
+		JButton b11_e = new JButton("退出");
+		b11_e.setActionCommand("GetoutWatchroom,-1");
+		b11_e.addMouseListener(this);
+		reactPanel.add(b11_a);
+		reactPanel.add(b11_b);
+		reactPanel.add(b11_c);
+		reactPanel.add(b11_d);
+		reactPanel.add(b11_e);
 		logPanel = new JPanel();//ログ表示パネル
 		logPanel.setBounds(0,TABLE_H+20,TABLE_W,170);
 		logArea = new JTextArea(8,34);
@@ -401,6 +421,7 @@ public class Client extends JFrame implements MouseListener {
 		panel[11].add(tablePanel);
 		panel[11].add(infoPanel);
 		panel[11].add(playerPanel);
+		panel[11].add(reactPanel);
 		panel[11].add(logPanel);
 		panel[11].add(chatPanel);
 		othello.resetGrids();
@@ -645,6 +666,7 @@ public class Client extends JFrame implements MouseListener {
 				updateTable();									//盤面表示
 				reactPanel.setVisible(false);					//リアクションパネル無効化
 				if(!player.getChat()) chatPanel.setVisible(false);//チャット無ならチャットパネル無効化
+				b11_1.setEnabled(false);						//パスボタン無効化
 				b11_3.setEnabled(false);						//アシスト切替ボタン無効化
 				panelID = 11;									//対局画面へ
 			}
@@ -731,6 +753,7 @@ public class Client extends JFrame implements MouseListener {
 				logArea.setEditable(true);															//ログ反映
 				logArea.append("\n"+log);
 				logArea.setEditable(false);
+				b11_1.setEnabled(true);																//パスボタン有効化
 				b11_3.setEnabled(true);																//アシスト切替ボタン有効化
 				othello.changeTurn();																//ターン変更
 				if(othello.isGameover()) {															//決着がついたら
@@ -750,6 +773,7 @@ public class Client extends JFrame implements MouseListener {
 						}
 					}
 					else{																			//観戦者の場合
+						sendMessage(dataID.get(command));						//サーバへ送信
 						if(result.equals("draw")) showDialog("引き分け");
 						if(result.equals("black")) showDialog("先手の勝ちです");
 						else showDialog("後手の勝ちです");
@@ -761,6 +785,7 @@ public class Client extends JFrame implements MouseListener {
 			}
 			//パス受信
 			else if(info[0].equals(dataID.get("Pass"))){
+				b11_1.setEnabled(true);											//パスボタン有効化
 				b11_3.setEnabled(true);											//アシスト切替ボタン有効化
 				logArea.setEditable(true);										//ログに表示
 				if(player.getColor().equals("black")) logArea.append("\n後手がパスしました");
@@ -770,11 +795,11 @@ public class Client extends JFrame implements MouseListener {
 			}
 			//投了受信
 			else if(info[0].equals(dataID.get("Giveup"))){
-				resetRoom();													//部屋情報リセット
 				if(!player.isStand()) showDialog("対戦相手が投了しました");		//ダイアログ表示
 				else showDialog("対戦者が投了しました");						//ダイアログ表示
 				panelID = 3;													//メニュー画面へ
 				switchDisplay();												//画面遷移
+				resetRoom();													//部屋情報リセット
 			}
 			//チャット受信
 			else if(info[0].equals(dataID.get("Chat"))){
@@ -877,6 +902,9 @@ public class Client extends JFrame implements MouseListener {
 						logArea.append("\n"+log);
 						logArea.setEditable(false);
 						sendMessage(dataID.get(command)+","+table+","+log);								//サーバへ送信
+						b11_1.setEnabled(false);														//パスボタン無効化
+						b11_3.setEnabled(false);														//アシスト切替ボタン無効化
+						othello.changeTurn();															//ターン変更
 						if(othello.isGameover()) {														//決着がついたら
 							String result = othello.checkWinner();										//勝敗確認
 							if(result.equals("draw")) {						//引き分け
@@ -891,18 +919,17 @@ public class Client extends JFrame implements MouseListener {
 								sendMessage(dataID.get("Finish")+",2");		//サーバに送信
 								showDialog("あなたの負けです");				//ダイアログ表示
 							}
-							resetRoom();																//部屋情報リセット
 							panelID = 3;																//メニュー画面へ
 							switchDisplay();															//画面遷移
+							resetRoom();																//部屋情報リセット
 						}
-						b11_3.setEnabled(false);														//アシスト切替ボタン無効化
-						othello.changeTurn();															//ターン変更
 					}
 				}
 				break;
 			//パス
 			case "Pass":
 				sendMessage(dataID.get(command));						//サーバへ送信
+				b11_1.setEnabled(false);								//パスボタン無効化
 				b11_3.setEnabled(false);								//アシスト切替ボタン無効化
 				logArea.setEditable(true);								//ログに表示
 				if(player.getColor().equals("black")) logArea.append("\n先手がパスしました");
@@ -913,10 +940,10 @@ public class Client extends JFrame implements MouseListener {
 			//投了
 			case "Giveup":
 				sendMessage(dataID.get(command));						//サーバへ送信
-				resetRoom();											//部屋情報リセット
 				showDialog("投了しました");								//ダイアログ表示
 				panelID = 3;											//メニュー画面へ
 				switchDisplay();										//画面遷移
+				resetRoom();											//部屋情報リセット
 				break;
 			//チャット
 			case "Chat":
@@ -991,7 +1018,16 @@ public class Client extends JFrame implements MouseListener {
 				break;
 			//リアクション
 			case "Reaction":
-				sendMessage(dataID.get(command));				//サーバへ送信
+				String reaction = player.getName()+subc;						//リアクション変換
+				sendMessage(dataID.get(command)+","+reaction);					//サーバへ送信
+				break;
+			//観戦退出
+			case "GetoutWatchroom":
+				sendMessage(dataID.get("Reaction")+","+player.getName()+"さんが退出しました");
+				sendMessage(dataID.get(command));						//サーバへ送信
+				panelID = 3;											//メニュー画面へ
+				switchDisplay();										//画面遷移
+				resetRoom();											//部屋情報リセット
 				break;
 			//ログアウト
 			case "Logout":
@@ -1015,7 +1051,9 @@ public class Client extends JFrame implements MouseListener {
 /**/	player.setTime(-1);					//制限時間リセット
 		player.setAssist(true);				//アシストの有無リセット
 		othello.resetGrids();				//盤面・ターンリセット
-		b11_3.setEnabled(true);				//以下、対局画面の初期化
+		//以下、対局画面の初期化
+		b11_1.setEnabled(true);
+		b11_3.setEnabled(true);
 		logArea.setText("");
 		chatField.setText("");
 		player.beStand(false);
