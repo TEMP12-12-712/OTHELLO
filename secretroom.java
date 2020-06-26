@@ -157,6 +157,26 @@ public class secretroom{
 		}
 	}
 
+	public void sendpass(String PN) {
+		if(PN.equals(PlayerName2)) {
+			try {
+				DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
+				out1.writeUTF("23");	//クライアントに送信
+				out1.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}else {
+			try {
+				DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
+				out2.writeUTF("23");	//クライアントに失敗を送信
+				out2.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 
 
 	public static void main(String[] args) {

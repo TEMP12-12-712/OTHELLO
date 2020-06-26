@@ -266,6 +266,15 @@ class EchoThread extends Thread {
 		}
 	}
 
+	//22:パスをする
+	public static void passing() {
+		if(myroom == 1) {
+			Server.mr[myroomNo].sendpass(PlayerName);
+		}else {
+			Server.sr[myroomNo].sendpass(PlayerName);
+		}
+	}
+
 	//23:投了
 	public static void giveup(String message) {
 		//もうひとりのプレイヤーと観客に投了したことを伝える
