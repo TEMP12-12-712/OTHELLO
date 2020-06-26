@@ -84,7 +84,7 @@ public class EchoServer {
 							break;
 						//鍵部屋リスト要求
 						case "7":
-							out.println("0.プレイヤ１.ture.3,1.プレイヤ２.false.1,2.プレイヤ３.true.5");
+							out.println("0.プレイヤ１.ture.3,1.プレイヤ２.false.1,2.プレイヤ３.true.5,3.プレイヤ４.true.1,4.プレイヤ５.false.1,5.プレイヤ６.true.3,6.プレイヤ７.true.3,7.プレイヤ８.true.3,8.プレイヤ９.true.3,9.プレイヤ１０.true.3,10.プレイヤ１１.true.3,11.プレイヤ１２.true.3");
 							out.flush();
 							System.out.println("送信：KeyroomList");
 							break;

@@ -37,7 +37,6 @@ public class Client extends JFrame implements MouseListener {
 	private JPanel tablePanel,playerPanel,reactPanel,logPanel,chatPanel;//盤面配置用パネル、対局者操作パネル、観戦者操作パネル、ログエリア表示パネル、チャット表示パネル
 	private JTextArea logArea;						//ログエリア
 	private JTextField chatField;					//チャットフィールド
-	private JButton b11_1,b11_3;					//パスボタン、アシスト切替ボタン
 	private JLabel label11_1,label11_2,label11_3,label11_4,label11_5,label11_6;//対局情報表示ラベル
 	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;		//アイコン
 	//処理関連
@@ -298,13 +297,21 @@ public class Client extends JFrame implements MouseListener {
 		panel[8].add(b81);
 		//鍵部屋選択画面
 		listPanel9 = new JPanel();
+		listPanel9.setMinimumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		listPanel9.setLayout(new BoxLayout(listPanel9,BoxLayout.Y_AXIS));
 		JButton b91 = new JButton("戻る");
 		b91.setActionCommand("Switch,6");
 		b91.addMouseListener(this);
 		panel[9] = new JPanel();
 		panel[9].setSize(WIDTH,HEIGHT);
-		panel[9].add(listPanel9);
-		panel[9].add(b91);
+		panel[9].setLayout(new BoxLayout(panel[9], BoxLayout.Y_AXIS));
+		JScrollPane sp9 = new JScrollPane(listPanel9,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		sp9.setMaximumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		panel[9].add(sp9);
+		JPanel panel9 = new JPanel();
+		panel9.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel9.add(b91);
+		panel[9].add(panel9);
 		//パスワード入力画面
 		JLabel label10_1 = new JLabel("パスワード");
 		passfield10 = new JPasswordField(20);
@@ -358,13 +365,13 @@ public class Client extends JFrame implements MouseListener {
 		infoPanel.add(infoPanel4);
 		playerPanel = new JPanel();//対局者操作パネル
 		playerPanel.setBounds(TABLE_W+20,170,200,100);
-		b11_1 = new JButton("パス");
+		JButton b11_1 = new JButton("パス");
 		b11_1.setActionCommand("Pass,-1");
 		b11_1.addMouseListener(this);
 		JButton b11_2 = new JButton("投了");
 		b11_2.setActionCommand("Giveup,-1");
 		b11_2.addMouseListener(this);
-		b11_3 = new JButton("アシスト");
+		JButton b11_3 = new JButton("アシスト");
 		b11_3.setActionCommand("Assist,-1");
 		b11_3.addMouseListener(this);
 		label11_6 = new JLabel("：ON");
@@ -427,14 +434,21 @@ public class Client extends JFrame implements MouseListener {
 		othello.resetGrids();
 		//観戦部屋選択画面
 		listPanel12 = new JPanel();
+		listPanel12.setMinimumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		listPanel12.setLayout(new BoxLayout(listPanel12,BoxLayout.Y_AXIS));
 		JButton b121 = new JButton("戻る");
-		b121.setSize(100,50);
 		b121.setActionCommand("Switch,3");
 		b121.addMouseListener(this);
 		panel[12] = new JPanel();
 		panel[12].setSize(WIDTH,HEIGHT);
-		panel[12].add(listPanel12);
-		panel[12].add(b121);
+		panel[12].setLayout(new BoxLayout(panel[12], BoxLayout.Y_AXIS));
+		JScrollPane sp12 = new JScrollPane(listPanel12,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		sp12.setMaximumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		panel[12].add(sp12);
+		JPanel panel12 = new JPanel();
+		panel12.setMaximumSize(new Dimension(WIDTH,FIELD_H));
+		panel12.add(b121);
+		panel[12].add(panel12);
 		//記録選択画面
 		JButton b141 = new JButton("総合戦績");
 		b141.setSize(100,50);
@@ -608,7 +622,7 @@ public class Client extends JFrame implements MouseListener {
 					label11_1.setText(info[1]);				//先手名表示
 					othello.setWhiteName(player.getName());	//後手名保存
 					label11_5.setText(player.getName());	//後手名表示
-					b11_3.setEnabled(false);				//アシスト切替ボタン無効化
+					playerPanel.setVisible(false);			//操作無効化
 				}
 				reactPanel.setVisible(false);				//リアクションパネル無効化
 /**/			player.setChat(true);						//チャットの有無保存
@@ -642,11 +656,11 @@ public class Client extends JFrame implements MouseListener {
 			String[] keyroom = msg.split(",",0);
 			String[] info;										//部屋情報
 			String strchat;										//チャットの有無
-			for(int i=0;i<keyroom.length;i++){					//選択肢ボタン生成
+			for(int i=0;i<keyroom.length;i++){
 				info = keyroom[i].split(Pattern.quote("."),4);
 				if(info[2].equals("true")) strchat = "あり";
 				else strchat = "なし";
-				JButton bi = new JButton("作成者："+info[1]+" チャット："+strchat+" 制限時間："+info[3]+"分");
+				JButton bi = new JButton("<html>作成者："+info[1]+"<br/>チャット："+strchat+" 制限時間："+info[3]+"分</html>");
 				bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
 				bi.addMouseListener(this);
 				listPanel9.add(bi);
@@ -666,8 +680,7 @@ public class Client extends JFrame implements MouseListener {
 				updateTable();									//盤面表示
 				reactPanel.setVisible(false);					//リアクションパネル無効化
 				if(!player.getChat()) chatPanel.setVisible(false);//チャット無ならチャットパネル無効化
-				b11_1.setEnabled(false);						//パスボタン無効化
-				b11_3.setEnabled(false);						//アシスト切替ボタン無効化
+				playerPanel.setVisible(false);					//操作無効化
 				panelID = 11;									//対局画面へ
 			}
 			if(info[0].equals("false")){						//入室失敗
@@ -685,7 +698,7 @@ public class Client extends JFrame implements MouseListener {
 			String[] info;							//部屋情報
 			for(int i=0;i<room.length;i++){			//選択肢ボタン生成
 				info = room[i].split(Pattern.quote("."),5);
-				JButton bi = new JButton("先手："+info[1]+" 後手："+info[2]+" \n黒石："+info[3]+" 白石："+info[4]);
+				JButton bi = new JButton("<html>先手："+info[1]+" 後手："+info[2]+"<br/>黒石："+info[3]+" 白石："+info[4]+"</html>");
 				bi.setActionCommand("EnterWatchroom,"+room[i]);
 				bi.addMouseListener(this);
 				listPanel12.add(bi);
@@ -705,7 +718,7 @@ public class Client extends JFrame implements MouseListener {
 			else{												//入室許可
 				player.beStand(true);							//観戦モードへ
 				player.setAssist(false);						//アシスト無効化
-				playerPanel.setVisible(false);					//対局者操作パネル無効化
+				playerPanel.setVisible(false);					//操作無効化
 				chatPanel.setVisible(false);					//チャットパネル無効化
 				player.setColor("black");						//手番保存
 				label11_1.setText(othello.getBlackName());		//先手名表示
@@ -753,8 +766,7 @@ public class Client extends JFrame implements MouseListener {
 				logArea.setEditable(true);															//ログ反映
 				logArea.append("\n"+log);
 				logArea.setEditable(false);
-				b11_1.setEnabled(true);																//パスボタン有効化
-				b11_3.setEnabled(true);																//アシスト切替ボタン有効化
+				playerPanel.setVisible(false);														//操作有効化
 				othello.changeTurn();																//ターン変更
 				if(othello.isGameover()) {															//決着がついたら
 					String result = othello.checkWinner();											//勝敗確認
@@ -785,8 +797,7 @@ public class Client extends JFrame implements MouseListener {
 			}
 			//パス受信
 			else if(info[0].equals(dataID.get("Pass"))){
-				b11_1.setEnabled(true);											//パスボタン有効化
-				b11_3.setEnabled(true);											//アシスト切替ボタン有効化
+				playerPanel.setVisible(true);									//操作有効化
 				logArea.setEditable(true);										//ログに表示
 				if(player.getColor().equals("black")) logArea.append("\n後手がパスしました");
 				else logArea.append("\n先手がパスしました");
@@ -806,6 +817,13 @@ public class Client extends JFrame implements MouseListener {
 				String chat = info[1];											//チャット保存
 				logArea.setEditable(true);										//チャット反映
 				logArea.append("\n"+chat);
+				logArea.setEditable(false);
+			}
+			//リアクション受信
+			else if(info[0].equals(dataID.get("Reaction"))){
+				String reaction = info[1];										//リアクション保存
+				logArea.setEditable(true);										//リアクション反映反映
+				logArea.append("\n> "+reaction);
 				logArea.setEditable(false);
 			}
 		}
@@ -902,8 +920,7 @@ public class Client extends JFrame implements MouseListener {
 						logArea.append("\n"+log);
 						logArea.setEditable(false);
 						sendMessage(dataID.get(command)+","+table+","+log);								//サーバへ送信
-						b11_1.setEnabled(false);														//パスボタン無効化
-						b11_3.setEnabled(false);														//アシスト切替ボタン無効化
+						playerPanel.setVisible(false);													//操作無効化
 						othello.changeTurn();															//ターン変更
 						if(othello.isGameover()) {														//決着がついたら
 							String result = othello.checkWinner();										//勝敗確認
@@ -929,8 +946,7 @@ public class Client extends JFrame implements MouseListener {
 			//パス
 			case "Pass":
 				sendMessage(dataID.get(command));						//サーバへ送信
-				b11_1.setEnabled(false);								//パスボタン無効化
-				b11_3.setEnabled(false);								//アシスト切替ボタン無効化
+				playerPanel.setVisible(false);							//操作無効化
 				logArea.setEditable(true);								//ログに表示
 				if(player.getColor().equals("black")) logArea.append("\n先手がパスしました");
 				else logArea.append("\n後手がパスしました");
@@ -1019,6 +1035,9 @@ public class Client extends JFrame implements MouseListener {
 			//リアクション
 			case "Reaction":
 				String reaction = player.getName()+subc;						//リアクション変換
+				logArea.setEditable(true);										//リアクション反映
+				logArea.append("\n> "+reaction);
+				logArea.setEditable(false);
 				sendMessage(dataID.get(command)+","+reaction);					//サーバへ送信
 				break;
 			//観戦退出
@@ -1052,8 +1071,6 @@ public class Client extends JFrame implements MouseListener {
 		player.setAssist(true);				//アシストの有無リセット
 		othello.resetGrids();				//盤面・ターンリセット
 		//以下、対局画面の初期化
-		b11_1.setEnabled(true);
-		b11_3.setEnabled(true);
 		logArea.setText("");
 		chatField.setText("");
 		player.beStand(false);
