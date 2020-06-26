@@ -29,7 +29,7 @@ public class Client extends JFrame implements MouseListener {
 	private Container pane;							//コンテナ
 	private JPanel[] panel = new JPanel[19];		//画面パネル
 	private JPanel listPanel9,listPanel12;			//リスト表示用パネル
-	private JLabel label1_3, label2_3, label15, label17;//ラベル
+	private JLabel label1_3, label2_3, label10_2, label15, label17;//ラベル
 	private JTextField field1, field2, field16;		//テキストフィールド
 	private JPasswordField passfield1, passfield2, passfield10;//パスワードフィールド
 	private JRadioButton rb71,rb72;					//ラジオボタン
@@ -323,6 +323,7 @@ public class Client extends JFrame implements MouseListener {
 		b102.setSize(100,50);
 		b102.setActionCommand("Switch,9");
 		b102.addMouseListener(this);
+		label10_2 = new JLabel("");
 		panel[10] = new JPanel();
 		panel[10].setSize(WIDTH,HEIGHT);
 		panel[10].setLayout(new BoxLayout(panel[10], BoxLayout.Y_AXIS));
@@ -332,10 +333,14 @@ public class Client extends JFrame implements MouseListener {
 		panel10_1.add(passfield10);
 		JPanel panel10_2 = new JPanel();
 		panel10_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel10_2.add(b101);
-		panel10_2.add(b102);
+		panel10_2.add(label10_2);
+		JPanel panel10_3 = new JPanel();
+		panel10_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel10_3.add(b101);
+		panel10_3.add(b102);
 		panel[10].add(panel10_1);
 		panel[10].add(panel10_2);
+		panel[10].add(panel10_3);
 		//対局画面
 		tablePanel = new JPanel();//盤面表示パネル
 		tablePanel.setBounds(10,10,TABLE_W,TABLE_H);
@@ -1018,7 +1023,12 @@ public class Client extends JFrame implements MouseListener {
 				break;
 			//鍵部屋への入室要求
 			case "EnterKeyroom":
-				sendMessage(dataID.get(command)+","+othello.getRoomID()+","+(new String(passfield10.getPassword())));//サーバへ送信
+				String keypass = new String(passfield10.getPassword());
+				if(keypass.equals("")) {
+					label10_2.setText("パスワードが空欄です");
+					break;
+				}
+				sendMessage(dataID.get(command)+","+othello.getRoomID()+","+keypass);//サーバへ送信
 				break;
 			//観戦部屋リスト要求
 			case "WatchroomList":
