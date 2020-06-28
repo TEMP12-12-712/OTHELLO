@@ -25,7 +25,7 @@ import java.net.Socket;
     ServerSocket serverSocket = null;
     try {
       serverSocket = new ServerSocket(port);
-      System.out.println("EchoServerが起動しました(port="
+      System.out.println("Serverが起動しました(port="
                          + serverSocket.getLocalPort() + ")");
       while (true) {
         Socket socket = serverSocket.accept();
@@ -72,18 +72,20 @@ class EchoThread extends Thread {
 
       }*/
     	//受信ストリームの取得
+
+    	DataInputStream in = new DataInputStream(socket.getInputStream());
+		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
     	while(true) {
-    		DataInputStream in = new DataInputStream(socket.getInputStream());
-    		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
     		String ClientMessage = in.readUTF();		//クライアントからデータ受信
-    		System.out.println("クライアント"+ socket.getRemoteSocketAddress() +ClientMessage + "を受信");
+    		System.out.println("クライアント"+PlayerName+ClientMessage + "を受信");
     		String Return = check(ClientMessage);
     		if(Return != null) {
     			out.writeUTF(Return);	//クライアントに送信
     		}
-    		out.close();
-    		in.close();
+
     	}
+    	//out.close();
+		//in.close();
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
@@ -189,7 +191,8 @@ class EchoThread extends Thread {
 
 			if(judge.equals("true")) {
 				FileWriter fr = new FileWriter(file, true);
-				fr.write(PN + "," + PW + ",0,0");
+				fr.write(PN + "," + PW + ",0,0\n");
+
 				fr.close();
 			}
 		}
