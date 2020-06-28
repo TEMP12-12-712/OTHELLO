@@ -63,8 +63,8 @@ public class Client extends JFrame implements MouseListener {
 	dataID.put("GetoutWatchroom","93");
 	dataID.put("Logout","100");}
 	// 通信用ストリーム
-	private PrintWriter out;						//送信用
-	private BufferedReader in;						//受信用
+	private DataOutputStream out;					//送信用
+	private DataInputStream in;						//受信用
 	private Receiver receiver;						//スレッド
 	// コンストラクタ/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public Client() {
@@ -533,10 +533,9 @@ public class Client extends JFrame implements MouseListener {
 		try {
 			socket = new Socket(ipAddress, port);				//接続
 			System.out.println("サーバと接続しました");
-			out = new PrintWriter(socket.getOutputStream());	//出力ストリーム
-			receiver = new Receiver(socket);					//受信スレッド
+			out = new DataOutputStream(socket.getOutputStream());	//出力ストリーム
+			receiver = new Receiver(socket);						//受信スレッド
 			receiver.start();
-			sendMessage("dummy");								//調整用ダミー
 		}
 		catch (UnknownHostException e) {
 			System.err.println("ホストのIPアドレスが判定できません: " + e);
@@ -549,28 +548,36 @@ public class Client extends JFrame implements MouseListener {
 	}
 	//データの送信
 	public void sendMessage(String msg){
-		out.println(msg);					//バッファに書き込み
-		out.flush();						//データ送信
-		System.out.println("送信：" +msg);	//テスト出力
+		try{
+			out.writeUTF(msg);					//バッファに書き込み
+			System.out.println("送信：" +msg);	//テスト出力
+		}
+		catch (IOException e){
+			System.err.println("データ送信時にエラーが発生しました: " + e);
+		}
 	}
 	//データの受信
 	class Receiver extends Thread {
 		Receiver (Socket socket){
 			try{
-				in = new BufferedReader(new InputStreamReader(socket.getInputStream())); //入力ストリーム
+				in = new DataInputStream(socket.getInputStream()); //入力ストリーム
 			}
 			catch (IOException e) {
-				System.err.println("データ受信時にエラーが発生しました: " + e);
+				System.err.println("サーバ接続時にエラーが発生しました: " + e);
+				System.exit(-1);
 			}
 		}
 		public void run(){
 			try{
 				while(true) {
-					String inputLine = in.readLine();			//バッファを読み込み
-					if (inputLine != null){						//データ受信
-						System.out.println("受信：" +inputLine);//テスト出力
-						receiveMessage(inputLine);				//処理
+					try{
+						String inputLine = in.readUTF();			//バッファを読み込み
+						if (inputLine != null){						//データ受信
+							System.out.println("受信：" +inputLine);//テスト出力
+							receiveMessage(inputLine);				//処理
+						}
 					}
+					catch (EOFException e){/*データを読み込まなかった場合*/}
 				}
 			}
 			catch (IOException e){
