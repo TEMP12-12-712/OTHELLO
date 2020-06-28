@@ -46,10 +46,12 @@ import java.net.Socket;
 class EchoThread extends Thread {
 
   private static Socket socket;
-  private static String PlayerName ="";
+  private static String PlayerName = null;
   private static int myroomNo = 1001;
   private static int myroom = 0;	//0なら対戦してない、１ならマッチ、２なら鍵部屋マッチ
   private static int watchNo = 1001;	//観戦しているときの番号
+  DataInputStream in;
+  DataOutputStream out;
 
 
   public EchoThread(Socket socket) {
@@ -60,20 +62,7 @@ class EchoThread extends Thread {
 
   public void run() {
     try {
-      /*	BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-      String line;
-      while ( (line = in.readLine()) != null ) {
-        System.out.println(socket.getRemoteSocketAddress()
-                           + " 受信: " + line);
-        out.println(line);
-        System.out.println(socket.getRemoteSocketAddress()
-                           + " 送信: " + line);
-
-      }*/
-    	//受信ストリームの取得
-
-    	DataInputStream in = new DataInputStream(socket.getInputStream());
+    	in = new DataInputStream(socket.getInputStream());
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
     	while(true) {
     		String ClientMessage = in.readUTF();		//クライアントからデータ受信
@@ -81,17 +70,17 @@ class EchoThread extends Thread {
     		String Return = check(ClientMessage);
     		if(Return != null) {
     			out.writeUTF(Return);	//クライアントに送信
+    			System.out.println(Return);
     		}
-
-    	}
-    	//out.close();
-		//in.close();
+        	}
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
       try {
         if (socket != null) {
           socket.close();
+        out.close();
+  		in.close();
         }
       } catch (IOException e) {}
       System.out.println("切断されました "
@@ -192,7 +181,6 @@ class EchoThread extends Thread {
 			if(judge.equals("true")) {
 				FileWriter fr = new FileWriter(file, true);
 				fr.write(PN + "," + PW + ",0,0\n");
-
 				fr.close();
 			}
 		}
@@ -218,6 +206,7 @@ class EchoThread extends Thread {
 						judge = "pass";
 						if(check[1].equals(PW)) {
 							judge = "true";
+							PlayerName = PN;
 						}
 					}
 				}
