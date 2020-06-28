@@ -65,7 +65,7 @@ public class Client extends JFrame implements MouseListener {
 	// 通信用ストリーム
 	private DataOutputStream out;					//送信用
 	private DataInputStream in;						//受信用
-	private Receiver receiver;						//スレッド
+	private Receiver receiver;						//受信スレッド
 	// コンストラクタ/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public Client() {
 		player = new Player();					//プレイヤ生成
@@ -531,10 +531,10 @@ public class Client extends JFrame implements MouseListener {
 	public void connectServer(String ipAddress, int port){
 		Socket socket = null;
 		try {
-			socket = new Socket(ipAddress, port);				//接続
+			socket = new Socket(ipAddress, port);					//サーバに接続要求を送信
 			System.out.println("サーバと接続しました");
-			out = new DataOutputStream(socket.getOutputStream());	//出力ストリーム
-			receiver = new Receiver(socket);						//受信スレッド
+			out = new DataOutputStream(socket.getOutputStream());	//出力ストリームを作成
+			receiver = new Receiver(socket);						//受信スレッドを作成
 			receiver.start();
 		}
 		catch (UnknownHostException e) {
@@ -560,7 +560,7 @@ public class Client extends JFrame implements MouseListener {
 	class Receiver extends Thread {
 		Receiver (Socket socket){
 			try{
-				in = new DataInputStream(socket.getInputStream()); //入力ストリーム
+				in = new DataInputStream(new BufferedInputStream(socket.getInputStream())); //入力ストリームを作成
 			}
 			catch (IOException e) {
 				System.err.println("サーバ接続時にエラーが発生しました: " + e);
@@ -570,14 +570,11 @@ public class Client extends JFrame implements MouseListener {
 		public void run(){
 			try{
 				while(true) {
-					try{
-						String inputLine = in.readUTF();			//バッファを読み込み
-						if (inputLine != null){						//データ受信
-							System.out.println("受信：" +inputLine);//テスト出力
-							receiveMessage(inputLine);				//処理
-						}
+					String inputLine = in.readUTF();			//バッファを読み込み
+					if (inputLine != null){						//データ受信したら
+						System.out.println("受信：" +inputLine);//テスト出力
+						receiveMessage(inputLine);				//処理
 					}
-					catch (EOFException e){/*データを読み込まなかった場合*/}
 				}
 			}
 			catch (IOException e){
