@@ -7,6 +7,7 @@ public class Player {
 	private boolean myChat = true;//チャットの有無
 	private int myTime = -1;//制限時間
 	private boolean myAssist = true;//アシストの有無
+	private boolean myShowlog = true;//ログ表示の有無
 	private boolean standing = false;//観戦モード
 
 	// メソッド
@@ -49,6 +50,12 @@ public class Player {
 	}
 	public boolean getAssist(){ // アシストの有無の取得
 		return myAssist;
+	}
+	public void setShowlog(boolean showlog){ // ログ表示の有無を受付
+		myShowlog = showlog;
+	}
+	public boolean getShowlog(){ // ログ表示の有無の取得
+		return myShowlog;
 	}
 	public void beStand(boolean std){
 		standing = std;
