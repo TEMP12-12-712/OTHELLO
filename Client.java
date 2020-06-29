@@ -943,35 +943,29 @@ public class Client extends JFrame implements MouseListener {
 				break;
 			//ログイン要求
 			case "Login":
-				String logname = field1.getText();							//プレイヤ名読み取り
-				String logpass = new String(passfield1.getPassword());		//パスワード読み取り
-				if(logname.equals("")) {									//プレイヤ名が空欄だった場合
-					label1_3.setText("プレイヤ名が空欄です");			//メッセージ表示
-					break;
+				String logname = field1.getText();									//プレイヤ名読み取り
+				String logpass = new String(passfield1.getPassword());				//パスワード読み取り
+				if(checkString(logname,"プレイヤ名",label1_3)){
+					if(checkString(logpass,"パスワード",label1_3)){
+						player.setName(logname);									//プレイヤ名保存
+						player.setPass(logpass);									//パスワード保存
+						sendMessage(dataID.get(command)+","+logname+","+logpass);	//サーバへ送信
+						break;
+					}
 				}
-				else if(logpass.equals("")) {								//パスワードが空欄だった場合
-					label1_3.setText("パスワードが空欄です");			//メッセージ表示
-					break;
-				}
-				player.setName(logname);									//プレイヤ名保存
-				player.setPass(logpass);									//パスワード保存
-				sendMessage(dataID.get(command)+","+logname+","+logpass);	//サーバへ送信
 				break;
 			//新規登録要求
 			case "Register":
-				String regname = field2.getText();							//プレイヤ名読み取り
-				String regpass = new String(passfield2.getPassword());		//パスワード読み取り
-				if(regname.equals("")) {									//プレイヤ名が空欄だった場合
-					label2_3.setText("プレイヤ名が空欄です");			//メッセージ表示
-					break;
+				String regname = field2.getText();									//プレイヤ名読み取り
+				String regpass = new String(passfield2.getPassword());				//パスワード読み取り
+				if(checkString(regname,"プレイヤ名",label2_3)){
+					if(checkString(regpass,"パスワード",label2_3)){
+						player.setName(regname);									//プレイヤ名保存
+						player.setPass(regpass);									//パスワード保存
+						sendMessage(dataID.get(command)+","+regname+","+regpass);	//サーバへ送信
+						break;
+					}
 				}
-				else if(regpass.equals("")) {								//パスワードが空欄だった場合
-					label2_3.setText("パスワードが空欄です");			//メッセージ表示
-					break;
-				}
-				player.setName(regname);									//プレイヤ名保存
-				player.setPass(regpass);									//パスワード保存
-				sendMessage(dataID.get(command)+","+regname+","+regpass);	//サーバへ送信
 				break;
 			//ランダムマッチング要求
 			case "RandomMatch":
@@ -1114,12 +1108,11 @@ public class Client extends JFrame implements MouseListener {
 				break;
 			//鍵部屋への入室要求
 			case "EnterKeyroom":
-				String keypass = new String(passfield10.getPassword());		//パスワード読み取り
-				if(keypass.equals("")) {									//パスワードが空欄だった場合
-					label10_2.setText("パスワードが空欄です");				//メッセージ表示
+				String keypass = new String(passfield10.getPassword());						//パスワード読み取り
+				if(checkString(keypass,"パスワード",label10_2)) {							//パスワードが空欄だった場合
+					sendMessage(dataID.get(command)+","+othello.getRoomID()+","+keypass);	//サーバへ送信
 					break;
 				}
-				sendMessage(dataID.get(command)+","+othello.getRoomID()+","+keypass);//サーバへ送信
 				break;
 			//観戦部屋リスト要求
 			case "WatchroomList":
@@ -1190,6 +1183,25 @@ public class Client extends JFrame implements MouseListener {
 		logPanel.setVisible(true);			//ログパネル有効化
 		chatPanel.setVisible(true);			//チャットパネル有効化
 		b11_1.setEnabled(false);			//パスボタン無効化
+	}
+	//入力文字列をチェックする関数
+	public boolean checkString(String str, String item, JLabel label){
+		if(str.equals("")){						//空欄だった場合
+			label.setText(item+"が空欄です");
+			return false;
+		}
+		else if(str.length()>=20){				//文字数が長すぎる場合
+			label.setText(item+"が長すぎます");
+			return false;
+		}
+		else if(str.contains(",")){				//カンマが含まれる場合
+			label.setText(item+"にカンマは含められません");
+			return false;
+		}
+		else{
+			label.setText(" ");
+			return true;
+		}
 	}
 	// 表示 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//画面の遷移・描画
