@@ -737,21 +737,28 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		}
 		//鍵部屋リスト
 		else if(command.equals("KeyroomList")){
-			String[] keyroom = msg.split(",",0);
-			String[] info;	//部屋情報
-			String strchat;	//チャットの有無
-			listPanel9.removeAll();										//選択肢ボタンリセット
-			for(int i=0;i<keyroom.length;i++){							//選択肢ボタン生成
-				info = keyroom[i].split(Pattern.quote("."),4);
-				if(info[2].equals("true")) strchat = "あり";
-				else strchat = "なし";
-				JButton bi = new JButton("<html>作成者："+info[1]+"<br/>チャット："+strchat+" 制限時間："+info[3]+"分</html>");
-				bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
-				bi.addMouseListener(this);
-				listPanel9.add(bi);
+			if(msg.equals("no")){										//リストが無かったら
+				showDialog("現在 鍵部屋はありません");						//ダイアログ表示
+				panelID = 6;												//部屋の作成・入室選択画面へ
+				switchDisplay();											//画面遷移
 			}
-			panelID = 9;												//鍵部屋リスト表示画面へ
-			switchDisplay();											//画面遷移
+			else{														//リストがあれば
+				String[] keyroom = msg.split(",",0);
+				String[] info;	//部屋情報
+				String strchat;	//チャットの有無
+				listPanel9.removeAll();										//選択肢ボタンリセット
+				for(int i=0;i<keyroom.length;i++){							//選択肢ボタン生成
+					info = keyroom[i].split(Pattern.quote("."),4);
+					if(info[2].equals("true")) strchat = "あり";
+					else strchat = "なし";
+					JButton bi = new JButton("<html>作成者："+info[1]+"<br/>チャット："+strchat+" 制限時間："+info[3]+"分</html>");
+					bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
+					bi.addMouseListener(this);
+					listPanel9.add(bi);
+				}
+				panelID = 9;												//鍵部屋リスト表示画面へ
+				switchDisplay();											//画面遷移
+			}
 		}
 		//鍵部屋への入室
 		else if(command.equals("EnterKeyroom")){
@@ -781,18 +788,25 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		}
 		//観戦部屋リスト
 		else if(command.equals("WatchroomList")){
-			String[] room = msg.split(",",0);
-			String[] info;//部屋情報
-			listPanel12.removeAll();									//選択肢ボタンリセット
-			for(int i=0;i<room.length;i++){								//選択肢ボタン生成
-				info = room[i].split(Pattern.quote("."),5);
-				JButton bi = new JButton("<html>先手："+info[1]+" 後手："+info[2]+"<br/>黒石："+info[3]+" 白石："+info[4]+"</html>");
-				bi.setActionCommand("EnterWatchroom,"+room[i]);
-				bi.addMouseListener(this);
-				listPanel12.add(bi);
+			if(msg.equals("no")){										//リストが無かったら
+				showDialog("現在 観戦できる部屋はありません");				//ダイアログ表示
+				panelID = 3;												//メニュー画面へ
+				switchDisplay();											//画面遷移
 			}
-			panelID = 12;												//観戦部屋リスト表示画面へ
-			switchDisplay();											//画面遷移
+			else{														//リストがあったら
+				String[] room = msg.split(",",0);
+				String[] info;//部屋情報
+				listPanel12.removeAll();									//選択肢ボタンリセット
+				for(int i=0;i<room.length;i++){								//選択肢ボタン生成
+					info = room[i].split(Pattern.quote("."),5);
+					JButton bi = new JButton("<html>先手："+info[1]+" 後手："+info[2]+"<br/>黒石："+info[3]+" 白石："+info[4]+"</html>");
+					bi.setActionCommand("EnterWatchroom,"+room[i]);
+					bi.addMouseListener(this);
+					listPanel12.add(bi);
+				}
+				panelID = 12;												//観戦部屋リスト表示画面へ
+				switchDisplay();											//画面遷移
+			}
 		}
 		//観戦部屋への入室
 		else if(command.equals("EnterWatchroom")){
