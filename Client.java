@@ -29,10 +29,10 @@ public class Client extends JFrame implements MouseListener {
 	private Container pane;							//コンテナ
 	private JPanel[] panel = new JPanel[19];		//画面パネル
 	private JPanel listPanel9,listPanel12;			//リスト表示用パネル
-	private JLabel label1_3, label2_3, label10_2;	//照合結果表示ラベル
+	private JLabel label1_3, label2_3, label7_6, label10_2;	//照合結果表示ラベル
 	private JLabel label15_1, label15_2, label15_3, label15_4;//総合戦績表示ラベル
 	private JLabel label17_1, label17_2, label17_3, label17_4;//対人別戦績表示ラベル
-	private JTextField field1, field2, field16;					//プレイヤ名入力フィールド
+	private JTextField field1, field2, passfield7, field16;		//入力フィールド
 	private JPasswordField passfield1, passfield2, passfield10;	//パスワード入力フィールド
 	private JRadioButton rb71,rb72;					//ラジオボタン
 	private JComboBox<String> box7;					//コンボボックス
@@ -254,6 +254,9 @@ public class Client extends JFrame implements MouseListener {
 		String[] time = {"1","3","5"};
 		box7 = new JComboBox<String>(time);
 		JLabel label7_4 = new JLabel("分");
+		JLabel label7_5 = new JLabel("パスワード");
+		passfield7 = new JTextField(20);
+		label7_6 = new JLabel(" ");
 		JButton b71 = new JButton("決定");
 		b71.setSize(100,50);
 		b71.setActionCommand("MakeKeyroom,-1");
@@ -283,13 +286,24 @@ public class Client extends JFrame implements MouseListener {
 		panel7_3.add(label7_4);
 		JPanel panel7_4 = new JPanel();
 		panel7_4.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel7_4.setAlignmentX(0.0f);
-		panel7_4.add(b71);
-		panel7_4.add(b72);
+		panel7_4.setAlignmentX(1.0f);
+		panel7_4.add(label7_5);
+		panel7_4.add(passfield7);
+		JPanel panel7_5 = new JPanel();
+		panel7_5.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_5.setAlignmentX(1.0f);
+		panel7_5.add(label7_6);
+		JPanel panel7_6 = new JPanel();
+		panel7_6.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_6.setAlignmentX(0.0f);
+		panel7_6.add(b71);
+		panel7_6.add(b72);
 		panel[7].add(panel7_1);
 		panel[7].add(panel7_2);
 		panel[7].add(panel7_3);
 		panel[7].add(panel7_4);
+		panel[7].add(panel7_5);
+		panel[7].add(panel7_6);
 		//相手の入室待機画面
 		JLabel label8 = new JLabel("対戦相手の入室を待っています。しばらくお待ちください。");
 		JButton b81 = new JButton("戻る");
@@ -317,7 +331,7 @@ public class Client extends JFrame implements MouseListener {
 		panel9.setMaximumSize(new Dimension(WIDTH, FIELD_H));
 		panel9.add(b91);
 		panel[9].add(panel9);
-		//パスワード入力画面
+		//入室パスワード入力画面
 		JLabel label10_1 = new JLabel("パスワード");
 		passfield10 = new JPasswordField(20);
 		JButton b101 = new JButton("OK");
@@ -374,7 +388,7 @@ public class Client extends JFrame implements MouseListener {
 		infoPanel.add(infoPanel3);
 		infoPanel.add(infoPanel4);
 		playerPanel = new JPanel();//対局者操作パネル
-		playerPanel.setBounds(TABLE_W+20,170,200,120);
+		playerPanel.setBounds(TABLE_W+20,170,200,100);
 		b11_1 = new JButton("パス");
 		b11_1.setActionCommand("Pass,-1");
 		b11_1.addMouseListener(this);
@@ -386,24 +400,16 @@ public class Client extends JFrame implements MouseListener {
 		b11_3.setActionCommand("Assist,-1");
 		b11_3.addMouseListener(this);
 		label11_6 = new JLabel("：ON");
-		JButton b11_4 = new JButton("ログ表示");
-		b11_4.setActionCommand("Showlog,-1");
-		b11_4.addMouseListener(this);
-		label11_7 = new JLabel("：ON");
 		JPanel playerPanel1 = new JPanel();
 		playerPanel1.add(b11_1);
 		playerPanel1.add(b11_2);
 		JPanel playerPanel2 = new JPanel();
 		playerPanel2.add(b11_3);
 		playerPanel2.add(label11_6);
-		JPanel playerPanel3 = new JPanel();
-		playerPanel3.add(b11_4);
-		playerPanel3.add(label11_7);
 		playerPanel.add(playerPanel1);
 		playerPanel.add(playerPanel2);
-		playerPanel.add(playerPanel3);
 		reactPanel = new JPanel();//観戦者操作パネル
-		reactPanel.setBounds(TABLE_W+20,300,200,100);
+		reactPanel.setBounds(TABLE_W+20,270,200,100);
 		JButton b11_a = new JButton("いいね");
 		b11_a.setActionCommand("Reaction,さんがいいねしました");
 		b11_a.addMouseListener(this);
@@ -433,15 +439,26 @@ public class Client extends JFrame implements MouseListener {
 		logPanel.setLayout(new FlowLayout());
 		logPanel.add(sp);
 		chatPanel = new JPanel();//チャット表示パネル
-		chatPanel.setBounds(TABLE_W+20,TABLE_H+90,200,100);
+		chatPanel.setBounds(TABLE_W+20,390,200,210);
+		JButton b11_4 = new JButton("ログ表示");
+		b11_4.setActionCommand("Showlog,-1");
+		b11_4.addMouseListener(this);
+		label11_7 = new JLabel("：ON");
 		chatField = new JTextField(17);
 		JButton b11_5 = new JButton("送信");
 		b11_5.setAlignmentX(0.0f);
 		b11_5.setActionCommand("Chat,-1");
 		b11_5.addMouseListener(this);
-		chatPanel.setLayout(new FlowLayout());
-		chatPanel.add(chatField);
-		chatPanel.add(b11_5);
+		JPanel chatPanel1 = new JPanel();
+		chatPanel1.add(b11_4);
+		chatPanel1.add(label11_7);
+		JPanel chatPanel2 = new JPanel();
+		chatPanel2.add(chatField);
+		JPanel chatPanel3 = new JPanel();
+		chatPanel3.add(b11_5);
+		chatPanel.add(chatPanel1);
+		chatPanel.add(chatPanel2);
+		chatPanel.add(chatPanel3);
 		panel[11] = new JPanel();//追加
 		panel[11].setLayout(null);
 		panel[11].setBounds(0,0,TABLE_W+200,TABLE_H+170);
@@ -1079,11 +1096,15 @@ public class Client extends JFrame implements MouseListener {
 			case "MakeKeyroom":
 				boolean chat = rb71.isSelected();							//チャットの有無読み取り
 				int time = Integer.parseInt((String)box7.getSelectedItem());//制限時間読み取り
-				player.setChat(chat);										//チャットの有無保存
-				player.setTime(time);										//制限時間保存
-				sendMessage(dataID.get(command)+","+chat+","+time);			//サーバへ送信
-				panelID = 8;												//相手の入室待機画面へ
-				switchDisplay();											//画面遷移
+				String setpass = passfield7.getText();						//パスワード読み取り
+				if(checkString(setpass,"パスワード",label7_6)){
+					player.setChat(chat);									//チャットの有無保存
+					player.setTime(time);									//制限時間保存
+					sendMessage(dataID.get(command)+","+chat+","+time+","+setpass);//サーバへ送信
+					panelID = 8;											//相手の入室待機画面へ
+					switchDisplay();										//画面遷移
+					break;
+				}
 				break;
 			//鍵部屋削除要求
 			case "DeleteKeyroom":
