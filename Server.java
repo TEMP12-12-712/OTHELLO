@@ -180,7 +180,7 @@ class EchoThread extends Thread {
 
 			if(judge.equals("true")) {
 				FileWriter fr = new FileWriter(file, true);
-				fr.write(PN + "," + PW + ",0,0\n");
+				fr.write(PN + "," + PW + ",0,0,0,0\n");
 				fr.close();
 			}
 		}
@@ -230,10 +230,12 @@ class EchoThread extends Thread {
 				if(!Server.mr[i].getPN1().equals(null) && Server.mr[i].getPN2().equals(null) && myroomNo == 1001) {
 					Server.mr[i].set2P(PlayerName, socket);
 					myroomNo = i;
+					break;
 				//二人ともいない部屋があったらその最初の部屋に
 				}else if(Server.mr[i].getPN1().equals(null) && myroomNo == 1001) {
-					Server.mr[i].set2P(PlayerName, socket);
+					Server.mr[i].set1P(PlayerName, socket);
 					myroomNo = i;
+					break;
 				}
 			}
 		}
@@ -242,8 +244,8 @@ class EchoThread extends Thread {
 			Server.mr[Server.mrNo] = new matchroom(PlayerName, socket);
 			myroomNo = Server.mrNo;
 			Server.mrNo++;
-			myroom = 1;
 		}
+		myroom = 1;
 		return Server.mr[myroomNo].setData(PlayerName);
 	}
 
@@ -345,6 +347,7 @@ class EchoThread extends Thread {
 		if(myroom == 1) {
 			Server.mr[myroomNo].deletePN1();
 			Server.mr[myroomNo].deletePN2();
+			Server.mr[myroom].deletewatcher();
 		}else if(myroom == 2) {
 			Server.sr[myroomNo].deletePN1();
 			Server.sr[myroomNo].deletePN2();
@@ -375,7 +378,7 @@ class EchoThread extends Thread {
 					String[] check = str.split(",", 0);
 					//System.out.println(str);
 					if(check[0].equals(PN)) {
-						PD = str;
+						PD = check[2] +"," + check[3] +","+ check[4] +","+ check[5];
 					}
 				}
 				br.close();
@@ -421,6 +424,7 @@ class EchoThread extends Thread {
 			}
 		}
 		String str = Server.srlist.toString();
+		System.out.println(str);
 		return str;
 	}
 
