@@ -1,7 +1,11 @@
 // パッケージのインポート
 import javax.swing.*;
+import javax.sound.sampled.*;
+import javax.imageio.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.net.*;
@@ -14,11 +18,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	//関連するクラス
 	private Player player;							//プレイヤ
 	private Othello othello;						//オセロ
-	private javax.swing.Timer timer;							//タイマー
+	private javax.swing.Timer timer;				//タイマー
 	//表示関連
 	final private int WIDTH = 630, HEIGHT = 600;	//ウィンドウの大きさ
 	final private int FIELD_W = 200, FIELD_H = 30;	//テキストフィールドの大きさ
 	final private int TABLE_W = 370, TABLE_H = 370;	//盤面の大きさ
+	final private String[] CLM = {"A","B","C","D","E","F","G","H"};
+	final private String[] ROW = {"1","2","3","4","5","6","7","8"};
 	final private String RULE = "";					//遊び方
 	final private String TITLE[] = {				//タイトル一覧
 		"ようこそ","ログイン","新規登録","メニュー",
@@ -28,7 +34,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		"遊び方"
 	};
 	private Container pane;							//コンテナ
-	private JPanel[] panel = new JPanel[19];		//画面パネル
+	private ImagePanel[] panel = new ImagePanel[19];//画面パネル
 	private JPanel listPanel9,listPanel12;			//リスト表示用パネル
 	private JLabel label1_3, label2_3, label7_6, label10_2;	//照合結果表示ラベル
 	private JLabel label15_1, label15_2, label15_3, label15_4;//総合戦績表示ラベル
@@ -43,7 +49,12 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	private JTextArea logArea;						//ログエリア
 	private JTextField chatField;					//チャットフィールド
 	private JLabel label11_1,label11_2,label11_4,label11_5,label11_6,label11_7,label11_8;//対局情報表示ラベル
+	//素材
+	final private String SRC_IMG = ".\\img\\";
+	final private String SRC_SND = ".\\sounds\\";
 	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;		//アイコン
+	File backImage;												//画像
+	File SE_switch;												//音
 	//処理関連
 	private String operation;												//オペレーション
 	private int panelID;													//画面パネルID
@@ -75,33 +86,39 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	private Receiver receiver;						//受信スレッド
 	// コンストラクタ/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public Client() {
+		//オブジェクト生成
 		player = new Player();						//プレイヤ生成
 		othello = new Othello();					//オセロ生成
 		timer = new javax.swing.Timer(1000,this);	//タイマー生成
+		//画像設定
+		whiteIcon = new ImageIcon(SRC_IMG+"White.jpg");
+		blackIcon = new ImageIcon(SRC_IMG+"Black.jpg");
+		boardIcon = new ImageIcon(SRC_IMG+"GreenFrame.jpg");
+		canPutIcon = new ImageIcon(SRC_IMG+"canPut.jpg");
+		backImage = new File(/*SRC_IMG+*/"back2.png");
+		//音設定
+//		SE_switch = new File(SRC_SND+"keyboard1.wav");
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(WIDTH, HEIGHT);
-		//ペイン獲得
+		//ペイン設定
 		pane = getContentPane();
 		pane.setLayout(null);
-		//アイコン設定
-		whiteIcon = new ImageIcon("White.jpg");
-		blackIcon = new ImageIcon("Black.jpg");
-		boardIcon = new ImageIcon("GreenFrame.jpg");
-		canPutIcon = new ImageIcon("canPut.jpg");
 		/* パネルデザイン *****************************************************************/
-		panel = new JPanel[19];
 		//タイトル画面
 		JButton b01 = new JButton("ログイン");
-		b01.setSize(100,50);
+		b01.setBounds(WIDTH*5/32, HEIGHT/2-WIDTH/8, WIDTH/4, WIDTH/8);
+		b01.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b01.setActionCommand("Switch,1");
 		b01.addMouseListener(this);
 		JButton b02 = new JButton("新規登録");
-		b02.setSize(100,50);
+		b02.setBounds(WIDTH*19/32, HEIGHT/2-WIDTH/8, WIDTH/4, WIDTH/8);
+		b02.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b02.setActionCommand("Switch,2");
 		b02.addMouseListener(this);
-		panel[0] = new JPanel();
+		panel[0] = new ImagePanel(backImage);
 		panel[0].setSize(WIDTH,HEIGHT);
+		panel[0].setLayout(null);
 		panel[0].add(b01);
 		panel[0].add(b02);
 		//ログイン画面
@@ -119,17 +136,20 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b12.addMouseListener(this);
 		JPanel panel1_1 = new JPanel();
 		panel1_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel1_1.setOpaque(false);
 		panel1_1.add(label1_1);
 		panel1_1.add(field1);
 		JPanel panel1_2 = new JPanel();
 		panel1_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel1_2.setOpaque(false);
 		panel1_2.add(label1_2);
 		panel1_2.add(passfield1);
 		JPanel panel1_3 = new JPanel();
 		panel1_3.setMaximumSize(new Dimension(WIDTH,FIELD_H));
+		panel1_3.setOpaque(false);
 		panel1_3.add(b11);
 		panel1_3.add(b12);
-		panel[1] = new JPanel();
+		panel[1] = new ImagePanel(backImage);
 		panel[1].setSize(WIDTH,HEIGHT);
 		panel[1].setLayout(new BoxLayout(panel[1], BoxLayout.Y_AXIS));
 		panel[1].add(panel1_1);
@@ -151,17 +171,20 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b22.addMouseListener(this);
 		JPanel panel2_1 = new JPanel();
 		panel2_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel2_1.setOpaque(false);
 		panel2_1.add(label2_1);
 		panel2_1.add(field2);
 		JPanel panel2_2 = new JPanel();
 		panel2_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel2_2.setOpaque(false);
 		panel2_2.add(label2_2);
 		panel2_2.add(passfield2);
 		JPanel panel2_3 = new JPanel();
 		panel2_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel2_3.setOpaque(false);
 		panel2_3.add(b21);
 		panel2_3.add(b22);
-		panel[2] = new JPanel();
+		panel[2] = new ImagePanel(backImage);
 		panel[2].setSize(WIDTH,HEIGHT);
 		panel[2].setLayout(new BoxLayout(panel[2], BoxLayout.Y_AXIS));
 		panel[2].add(panel2_1);
@@ -170,28 +193,33 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel[2].add(panel2_3);
 		//メニュー画面
 		JButton b31 = new JButton("対局する");
-		b31.setMaximumSize(new Dimension(150, 50));
+		b31.setBounds(WIDTH/16, HEIGHT/2-WIDTH/4, WIDTH/4, WIDTH/8);
+		b31.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b31.setActionCommand("Switch,4");
 		b31.addMouseListener(this);
 		JButton b32 = new JButton("観戦する");
-		b32.setMaximumSize(new Dimension(150, 50));
+		b32.setBounds(WIDTH*3/8, HEIGHT/2-WIDTH/4, WIDTH/4, WIDTH/8);
+		b32.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b32.setActionCommand("WatchroomList,-1");
 		b32.addMouseListener(this);
 		JButton b33 = new JButton("記録を見る");
-		b33.setMaximumSize(new Dimension(150, 50));
+		b33.setBounds(WIDTH*11/16, HEIGHT/2-WIDTH/4, WIDTH/4, WIDTH/8);
+		b33.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b33.setActionCommand("Switch,14");
 		b33.addMouseListener(this);
 		JButton b34 = new JButton("遊び方");
-		b34.setMaximumSize(new Dimension(150, 50));
+		b34.setBounds(WIDTH*7/32, HEIGHT*3/4-WIDTH/4, WIDTH/4, WIDTH/8);
+		b34.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b34.setActionCommand("Switch,18");
 		b34.addMouseListener(this);
 		JButton b35 = new JButton("ログアウト");
-		b35.setMaximumSize(new Dimension(150, 50));
+		b35.setBounds(WIDTH*17/32, HEIGHT*3/4-WIDTH/4, WIDTH/4, WIDTH/8);
+		b35.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b35.setActionCommand("Logout,-1");
 		b35.addMouseListener(this);
-		panel[3] = new JPanel();
+		panel[3] = new ImagePanel(backImage);
 		panel[3].setSize(WIDTH,HEIGHT);
-		panel[3].setLayout(new BoxLayout(panel[3], BoxLayout.Y_AXIS));
+		panel[3].setLayout(null);
 		panel[3].add(b31);
 		panel[3].add(b32);
 		panel[3].add(b33);
@@ -210,7 +238,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b43.setMaximumSize(new Dimension(150, 50));
 		b43.setActionCommand("Switch,3");
 		b43.addMouseListener(this);
-		panel[4] = new JPanel();
+		panel[4] = new ImagePanel(backImage);
 		panel[4].setSize(WIDTH,HEIGHT);
 		panel[4].setLayout(new BoxLayout(panel[4], BoxLayout.Y_AXIS));
 		panel[4].add(b41);
@@ -222,7 +250,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b51.setSize(100,50);
 		b51.setActionCommand("CancelMatch,-1");
 		b51.addMouseListener(this);
-		panel[5] = new JPanel();
+		panel[5] = new ImagePanel(backImage);
 		panel[5].setSize(WIDTH,HEIGHT);
 		panel[5].add(label5);
 		panel[5].add(b51);
@@ -239,7 +267,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b63.setMaximumSize(new Dimension(150, 50));
 		b63.setActionCommand("Switch,4");
 		b63.addMouseListener(this);
-		panel[6] = new JPanel();
+		panel[6] = new ImagePanel(backImage);
 		panel[6].setSize(WIDTH,HEIGHT);
 		panel[6].setLayout(new BoxLayout(panel[6], BoxLayout.Y_AXIS));
 		panel[6].add(b61);
@@ -268,39 +296,50 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b72.setSize(100,50);
 		b72.setActionCommand("Switch,6");
 		b72.addMouseListener(this);
-		panel[7] = new JPanel();
-		panel[7].setSize(WIDTH,HEIGHT);
-		panel[7].setLayout(new BoxLayout(panel[7], BoxLayout.Y_AXIS));
 		JPanel panel7_1 = new JPanel();
 		panel7_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_1.setOpaque(false);
 		panel7_1.setAlignmentX(1.0f);
+		panel7_1.setOpaque(false);
 		panel7_1.add(label7_1);
 		JPanel panel7_2 = new JPanel();
 		panel7_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_2.setOpaque(false);
 		panel7_2.setAlignmentX(1.0f);
+		panel7_2.setOpaque(false);
 		panel7_2.add(label7_2);
 		panel7_2.add(rb71);
 		panel7_2.add(rb72);
 		JPanel panel7_3 = new JPanel();
 		panel7_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_3.setOpaque(false);
 		panel7_3.setAlignmentX(1.0f);
+		panel7_3.setOpaque(false);
 		panel7_3.add(label7_3);
 		panel7_3.add(box7);
 		panel7_3.add(label7_4);
 		JPanel panel7_4 = new JPanel();
 		panel7_4.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_4.setOpaque(false);
 		panel7_4.setAlignmentX(1.0f);
+		panel7_4.setOpaque(false);
 		panel7_4.add(label7_5);
 		panel7_4.add(passfield7);
 		JPanel panel7_5 = new JPanel();
 		panel7_5.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_5.setOpaque(false);
 		panel7_5.setAlignmentX(1.0f);
+		panel7_5.setOpaque(false);
 		panel7_5.add(label7_6);
 		JPanel panel7_6 = new JPanel();
 		panel7_6.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel7_6.setOpaque(false);
 		panel7_6.setAlignmentX(0.0f);
 		panel7_6.add(b71);
 		panel7_6.add(b72);
+		panel[7] = new ImagePanel(backImage);
+		panel[7].setSize(WIDTH,HEIGHT);
+		panel[7].setLayout(new BoxLayout(panel[7], BoxLayout.Y_AXIS));
 		panel[7].add(panel7_1);
 		panel[7].add(panel7_2);
 		panel[7].add(panel7_3);
@@ -313,7 +352,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b81.setSize(100,50);
 		b81.setActionCommand("DeleteKeyroom,-1");
 		b81.addMouseListener(this);
-		panel[8] = new JPanel();
+		panel[8] = new ImagePanel(backImage);
 		panel[8].setSize(WIDTH,HEIGHT);
 		panel[8].add(label8);
 		panel[8].add(b81);
@@ -324,16 +363,18 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		JButton b91 = new JButton("戻る");
 		b91.setActionCommand("Switch,6");
 		b91.addMouseListener(this);
-		panel[9] = new JPanel();
-		panel[9].setSize(WIDTH,HEIGHT);
-		panel[9].setLayout(new BoxLayout(panel[9], BoxLayout.Y_AXIS));
 		JScrollPane sp9 = new JScrollPane(listPanel9,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp9.setMaximumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		JPanel panel9_1 = new JPanel();
+		panel9_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel9_1.setOpaque(false);
+		panel9_1.setOpaque(false);
+		panel9_1.add(b91);
+		panel[9] = new ImagePanel(backImage);
+		panel[9].setSize(WIDTH,HEIGHT);
+		panel[9].setLayout(new BoxLayout(panel[9], BoxLayout.Y_AXIS));
 		panel[9].add(sp9);
-		JPanel panel9 = new JPanel();
-		panel9.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel9.add(b91);
-		panel[9].add(panel9);
+		panel[9].add(panel9_1);
 		//入室パスワード入力画面
 		JLabel label10_1 = new JLabel("パスワード");
 		passfield10 = new JPasswordField(20);
@@ -346,29 +387,40 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b102.setActionCommand("Switch,9");
 		b102.addMouseListener(this);
 		label10_2 = new JLabel("");
-		panel[10] = new JPanel();
-		panel[10].setSize(WIDTH,HEIGHT);
-		panel[10].setLayout(new BoxLayout(panel[10], BoxLayout.Y_AXIS));
 		JPanel panel10_1 = new JPanel();
 		panel10_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel10_1.setOpaque(false);
 		panel10_1.add(label10_1);
 		panel10_1.add(passfield10);
 		JPanel panel10_2 = new JPanel();
 		panel10_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel10_2.setOpaque(false);
 		panel10_2.add(label10_2);
 		JPanel panel10_3 = new JPanel();
 		panel10_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		panel10_3.setOpaque(false);
 		panel10_3.add(b101);
 		panel10_3.add(b102);
+		panel[10] = new ImagePanel(backImage);
+		panel[10].setSize(WIDTH,HEIGHT);
+		panel[10].setLayout(new BoxLayout(panel[10], BoxLayout.Y_AXIS));
 		panel[10].add(panel10_1);
 		panel[10].add(panel10_2);
 		panel[10].add(panel10_3);
 		//対局画面
 		tablePanel = new JPanel();//盤面表示パネル
-		tablePanel.setBounds(10,10,TABLE_W,TABLE_H);
+		tablePanel.setBounds(25,25,TABLE_W,TABLE_H);
+		tablePanel.setOpaque(false);
 		tablePanel.setLayout(null);
+		JLabel columnNumber = new JLabel(CLM[0]+"　　"+CLM[1]+"　　"+CLM[2]+"　　"+CLM[3]+"　　"+CLM[4]+"　　"+CLM[5]+"　　"+CLM[6]+"　　"+CLM[7]);//列番号の表示
+		columnNumber.setBounds(35, 0, TABLE_W, FIELD_H);
+		columnNumber.setFont(new Font("MSゴシック",Font.PLAIN,18));
+		JLabel rowNumber = new JLabel("<html>"+ROW[0]+"<br/><br/>"+ROW[1]+"<br/><br/>"+ROW[2]+"<br/><br/>"+ROW[3]+"<br/><br/>"+ROW[4]+"<br/><br/>"+ROW[5]+"<br/><br/>"+ROW[6]+"<br/><br/>"+ROW[7]+"</html>");//行番号の表示
+		rowNumber.setBounds(7, 15, FIELD_W, TABLE_H);
+		rowNumber.setFont(new Font("MSゴシック",Font.PLAIN,17));
 		JPanel infoPanel = new JPanel();//対局情報表示パネル
 		infoPanel.setBounds(TABLE_W+20,10,200,160);
+		infoPanel.setOpaque(false);
 		label11_1 = new JLabel("          ");
 		label11_2 = new JLabel("黒：２");
 		JLabel label11_3 = new JLabel("vs");
@@ -376,14 +428,18 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		label11_5 = new JLabel("          ");
 		label11_6 = new JLabel("制限時間：0分0秒");
 		JPanel infoPanel1 = new JPanel();
+		infoPanel1.setOpaque(false);
 		infoPanel1.add(label11_1);
 		infoPanel1.add(label11_2);
 		JPanel infoPanel2 = new JPanel();
+		infoPanel2.setOpaque(false);
 		infoPanel2.add(label11_3);
 		JPanel infoPanel3 = new JPanel();
+		infoPanel3.setOpaque(false);
 		infoPanel3.add(label11_4);
 		infoPanel3.add(label11_5);
 		JPanel infoPanel4 = new JPanel();
+		infoPanel4.setOpaque(false);
 		infoPanel4.add(label11_6);
 		infoPanel.setLayout(new GridLayout(4,1));
 		infoPanel.add(infoPanel1);
@@ -392,6 +448,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		infoPanel.add(infoPanel4);
 		playerPanel = new JPanel();//対局者操作パネル
 		playerPanel.setBounds(TABLE_W+20,170,200,100);
+		playerPanel.setOpaque(false);
 		b11_1 = new JButton("パス");
 		b11_1.setActionCommand("Pass,-1");
 		b11_1.addMouseListener(this);
@@ -404,15 +461,18 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b11_3.addMouseListener(this);
 		label11_7 = new JLabel("：ON");
 		JPanel playerPanel1 = new JPanel();
+		playerPanel1.setOpaque(false);
 		playerPanel1.add(b11_1);
 		playerPanel1.add(b11_2);
 		JPanel playerPanel2 = new JPanel();
+		playerPanel2.setOpaque(false);
 		playerPanel2.add(b11_3);
 		playerPanel2.add(label11_7);
 		playerPanel.add(playerPanel1);
 		playerPanel.add(playerPanel2);
 		reactPanel = new JPanel();//観戦者操作パネル
-		reactPanel.setBounds(TABLE_W+20,270,200,100);
+		reactPanel.setBounds(TABLE_W+20,280,200,100);
+		reactPanel.setOpaque(false);
 		JButton b11_a = new JButton("いいね");
 		b11_a.setActionCommand("Reaction,さんがいいねしました");
 		b11_a.addMouseListener(this);
@@ -435,7 +495,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		reactPanel.add(b11_d);
 		reactPanel.add(b11_e);
 		logPanel = new JPanel();//ログ表示パネル
-		logPanel.setBounds(0,TABLE_H+20,TABLE_W,170);
+		logPanel.setBounds(20,TABLE_H+20,TABLE_W,170);
+		logPanel.setOpaque(false);
 		logArea = new JTextArea(8,34);
 		logArea.setEditable(false);
 		JScrollPane sp = new JScrollPane(logArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -443,6 +504,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		logPanel.add(sp);
 		chatPanel = new JPanel();//チャット表示パネル
 		chatPanel.setBounds(TABLE_W+20,390,200,210);
+		chatPanel.setOpaque(false);
 		JButton b11_4 = new JButton("ログ表示");
 		b11_4.setActionCommand("Showlog,-1");
 		b11_4.addMouseListener(this);
@@ -453,19 +515,24 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b11_5.setActionCommand("Chat,-1");
 		b11_5.addMouseListener(this);
 		JPanel chatPanel1 = new JPanel();
+		chatPanel1.setOpaque(false);
 		chatPanel1.add(b11_4);
 		chatPanel1.add(label11_8);
 		JPanel chatPanel2 = new JPanel();
+		chatPanel2.setOpaque(false);
 		chatPanel2.add(chatField);
 		JPanel chatPanel3 = new JPanel();
+		chatPanel3.setOpaque(false);
 		chatPanel3.add(b11_5);
 		chatPanel.add(chatPanel1);
 		chatPanel.add(chatPanel2);
 		chatPanel.add(chatPanel3);
-		panel[11] = new JPanel();//追加
+		panel[11] = new ImagePanel(backImage);//追加
 		panel[11].setLayout(null);
-		panel[11].setBounds(0,0,TABLE_W+200,TABLE_H+170);
+		panel[11].setBounds(0,0,WIDTH,HEIGHT);
 		panel[11].add(tablePanel);
+		panel[11].add(columnNumber);
+		panel[11].add(rowNumber);
 		panel[11].add(infoPanel);
 		panel[11].add(playerPanel);
 		panel[11].add(reactPanel);
@@ -479,31 +546,33 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		JButton b121 = new JButton("戻る");
 		b121.setActionCommand("Switch,3");
 		b121.addMouseListener(this);
-		panel[12] = new JPanel();
-		panel[12].setSize(WIDTH,HEIGHT);
-		panel[12].setLayout(new BoxLayout(panel[12], BoxLayout.Y_AXIS));
 		JScrollPane sp12 = new JScrollPane(listPanel12,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp12.setMaximumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		JPanel panel12_1 = new JPanel();
+		panel12_1.setMaximumSize(new Dimension(WIDTH,FIELD_H));
+		panel12_1.setOpaque(false);
+		panel12_1.add(b121);
+		panel[12] = new ImagePanel(backImage);
+		panel[12].setSize(WIDTH,HEIGHT);
+		panel[12].setLayout(new BoxLayout(panel[12], BoxLayout.Y_AXIS));
 		panel[12].add(sp12);
-		JPanel panel12 = new JPanel();
-		panel12.setMaximumSize(new Dimension(WIDTH,FIELD_H));
-		panel12.add(b121);
-		panel[12].add(panel12);
+		panel[12].add(panel12_1);
 		//記録選択画面
 		JButton b141 = new JButton("総合戦績");
-		b141.setSize(100,50);
+		b141.setMaximumSize(new Dimension(150,50));
 		b141.setActionCommand("TotalRecord,-1");
 		b141.addMouseListener(this);
 		JButton b142 = new JButton("対人戦績");
-		b142.setSize(100,50);
+		b142.setMaximumSize(new Dimension(150,50));
 		b142.setActionCommand("Switch,16");
 		b142.addMouseListener(this);
 		JButton b143 = new JButton("戻る");
-		b143.setSize(100,50);
+		b143.setMaximumSize(new Dimension(150,50));
 		b143.setActionCommand("Switch,3");
 		b143.addMouseListener(this);
-		panel[14] = new JPanel();
+		panel[14] = new ImagePanel(backImage);
 		panel[14].setSize(WIDTH,HEIGHT);
+		panel[14].setLayout(new BoxLayout(panel[14], BoxLayout.Y_AXIS));
 		panel[14].add(b141);
 		panel[14].add(b142);
 		panel[14].add(b143);
@@ -531,7 +600,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel15_1.setLayout(new BoxLayout(panel15_1, BoxLayout.Y_AXIS));
 		panel15_1.add(panel15_2);
 		panel15_1.add(panel15_3);
-		panel[15] = new JPanel();
+		panel[15] = new ImagePanel(backImage);
 		panel[15].setSize(WIDTH,HEIGHT);
 		panel[15].add(panel15_1, BorderLayout.CENTER);
 		panel[15].add(panel15_4, BorderLayout.PAGE_END);
@@ -546,7 +615,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b162.setSize(100,50);
 		b162.setActionCommand("Switch,14");
 		b162.addMouseListener(this);
-		panel[16] = new JPanel();
+		panel[16] = new ImagePanel(backImage);
 		panel[16].setSize(WIDTH,HEIGHT);
 		panel[16].add(field16);
 		panel[16].add(b161);
@@ -575,7 +644,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	    panel17_1.setLayout(new BoxLayout(panel17_1, BoxLayout.Y_AXIS));
 	    panel17_1.add(panel17_2);
 	    panel17_1.add(panel17_3);
-		panel[17] = new JPanel();
+		panel[17] = new ImagePanel(backImage);
 		panel[17].setSize(WIDTH,HEIGHT);
 	    panel[17].add(panel17_1, BorderLayout.CENTER);
 	    panel[17].add(panel17_4, BorderLayout.PAGE_END);
@@ -585,7 +654,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b181.setSize(100,50);
 		b181.setActionCommand("Switch,3");
 		b181.addMouseListener(this);
-		panel[18] = new JPanel();
+		panel[18] = new ImagePanel(backImage);
 		panel[18].setSize(WIDTH,HEIGHT);
 		panel[18].add(label18);
 		panel[18].add(b181);
@@ -762,11 +831,11 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		}
 		//鍵部屋への入室
 		else if(command.equals("EnterKeyroom")){
-			String[] info = msg.split(",",3);
+			String[] info = msg.split(",",2);
 			if(info[0].equals("true")){									//入室許可
 				player.setColor("white");									//手番保存
-				othello.setBlackName(info[2]);								//先手名保存
-				label11_1.setText(info[2]);									//先手名表示
+				othello.setBlackName(info[1]);								//先手名保存
+				label11_1.setText(info[1]);									//先手名表示
 				othello.setWhiteName(player.getName());						//後手名保存
 				label11_5.setText(player.getName());						//後手名表示
 				updateTable();												//盤面表示
@@ -1013,6 +1082,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		switch(command){													//以下、コマンドで場合分け
 			//画面遷移のみ
 			case "Switch":
+//				playSound(SE_switch);												//効果音再生
 				panelID = Integer.parseInt(subc);
 				switchDisplay();
 				break;
@@ -1070,10 +1140,10 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 							if(grids[i].equals("white")) table.append("2.");
 						}
 						if(player.getColor().equals("black")){									//ログ情報生成
-							log = "先手：("+Integer.toString(grid/8+1)+","+Integer.toString(grid%8+1)+")";
+							log = "先手：("+CLM[grid%8]+","+ROW[grid/8]+")";
 						}
 						if(player.getColor().equals("white")){
-							log = "後手：("+Integer.toString(grid/8+1)+","+Integer.toString(grid%8)+")";
+							log = "後手：("+CLM[grid%8]+","+ROW[grid/8]+")";
 						}
 						logArea.setEditable(true);												//ログ反映
 						logArea.append("\n"+log);
@@ -1289,6 +1359,17 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			return true;
 		}
 	}
+	//効果音再生
+	public void playSound(File sound) {
+    	try {
+        	AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sound.getAbsoluteFile());
+        	Clip clip = AudioSystem.getClip();
+        	clip.open(audioInputStream);
+        	clip.start();
+    	} catch(Exception e) {
+        	System.out.println("効果音再生時にエラーが発生しました："+e);
+    	}
+	}
 	// 表示 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//画面の遷移・描画
 	public void switchDisplay(){
@@ -1358,6 +1439,29 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		MessageDialog dialog = new MessageDialog(this,str);
 		dialog.setVisible(true);
 	}
+	//背景が描画できる拡張パネル
+	public class ImagePanel extends JPanel {
+    	private BufferedImage image;
+    	public ImagePanel(File image) {
+        	try {
+            	this.image = ImageIO.read(image);
+        	}
+        	catch (IOException e) {
+            	this.image = null;
+        	}
+    	}
+    	public void paintComponent(Graphics g) {
+        	Graphics2D g2D = (Graphics2D)g;
+        	double imageWidth = image.getWidth();
+        	double imageHeight = image.getHeight();
+        	double panelWidth = this.getWidth();
+        	double panelHeight = this.getHeight();
+        	double sx = (panelWidth / imageWidth);
+        	double sy = (panelHeight / imageHeight);
+        	AffineTransform af = AffineTransform.getScaleInstance(sx, sy);
+        	g2D.drawImage(image, af, this);
+    	}
+    }
 	// メイン ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String args[]){
 
