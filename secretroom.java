@@ -14,8 +14,8 @@ public class secretroom{
 
 
 	private String pass;				//パスワード
-	private String PlayerName1 = null, PlayerName2 = null;
-	private Socket socket1, socket2;
+	private String PlayerName1 = "", PlayerName2 = "";
+	private Socket socket1 = null, socket2 = null;
 	private String grids;
 	private String chatflag;		//チャットの有無
 	private String timeflag;		//時間
@@ -34,14 +34,18 @@ public class secretroom{
 	}
 
 	public void set2P(String PN2, Socket s) {//プレイヤー２が決まる
-		if(PlayerName2.equals(null)) {
+		System.out.println("check1");
+		if(PlayerName2.equals("")) {
 			PlayerName2 = PN2;
 			socket2 = s;
-
+			System.out.println("check2");
 			try {
 				DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
-				out1.writeUTF(PlayerName2);	//クライアントに送信
+				out1.writeUTF("true,"+ PlayerName2);	//クライアントに送信
 				out1.close();
+				DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
+				out2.writeUTF("true," + PlayerName1);	//クライアントに送信
+				out2.close();
 			}catch (IOException e) {
 				e.printStackTrace();
 			} finally {
@@ -80,7 +84,7 @@ public class secretroom{
 	}
 
 	public void deletePN1() {
-		PlayerName1 = null;
+		PlayerName1 = "";
 	}
 
 	public String getPN2() {
@@ -88,7 +92,7 @@ public class secretroom{
 	}
 
 	public void deletePN2() {
-		PlayerName2 = null;
+		PlayerName2 = "";
 	}
 
 	public String getlistData() {

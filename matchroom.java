@@ -11,8 +11,8 @@ public class matchroom {
 	}
 
 	private String grids;					//局面データ
-	private String PlayerName1;		//プレイヤ１(先手)
-	private String PlayerName2;		//プレイヤ２(後手)
+	private String PlayerName1 = "";		//プレイヤ１(先手)
+	private String PlayerName2 = "";		//プレイヤ２(後手)
 	private Socket socket1, socket2;
 	private String log;						//ログ
 	private String[] view;						//観戦者
@@ -20,17 +20,25 @@ public class matchroom {
 	private int socketNo = 0;
 	int flag;						//手番
 
-
+	public void set1P(String PN1, Socket s) {//プレイヤー1が決まる
+		if(PlayerName1.equals("")) {
+			PlayerName1 = PN1;
+			socket1 = s;
+		}
+	}
 
 	public void set2P(String PN2, Socket s) {//プレイヤー２が決まる
-		if(PlayerName2.equals(null)) {
+		if(PlayerName2.equals("")) {
 			PlayerName2 = PN2;
 			socket2 = s;
 
 			try {
 				DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
-				out1.writeUTF(PlayerName2);	//クライアントに送信
+				out1.writeUTF("true," + PlayerName2 + ",0");	//クライアントに送信
 				out1.close();
+				DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
+				out2.writeUTF("true," + PlayerName1 + ",1");	//クライアントに送信
+				out2.close();
 			}catch (IOException e) {
 				e.printStackTrace();
 			} finally {
@@ -70,7 +78,7 @@ public class matchroom {
 	}
 
 	public void deletePN1() {
-		PlayerName1 = null;
+		PlayerName1 = "";
 		socket1 = null;
 	}
 
@@ -79,18 +87,16 @@ public class matchroom {
 	}
 
 	public void deletePN2() {
-		PlayerName2 = null;
+		PlayerName2 = "";
 		socket2 = null;
 	}
 
-	public String setData(String PN) {
-		String re = null;
-		if(PN.equals(PlayerName1)) {
-			re = "true" + "," + PlayerName2 + "," + "0";
-		}else if(PN.equals(PlayerName2)) {
-			re = "true" + "," + PlayerName1 + "," + "1";
+	public void deletewatcher() {
+		for(int i = 0;i < 10; i++) {
+			if(!watchsocket[i].equals(null)) {
+				watchsocket[i] = null;
+			}
 		}
-		return re;
 	}
 
 	public void setfield(String PN, String field) {//送信者と盤面を得て、相手に盤面を送信
@@ -110,6 +116,19 @@ public class matchroom {
 				out2.close();
 			}catch (IOException e) {
 				e.printStackTrace();
+			}
+		}
+		//観客にも送る
+		for(int i = 0;i < 10; i++) {
+			if(!watchsocket[i].equals(null)) {
+				try{
+					DataOutputStream out = new DataOutputStream(watchsocket[i].getOutputStream());
+					out.writeUTF("21" + grids);
+					out.close();
+				}catch(IOException e) {
+					e.printStackTrace();
+					watchout(i);
+				}
 			}
 		}
 	}
@@ -132,6 +151,19 @@ public class matchroom {
 				e.printStackTrace();
 			}
 		}
+		//観客にも送る
+		for(int i = 0;i < 10; i++) {
+			if(!watchsocket[i].equals(null)) {
+				try{
+					DataOutputStream out = new DataOutputStream(watchsocket[i].getOutputStream());
+					out.writeUTF("25" + log);
+					out.close();
+				}catch(IOException e) {
+					e.printStackTrace();
+					watchout(i);
+				}
+			}
+		}
 	}
 
 	public void sendgiveup(String PN) {
@@ -152,6 +184,19 @@ public class matchroom {
 				e.printStackTrace();
 			}
 		}
+		//観客にも送る
+				for(int i = 0;i < 10; i++) {
+					if(!watchsocket[i].equals(null)) {
+						try{
+							DataOutputStream out = new DataOutputStream(watchsocket[i].getOutputStream());
+							out.writeUTF("23");
+							out.close();
+						}catch(IOException e) {
+							e.printStackTrace();
+							watchout(i);
+						}
+					}
+				}
 	}
 
 	public String sendfield() {
