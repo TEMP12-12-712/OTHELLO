@@ -449,12 +449,19 @@ class EchoThread extends Thread {
 
 	//8:鍵部屋に入室
 	public void enterroom(String roomNo, String pass) {
-		myroomNo = Integer.parseInt(roomNo);
-		String password = Server.sr[myroomNo].getpass();
+		int No = Integer.parseInt(roomNo);
+		String password = Server.sr[No].getpass();
+		System.out.println(password +","+ pass);
 		if(pass.equals(password)) {
-			//鍵部屋の2Pにクライアントの名前とソケットを送る
+			myroomNo = No;
 			Server.sr[myroomNo].set2P(PlayerName, socket);
 			myroom = 2;		//鍵部屋にいる状態
+		}else {
+			try{
+				out.writeUTF("false");	//クライアントに送信
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
