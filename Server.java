@@ -90,68 +90,71 @@ class EchoThread extends Thread {
 
   public String check(String message) {		//クライアントからきた命令の先頭にある数字をみてメソッドを呼び出し
 	  String[] check = message.split(",", 0);
-	  int checkNo =  Integer.valueOf(check[0]);
 	  String Re = "";
-	  switch(checkNo) {
-	  case 0:		//新規登録|resister
+	  switch(check[0]) {
+	  case "0":		//新規登録|resister
 		  Re = resister(check[1], check[2]);	//成功true：失敗false
 		  if(Re.equals("true")) {
 			  PlayerName = check[1];
 		  }
 		  break;
 
-	  case 1:		//ログイン|rogin
+	  case "1":		//ログイン|rogin
 		  Re = login(check[1], check[2]);		//成功true:プレイヤー名がないname:パスワードが違うpass
 		  break;
 
-	  case 2:		//マッチング|match
+	  case "2":		//マッチング|match
 		  match();
 		  break;
 
-	  case 21:		//盤面受信
+	  case "21":		//盤面受信
 		  field(check[1]);
 		  break;
 
-	  case 23:		//投了
+	  case "23":		//投了
 		  giveup(check[1]);
 		  break;
 
-	  case 24:		//対戦終了
+	  case "24":		//対戦終了
 		  newrecord(PlayerName, check[1]);
 		  break;
 
-	  case 25:		//チャット
+	  case "25":		//チャット
 		  chat(check[1]);
+		  break;
 
-	  case 3:		//対戦記録|record
+	  case "3":		//対戦記録|record
 		  Re = record(PlayerName);
 		  break;
 
-	  case 5:		//鍵部屋作成|make
+	  case "5":		//鍵部屋作成|make
 		  make(PlayerName, check[1], check[2], check[3]);//パスワード、チャットフラグ、時間フラグ
 		  break;
 
-	  case 6:		//鍵部屋削除|delete
+	  case "6":		//鍵部屋削除|delete
 		  delete();
 		  break;
 
-	  case 7:		//鍵部屋リストの送信|list
+	  case "7":		//鍵部屋リストの送信|list
 		  Re = list();
 		  break;
 
-	  case 8:		//鍵部屋入室|enterroom
+	  case "8":		//鍵部屋入室|enterroom
 		  enterroom(check[1], check[2]);//部屋名、パスワード
 		  break;
 
-	  case 9:		//対戦中の部屋リストを受信|watchroomlist
+	  case "9":		//対戦中の部屋リストを受信|watchroomlist
 		  Re = watchroomlist();
+		  break;
 
-	  case 91:		//観戦|watch
+	  case "91":		//観戦|watch
+		System.out.print("check\n");
 		  watch(check[1]);
 		  break;
 
-	  case 92:		//リアクション|reaction
+	  case "92":		//リアクション|reaction
 		  //未定
+		  break;
 
 	  default:
 
@@ -478,7 +481,7 @@ class EchoThread extends Thread {
 						+ Integer.toString(black) + "." + Integer.toString(white) + ",");
 			}
 		}
-		if(Server.mrlist.toString().equals("")) {
+		if(!Server.mrlist.toString().equals("")) {
 			str = Server.mrlist.toString();
 		}
 		return str;
