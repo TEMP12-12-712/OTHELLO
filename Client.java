@@ -1232,7 +1232,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				if(checkString(setpass,"パスワード",label7_6)){
 					player.setChat(chat);									//チャットの有無保存
 					player.setTime(time);									//制限時間保存
-					sendMessage(dataID.get(command)+","+chat+","+time+","+setpass);//サーバへ送信
+					sendMessage(dataID.get(command)+","+setpass+","+chat+","+time);//サーバへ送信
 					panelID = 8;											//相手の入室待機画面へ
 					switchDisplay();										//画面遷移
 					break;
