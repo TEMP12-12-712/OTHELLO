@@ -56,7 +56,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	File backImage;												//画像
 	File SE_switch;												//音
 	//処理関連
-	private String operation;												//オペレーション
+	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
 	private int minutes, seconds;											//時間
 	private HashMap<String,String> dataID = new HashMap<String,String>(20);	//コマンド・データ対応表
@@ -722,7 +722,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	}
 	//受信データの判別・処理
 	public void receiveMessage(String msg){
-		String[] c = operation.split(",",2);							//オペレーションをコマンドと付属情報に分解
+		String[] c = Operation.split(",",2);							//オペレーションをコマンドと付属情報に分解
 		String command = c[0];	//コマンド
 		String subc = c[1];		//付属情報
 		//ログイン結果
@@ -743,7 +743,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		else if(command.equals("Register")){
 			if(msg.equals("true")){										//登録許可
 				showDialog("登録しました");									//ダイアログの表示
-				operation = "Login,-1";										//ログインオペレーション実行
+				Operation = "Login,-1";										//ログインオペレーション実行
 				sendMessage(dataID.get("Login")+","+player.getName()+","+player.getPass());
 			}
 			else{														//登録失敗
@@ -777,6 +777,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				updateTable();												//盤面表示
 				resetTimer();												//タイマーリセット
 				timer.start();												//タイマースタート
+				Operation = "Game,-1";										//対局オペレーション実行
 				panelID = 11;												//対局画面へ
 			}
 			if(info[0].equals("false")){								//マッチング失敗
@@ -798,6 +799,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			if(!player.getChat()) chatPanel.setVisible(false);			//チャット無ならチャットパネル無効化
 			resetTimer();												//タイマーリセット
 			timer.start();												//タイマースタート
+			Operation = "Game,-1";										//対局オペレーション実行
 			panelID = 11;												//対局画面へ
 			switchDisplay();											//画面遷移
 		}
@@ -841,6 +843,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				playerPanel.setVisible(false);								//操作無効化
 				resetTimer();												//タイマーリセット
 				timer.start();												//タイマースタート
+				Operation = "Game,-1";										//対局オペレーション実行
 				panelID = 11;												//対局画面へ
 			}
 			if(info[0].equals("false")){								//入室失敗
@@ -895,6 +898,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				}
 				othello.setGrids(grids);									//盤面反映
 				updateTable();												//盤面更新
+				Operation = "Game,-1";										//対局オペレーション実行
 				sendMessage(dataID.get("Reaction")+","+player.getName()+"が入室しました");
 				panelID = 11;												//観戦画面へ
 			}
@@ -921,8 +925,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			switchDisplay();											//画面遷移
 		}
 		//対局(観戦)情報
-		else if(panelID == 11){
+		else if(command.equals("Game")){
 			String[] info = msg.split(",",0);							//以下、受信内容で場合分け
+//			System.out.println("コマンドGame内で"+info[0]+"を受信");
 			//盤面・ログ受信
 			if(info[0].equals(dataID.get("Table"))){
 				String table = info[1];																//盤面取得
@@ -1028,8 +1033,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	//マウスリスナー
 	public void mouseClicked(MouseEvent e) {
 		JButton button = (JButton)e.getComponent();			//ボタン特定
-		operation = button.getActionCommand();				//オペレーション確認
-		acceptOperation(operation);							//処理
+		Operation = button.getActionCommand();				//実行オペレーション特定
+		acceptOperation(Operation);							//処理
 	}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
@@ -1047,13 +1052,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				String[] grids = othello.getGrids();			//盤面取得
 				for(int i=0;i<othello.getRow()*othello.getRow();i++){
 					if(grids[i].equals("canPut")){				//置ける場所があるなら
-						operation = "Table,"+i;				//石を置くオペレーション実行
-						acceptOperation(operation);
+						Operation = "Table,"+i;				//石を置くオペレーション実行
+						acceptOperation(Operation);
 						return;
 					}
 				}												//置ける場所がないなら
-				operation = "Pass,-1";						//パスオペレーション実行
-				acceptOperation(operation);
+				Operation = "Pass,-1";						//パスオペレーション実行
+				acceptOperation(Operation);
 			}
 		}
 		else{															//まだ制限時間内なら
@@ -1141,11 +1146,12 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 						logArea.setEditable(true);												//ログ反映
 						logArea.append("\n"+log);
 						logArea.setEditable(false);
-						sendMessage(dataID.get(command)+","+table+","+log);						//サーバへ送信
 						playerPanel.setVisible(false);											//操作無効化
 						resetTimer();															//タイマーリセット
 						timer.restart();														//タイマーリスタート
 						othello.changeTurn();													//ターン変更
+						Operation = "Game,-1";													//対局オペレーション実行
+						sendMessage(dataID.get(command)+","+table+","+log);						//サーバへ送信
 						if(othello.isGameover()) {												//決着がついたら
 							String result = othello.checkWinner();						//勝敗確認
 							if(result.equals("draw")) {						//引き分け
@@ -1169,7 +1175,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//パス
 			case "Pass":
-				sendMessage(dataID.get(command));															//サーバへ送信
 				playerPanel.setVisible(false);																//操作無効化
 				pathFlag = true;																			//パスフラグを立てる
 				logArea.setEditable(true);																	//ログに表示
@@ -1179,6 +1184,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				resetTimer();																				//タイマーリセット
 				timer.restart();																			//タイマーリスタート
 				othello.changeTurn();																		//手番変更
+				Operation = "Game,-1";																		//対局オペレーション実行
+				sendMessage(dataID.get(command));															//サーバへ送信
 				break;
 			//投了
 			case "Giveup":
@@ -1190,15 +1197,17 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//チャット
 			case "Chat":
+				Operation = "Game,-1";																		//対局オペレーション実行
 				String str = player.getName()+": "+chatField.getText();										//チャット内容読み取り
 				logArea.setEditable(true);																	//チャット反映
 				logArea.append("\n"+str);
 				logArea.setEditable(false);
-				sendMessage(dataID.get(command)+","+str);													//サーバへ送信
 				chatField.setText("");																		//チャット入力欄リセット
+				sendMessage(dataID.get(command)+","+str);													//サーバへ送信
 				break;
 			//アシスト切替
 			case "Assist":
+				Operation = "Game,-1";																		//対局オペレーション実行
 				player.changeAssist();																		//アシスト切替
 				if(player.getAssist()==true) label11_7.setText("：ON");										//表示変更
 				if(player.getAssist()==false) label11_7.setText("：OFF");
@@ -1206,6 +1215,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//ログ表示切替
 			case "Showlog":
+				Operation = "Game,-1";																		//対局オペレーション実行
 				if(player.getShowlog()==true) {																//ONだったら
 					player.setShowlog(false);														//OFFにする
 					label11_8.setText("：OFF");														//表示変更
@@ -1274,6 +1284,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//リアクション
 			case "Reaction":
+				Operation = "Game,-1";										//対局オペレーション実行
 				String reaction = player.getName()+subc;					//リアクション変換
 				logArea.setEditable(true);									//リアクション反映
 				logArea.append("\n> "+reaction);
