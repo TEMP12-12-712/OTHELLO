@@ -95,7 +95,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		blackIcon = new ImageIcon(SRC_IMG+"Black.jpg");
 		boardIcon = new ImageIcon(SRC_IMG+"GreenFrame.jpg");
 		canPutIcon = new ImageIcon(SRC_IMG+"canPut.jpg");
-		backImage = new File(/*SRC_IMG+*/"back2.png");
+		backImage = new File(SRC_IMG+"back2.png");
 		//音設定
 //		SE_switch = new File(SRC_SND+"keyboard1.wav");
 		//フレーム設定
@@ -731,7 +731,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				showDialog("ログインしました");														//ダイアログの表示
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
-				label1_3.setText(" ");																//ラベル初期化
 			}
 			else{																				//ログイン失敗
 				if(msg.equals("name")) label1_3.setText("そのようなプレイヤ名は存在しません");		//メッセージ表示
@@ -746,7 +745,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				showDialog("登録しました");									//ダイアログの表示
 				operation = "Login,-1";										//ログインオペレーション実行
 				sendMessage(dataID.get("Login")+","+player.getName()+","+player.getPass());
-				label2_3.setText(" ");										//ラベル初期化
 			}
 			else{														//登録失敗
 				label2_3.setText("そのプレイヤ名は既に使われています");		//メッセージ表示
@@ -790,7 +788,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		//鍵部屋マッチング結果
 		else if(command.equals("MakeKeyroom")){
 			String[] info = msg.split(",",2);
-			othello.setRoomID(Integer.parseInt(info[0]));				//部屋番号保存
 			player.setColor("black");									//手番保存
 			othello.setBlackName(player.getName());						//先手名保存
 			label11_1.setText(player.getName());						//先手名表示
@@ -847,9 +844,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				panelID = 11;												//対局画面へ
 			}
 			if(info[0].equals("false")){								//入室失敗
-				othello.setRoomID(-1);										//部屋番号リセット
-				player.setChat(true);										//チャットの有無リセット
-				player.setTime(-1);											//制限時間リセット
+				resetRoom();												//部屋情報リセット
 				showDialog("入室に失敗しました");							//ダイアログの表示
 				panelID = 3;												//メニュー画面へ
 			}
@@ -880,9 +875,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		//観戦部屋への入室
 		else if(command.equals("EnterWatchroom")){
 			if(msg.equals("false")){									//入室失敗
-				othello.setRoomID(-1);										//部屋番号リセット
-				othello.setBlackName(null);									//先手名リセット
-				othello.setWhiteName(null);									//後手名リセット
+				resetRoom();												//部屋情報リセット
 				showDialog("入室に失敗しました");							//ダイアログの表示
 				panelID = 3;												//メニュー画面へ
 			}
@@ -1262,7 +1255,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			//鍵部屋への入室要求
 			case "EnterKeyroom":
 				String keypass = new String(passfield10.getPassword());						//パスワード読み取り
-				if(checkString(keypass,"パスワード",label10_2)) {							//パスワードが空欄だった場合
+				if(checkString(keypass,"パスワード",label10_2)) {
 					sendMessage(dataID.get(command)+","+othello.getRoomID()+","+keypass);	//サーバへ送信
 					break;
 				}
