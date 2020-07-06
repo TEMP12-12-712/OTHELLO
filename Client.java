@@ -939,16 +939,16 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				}
 				othello.setGrids(grids);															//盤面更新
 				pathFlag = false;																	//パスフラグリセット
+				othello.changeTurn();																//ターン変更
 				if(updateTable()) b11_1.setEnabled(false);											//盤面反映
 				else b11_1.setEnabled(true);														//置ける場所が無ければパスボタンを有効化
 				String log = info[2];																//ログ取得
 				logArea.setEditable(true);															//ログ反映
 				logArea.append("\n"+log);
 				logArea.setEditable(false);
-				playerPanel.setVisible(false);														//操作有効化
+				playerPanel.setVisible(true);														//操作有効化
 				resetTimer();																		//タイマーリセット
 				timer.restart();																	//タイマーリスタート
-				othello.changeTurn();																//ターン変更
 				if(othello.isGameover()) {															//決着がついたら
 					String result = othello.checkWinner();										//勝敗確認
 					if(!player.isStand()){													//対局者の場合
@@ -1134,14 +1134,16 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 						String[] grids = othello.getGrids();									//盤面情報取得
 						for(int i=0;i<othello.getRow()*othello.getRow();i++){					//盤面情報変換
 							if(grids[i].equals("board")) table.append("0.");
+							if(grids[i].equals("canPut")) table.append("0.");
 							if(grids[i].equals("black")) table.append("1.");
 							if(grids[i].equals("white")) table.append("2.");
 						}
+						table.setLength(table.length()-1);
 						if(player.getColor().equals("black")){									//ログ情報生成
-							log = "先手：("+CLM[grid%8]+","+ROW[grid/8]+")";
+							log = "先手：("+CLM[grid%8]+"-"+ROW[grid/8]+")";
 						}
 						if(player.getColor().equals("white")){
-							log = "後手：("+CLM[grid%8]+","+ROW[grid/8]+")";
+							log = "後手：("+CLM[grid%8]+"-"+ROW[grid/8]+")";
 						}
 						logArea.setEditable(true);												//ログ反映
 						logArea.append("\n"+log);
@@ -1387,9 +1389,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	}
 	//盤面更新(対局開始時・観戦開始時・石を置いた時・盤面受信時)
 	public boolean updateTable(){
+		boolean canPut = false;													//置けるフラグ
 		tablePanel.removeAll();													//ボタンを全て消去
 		othello.canPutGrids();													//置ける箇所を更新
-		boolean canPut = false;													//置けるフラグ
 		JButton[] buttonArray = new JButton[othello.getRow()*othello.getRow()];		//ボタンの配列を作成
 		String[] grids = othello.getGrids();										//盤面取得
 		for(int i=0;i<othello.getRow()*othello.getRow();i++){
