@@ -333,7 +333,7 @@ class EchoThread extends Thread {
 							default:
 
 						}
-						str = check[0] + check[1] + check[2] + check[3] + check[4] + check[5];
+						str = check[0] +","+ check[1] +","+ check[2] +","+ check[3] +","+ check[4] +","+ check[5];
 						sb.append(str);
 						sb.append(System.getProperty("line.separator"));
 					} else {
@@ -372,9 +372,9 @@ class EchoThread extends Thread {
 	//25:チャット
 	public void chat(String chat){
 		if(myroom == 1) {
-			Server.mr[myroomNo].setlog(PlayerName, chat);
+			Server.mr[myroomNo].chat(PlayerName, chat);
 		}else {
-			Server.sr[myroomNo].setlog(PlayerName, chat);
+			Server.sr[myroomNo].chat(PlayerName, chat);
 		}
 	}
 
@@ -410,13 +410,13 @@ class EchoThread extends Thread {
 		if(Server.srNo != 0) {
 			for(int i = 0; i < Server.srNo;i++) {
 				if(Server.sr[i].getPN1() == null) {
-					Server.sr[i].set1P(PN, socket, password, chatflag, timeflag);
+					Server.sr[i].set1P(PN, out, password, chatflag, timeflag);
 					myroomNo = i;
 				}
 			}
 		}
 		if(myroomNo == 1001) {
-			Server.sr[Server.srNo] = new secretroom(PN, socket, password, chatflag, timeflag);
+			Server.sr[Server.srNo] = new secretroom(PN, out, password, chatflag, timeflag);
 			myroomNo = Server.srNo;
 			Server.srNo++;
 			myroom = 2;		//鍵部屋にいる状態
@@ -453,7 +453,7 @@ class EchoThread extends Thread {
 		System.out.println(password +","+ pass);
 		if(pass.equals(password)) {
 			myroomNo = No;
-			Server.sr[myroomNo].set2P(PlayerName, socket);
+			Server.sr[myroomNo].set2P(PlayerName, out);
 			myroom = 2;		//鍵部屋にいる状態
 		}else {
 			try{
