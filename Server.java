@@ -440,6 +440,7 @@ class EchoThread extends Thread {
 			}
 			if(Server.srlist != null) {
 				str = Server.srlist.toString();
+				Server.srlist.delete(0, Server.srlist.length());
 			}
 		}
 		System.out.println(str);
@@ -489,6 +490,7 @@ class EchoThread extends Thread {
 		}
 		if(Server.mrlist != null) {
 			str = Server.mrlist.toString();
+			Server.mrlist.delete(0, Server.mrlist.length());
 		}
 		return str;
 	}
