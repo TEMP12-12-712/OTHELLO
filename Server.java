@@ -110,9 +110,13 @@ class EchoThread extends Thread {
 	  case "21":		//盤面・ログの送信
 		  field(check[1], check[2]);
 		  break;
+		  
+	  case "22":
+		  passing();
+		  break;
 
 	  case "23":		//投了
-		  giveup(check[1]);
+		  giveup();
 		  break;
 
 	  case "24":		//対戦終了
@@ -282,7 +286,7 @@ class EchoThread extends Thread {
 	}
 
 	//23:投了
-	public void giveup(String message) {
+	public void giveup() {
 		//もうひとりのプレイヤーと観客に投了したことを伝える
 		if(myroom == 1) {
 			Server.mr[myroomNo].sendgiveup(PlayerName);
