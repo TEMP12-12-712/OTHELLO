@@ -13,8 +13,8 @@ import java.net.Socket;
  public class Server {
 
   public static final int port = 10000;  //ポート番号１００００
-  public static StringBuffer mrlist = new StringBuffer("");
-  public static StringBuffer srlist = new StringBuffer("");
+  public static StringBuffer mrlist = new StringBuffer();
+  public static StringBuffer srlist = new StringBuffer();
   public static secretroom[] sr = new secretroom[1000];
   public static int srNo = 0;			//今newで作られた部屋数+1
   public static matchroom[] mr = new matchroom[1000];
@@ -46,7 +46,7 @@ import java.net.Socket;
 class EchoThread extends Thread {
 
   private Socket socket;
-  private String PlayerName = "";
+  private String PlayerName = null;
   private int myroomNo = 1001;
   private int myroom = 0;	//0なら対戦してない、１ならマッチ、２なら鍵部屋マッチ
   private int watchNo = 1001;	//観戦しているときの番号
@@ -68,7 +68,7 @@ class EchoThread extends Thread {
     		String ClientMessage = in.readUTF();		//クライアントからデータ受信
     		System.out.println("クライアント"+PlayerName+"から「"+ClientMessage + "」を受信");
     		String Return = check(ClientMessage);
-    		if(!Return.equals("")) {
+    		if(Return != null) {
     			out.writeUTF(Return);	//クライアントに送信
     			System.out.println(Return);
     		}
@@ -90,7 +90,7 @@ class EchoThread extends Thread {
 
   public String check(String message) {		//クライアントからきた命令の先頭にある数字をみてメソッドを呼び出し
 	  String[] check = message.split(",", 0);
-	  String Re = "";
+	  String Re = null;
 	  switch(check[0]) {
 	  case "0":		//新規登録|resister
 		  Re = resister(check[1], check[2]);	//成功true：失敗false
@@ -107,8 +107,8 @@ class EchoThread extends Thread {
 		  match();
 		  break;
 
-	  case "21":		//盤面受信
-		  field(check[1]);
+	  case "21":		//盤面・ログの送信
+		  field(check[1], check[2]);
 		  break;
 
 	  case "23":		//投了
@@ -148,7 +148,6 @@ class EchoThread extends Thread {
 		  break;
 
 	  case "91":		//観戦|watch
-		System.out.print("check\n");
 		  watch(check[1]);
 		  break;
 
@@ -231,8 +230,8 @@ class EchoThread extends Thread {
 			if (myroomNo == 1001) {
 				//一人しかいない部屋があったらそこに入る
 				for(int i = 0;i < Server.mrNo; i++) {
-					if (!Server.mr[i].getPN1().equals("") && Server.mr[i].getPN2().equals("")) {
-						Server.mr[i].set2P(PlayerName,  socket);
+					if (Server.mr[i].getPN1() != null && Server.mr[i].getPN2() == null) {
+						Server.mr[i].set2P(PlayerName,  out);
 						myroomNo = i;
 						break;
 					}
@@ -242,8 +241,8 @@ class EchoThread extends Thread {
 				//一人しかいない部屋はなかった
 				//二人ともいない部屋があったらその最初の部屋に
 				for(int i = 0; i < Server.mrNo; i++) {
-					if (Server.mr[i].getPN1().equals("")) {
-						Server.mr[i].set1P(PlayerName,  socket);
+					if (Server.mr[i].getPN1() == null) {
+						Server.mr[i].set1P(PlayerName,  out);
 						myroomNo = i;
 						break;
 					}
@@ -252,11 +251,11 @@ class EchoThread extends Thread {
 		}
 		//空き部屋がなければ新しい部屋を作る
 		if (myroomNo == 1001) {
-			Server.mr[Server.mrNo] = new matchroom(PlayerName, socket);
+			Server.mr[Server.mrNo] = new matchroom(PlayerName, out);
 			myroomNo = Server.mrNo;
 			Server.mrNo++;
-			//で、そこの1Pにするんじゃないの？
-			Server.mr[myroomNo].set1P(PlayerName, socket);
+			//で、そこの1Pにする
+			Server.mr[myroomNo].set1P(PlayerName, out);
 		}
 		myroom = 1;
 		System.out.println(PlayerName + "," + myroomNo + ",ok");
@@ -264,12 +263,12 @@ class EchoThread extends Thread {
 
 
 	//21:盤面を送信する
-	public void field(String field) {		//盤面を受信。対戦相手に送る
+	public void field(String field, String log) {		//盤面を受信。対戦相手に送る
 		//送ってきたプレイヤーでない方のプレイヤーと観客に盤面を送信
 		if(myroom == 1) {
-			Server.mr[myroomNo].setfield(PlayerName, field);
+			Server.mr[myroomNo].setfield(PlayerName, field, log);
 		}else if(myroom == 2) {
-			Server.sr[myroomNo].setfield(PlayerName, field);
+			Server.sr[myroomNo].setfield(PlayerName, field, log);
 		}
 	}
 
@@ -295,8 +294,8 @@ class EchoThread extends Thread {
 
 	//24:対局が終了
 	public void newrecord(String PN, String flag) {//flag = 1なら勝ち、2なら負け、3なら引き分け、4なら投了
-		String str = "";
-		StringBuffer sb = new StringBuffer("");
+		String str = null;
+		StringBuffer sb = new StringBuffer(null);
 		try {
 			File file = new File("D:\\PL\\java\\OTHELLO\\src\\PlayerData.txt");
 			if(file.exists()) {
@@ -410,7 +409,7 @@ class EchoThread extends Thread {
 	public void make(String PN, String password, String chatflag, String timeflag) {
 		if(Server.srNo != 0) {
 			for(int i = 0; i < Server.srNo;i++) {
-				if(Server.sr[i].getPN1().equals("")) {
+				if(Server.sr[i].getPN1() == null) {
 					Server.sr[i].set1P(PN, socket, password, chatflag, timeflag);
 					myroomNo = i;
 				}
@@ -435,11 +434,11 @@ class EchoThread extends Thread {
 		if(Server.srNo != 0) {
 			for(int i = 0;i < Server.srNo; i++) {
 				//プレイヤー１のみの鍵部屋をリストアップ
-				if(!Server.sr[i].getPN1().equals("") && Server.sr[i].getPN2().equals("")) {
+				if(Server.sr[i].getPN1() != null && Server.sr[i].getPN2() == null) {
 					Server.srlist.append(Integer.toString(i) + "." + Server.sr[i].getlistData());
 				}
 			}
-			if(!Server.srlist.toString().equals("")) {
+			if(Server.srlist != null) {
 				str = Server.srlist.toString();
 			}
 		}
@@ -475,7 +474,7 @@ class EchoThread extends Thread {
 		int black = 0;
 		for(int i = 0;i < Server.mrNo; i++) {
 			//プレイヤーがそろった部屋をリストアップ
-			if(!Server.mr[i].getPN1().equals("") && !Server.mr[i].getPN2().equals("")) {
+			if(Server.mr[i].getPN1() != null && Server.mr[i].getPN2()!= null) {
 				field = Server.mr[i].sendfield();
 				for(int j = 0; j < field.length();i++) {
 					if(field.charAt(i) == a) {
@@ -488,7 +487,7 @@ class EchoThread extends Thread {
 						+ Integer.toString(black) + "." + Integer.toString(white) + ",");
 			}
 		}
-		if(!Server.mrlist.toString().equals("")) {
+		if(Server.mrlist != null) {
 			str = Server.mrlist.toString();
 		}
 		return str;
@@ -496,7 +495,7 @@ class EchoThread extends Thread {
 
 	//91:観戦入室
 	public void watch(String roomNumber) {
-		watchNo = Server.mr[Integer.valueOf(roomNumber)].setwatcher(PlayerName, socket);
+		watchNo = Server.mr[Integer.valueOf(roomNumber)].setwatcher(PlayerName, out);
 		myroomNo = Integer.parseInt(roomNumber);
 	}
 
