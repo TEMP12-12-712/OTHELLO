@@ -14,12 +14,9 @@ public class secretroom{
 
 	private String pass;				//パスワード
 	private String PlayerName1 = null, PlayerName2 = null;
-	//private Socket socket1 = null, socket2 = null;
 	private DataOutputStream out1 = null, out2 = null;
-	//private String grids;
 	private String chatflag;		//チャットの有無
 	private String timeflag;		//時間
-
 
 	public String getpass() {
 		return pass;
@@ -37,18 +34,14 @@ public class secretroom{
 	}
 
 	public void set2P(String PN2, DataOutputStream dos2) {//プレイヤー２が決まる
-		//System.out.println("check1");
 		if(PlayerName2 == null) {
 			PlayerName2 = PN2;
 			out2 = dos2;
-			//System.out.println("check2");
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("true,"+ PlayerName2);	//クライアントに送信
-				//out1.close();
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
+				System.out.println(PlayerName1 +"に「true,"+ PlayerName2 +"」を送信");
 				out2.writeUTF("true," + PlayerName1);	//クライアントに送信
-				//out2.close();
+				System.out.println(PlayerName1 +"に「true,"+ PlayerName2 +"」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -107,20 +100,17 @@ public class secretroom{
 	}
 
 	public void setfield(String PN, String field, String log) {//送信者と盤面を得て、相手に盤面を送信
-		//grids = field;								//盤面を保持
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("21," + field + "," +log);	//クライアントに送信
-				//out1.close();
+				System.out.println(PlayerName1 +"に「21," + field + "," +log +"」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
-				out2.writeUTF("21," + field + "," +log);	//クライアントに失敗を送信
-				//out2.close();
+				out2.writeUTF("21," + field + "," +log);
+				System.out.println(PlayerName2 +"に「21," + field + "," +log +"」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -130,17 +120,15 @@ public class secretroom{
 	public void chat(String PN, String chat) {//送信者と盤面を得て、相手に盤面を送信								//盤面を保持
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("25," + chat);	//クライアントに送信
-				//out1.close();
+				System.out.println(PlayerName1 +"に「21," + chat  +"」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
 				out2.writeUTF("25," + chat);	//クライアントに失敗を送信
-				//out2.close();
+				System.out.println(PlayerName2 +"に「21," + chat  +"」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -150,17 +138,15 @@ public class secretroom{
 	public void sendgiveup(String PN) {
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("23");	//クライアントに送信
-				//out1.close();
+				System.out.println(PlayerName1 +"に「23」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
 				out2.writeUTF("23");	//クライアントに失敗を送信
-				//out2.close();
+				System.out.println(PlayerName2 +"に「23」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -170,17 +156,15 @@ public class secretroom{
 	public void sendpass(String PN) {
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("22");	//クライアントに送信
-				//out1.close();
+				System.out.println(PlayerName1 +"に「22」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
-				out2.writeUTF("22");	//クライアントに失敗を送信
-				//out2.close();
+				out2.writeUTF("22");
+				System.out.println(PlayerName2 +"に「22」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}

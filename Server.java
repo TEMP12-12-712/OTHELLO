@@ -44,7 +44,8 @@ import java.net.Socket;
 }
 
 class EchoThread extends Thread {
-
+  //プレイヤーデータのファイル名変数
+  private String PlayerData = "D:\\PL\\java\\OTHELLO\\src\\PlayerData.txt";
   private Socket socket;
   private String PlayerName = null;
   private int myroomNo = 1001;
@@ -168,7 +169,7 @@ class EchoThread extends Thread {
   public String resister(String PN, String PW) { 		//0:新規登録
 		String judge = "true";
 		try {
-			File file = new File("D:\\PL\\java\\OTHELLO\\src\\PlayerData.txt");
+			File file = new File(PlayerData);
 			if(file.exists()) {
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String str;
@@ -200,7 +201,7 @@ class EchoThread extends Thread {
 	public String login(String PN, String PW) {
 		String judge = "name";
 		try {
-			File file = new File("D:\\PL\\java\\OTHELLO\\src\\PlayerData.txt");
+			File file = new File(PlayerData);
 			if(file.exists()) {
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String str;
@@ -301,7 +302,7 @@ class EchoThread extends Thread {
 		String str = null;
 		StringBuffer sb = new StringBuffer(null);
 		try {
-			File file = new File("D:\\PL\\java\\OTHELLO\\src\\PlayerData.txt");
+			File file = new File(PlayerData);
 			if(file.exists()) {
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				int win, lose, draw, giveup;
@@ -386,7 +387,7 @@ class EchoThread extends Thread {
 	public String record(String PN) {
 		String PD = "no";
 		try {
-			File file = new File("D:\\PL\\java\\OTHELLO\\src\\PlayerData.txt");
+			File file = new File(PlayerData);
 			if(file.exists()) {
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String str;
