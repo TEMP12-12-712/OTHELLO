@@ -111,8 +111,8 @@ class EchoThread extends Thread {
 	  case "21":		//盤面・ログの送信
 		  field(check[1], check[2]);
 		  break;
-		  
-	  case "22":
+
+	  case "22":		//パス
 		  passing();
 		  break;
 
@@ -300,7 +300,7 @@ class EchoThread extends Thread {
 	//24:対局が終了
 	public void newrecord(String PN, String flag) {//flag = 1なら勝ち、2なら負け、3なら引き分け、4なら投了
 		String str = null;
-		StringBuffer sb = new StringBuffer(null);
+		StringBuffer sb = new StringBuffer();
 		try {
 			File file = new File(PlayerData);
 			if(file.exists()) {
@@ -364,7 +364,7 @@ class EchoThread extends Thread {
 		if(myroom == 1) {
 			Server.mr[myroomNo].deletePN1();
 			Server.mr[myroomNo].deletePN2();
-			Server.mr[myroom].deletewatcher();
+			Server.mr[myroomNo].deletewatcher();
 		}else if(myroom == 2) {
 			Server.sr[myroomNo].deletePN1();
 			Server.sr[myroomNo].deletePN2();
@@ -482,15 +482,15 @@ class EchoThread extends Thread {
 			//プレイヤーがそろった部屋をリストアップ
 			if(Server.mr[i].getPN1() != null && Server.mr[i].getPN2()!= null) {
 				field = Server.mr[i].sendfield();
-				for(int j = 0; j < field.length();i++) {
-					if(field.charAt(i) == a) {
+				for(int j = 0; j < field.length();j++) {
+					if(field.charAt(j) == a) {
 						black++;
-					}else if(field.charAt(i) == b) {
+					}else if(field.charAt(j) == b) {
 						white++;
 					}
 				}
-				Server.mrlist.append(Integer.toString(i) + "." + Server.sr[i].getlistData() + "."
-						+ Integer.toString(black) + "." + Integer.toString(white) + ",");
+				Server.mrlist.append(Integer.toString(i) + "." + Server.mr[i].getPN1() + "."
+						+ Server.mr[i].getPN2() + "." + Integer.toString(black) + "." + Integer.toString(white) + ",");
 			}
 		}
 		if(Server.mrlist != null) {

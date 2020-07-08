@@ -13,11 +13,10 @@ public class matchroom {
 	private String PlayerName2 = null;		//プレイヤ２(後手)
 	//private Socket socket1, socket2;
 	private DataOutputStream out1 = null, out2 = null;
-	private String log;						//ログ
 	private String[] view;						//観戦者
 	//private Socket[] watchsocket = new Socket[10];
 	private DataOutputStream[] watchdos = new DataOutputStream[10];
-	private int socketNo = 0;
+	private int socketNo = 0;		//観戦者のソケット配列の数
 	int flag;						//手番
 
 	public void set1P(String PN1, DataOutputStream dos1) {//プレイヤー1が決まる
@@ -33,12 +32,10 @@ public class matchroom {
 			out2 = dos2;
 
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("true," + PlayerName2 + ",0");	//クライアントに送信
-				//out1.close();
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
+				System.out.println(PlayerName1 + "に「" + "true," + PlayerName2 + ",0」を送信");
 				out2.writeUTF("true," + PlayerName1 + ",1");	//クライアントに送信
-				//out2.close();
+				System.out.println(PlayerName2 + "に「" + "true," + PlayerName1 + ",0」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -95,31 +92,27 @@ public class matchroom {
 	}
 
 	public void deletewatcher() {
-		for(int i = 0;i < 10; i++) {
+		for(int i = 0;i < socketNo; i++) {
 			if(watchdos[i] != null) {
 				watchdos[i] = null;
 			}
 		}
 	}
 
-	public void setfield(String PN, String field, String log) {//送信者と盤面を得て、相手に盤面を送信
+	public void setfield(String PN, String field, String log) {//送信者と盤面を得て、相手に盤面とログを送信
 		grids = field;								//盤面を保持
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("21," + grids + "," + log);	//クライアントに送信
-				System.out.println("「21," + grids + "," + log + "」を送信");
-				//out1.close();
+				System.out.println(PlayerName1 + "に「21," + grids + "," + log + "」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			System.out.println("い");
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
 				out2.writeUTF("21," + grids + "," +log);	//クライアントに失敗を送信
-				System.out.println("「21," + grids + "," + log + "」を送信");
-				//out2.close();
+				System.out.println(PlayerName2 + "に「21," + grids + "," + log + "」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -128,10 +121,8 @@ public class matchroom {
 		for(int i = 0;i < 10; i++) {
 			if(watchdos[i] != null) {
 				try{
-					//DataOutputStream out = new DataOutputStream(watchsocket[i].getOutputStream());
 					watchdos[i].writeUTF("21," + grids + "," + log);
-					System.out.println("「21," + grids + "," + log + "」を観客に送信");
-					//out.close();
+					System.out.println("観客に「21," + grids + "," + log + "」を送信");
 				}catch(IOException e) {
 					e.printStackTrace();
 					watchout(i);
@@ -140,22 +131,18 @@ public class matchroom {
 		}
 	}
 
-	public void chat(String PN, String log) {//チャットの送受								//盤面を保持
+	public void chat(String PN, String chat) {//チャットの送信
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
-				out1.writeUTF("25," + log);	//クライアントに送信
-				System.out.println("「25," + log + "」を送信");
-				//out1.close();
+				out1.writeUTF("25," + chat);	//クライアントに送信
+				System.out.println(PlayerName1 + "に「25," + chat + "」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
-				out2.writeUTF("25," + log);	//クライアントに失敗を送信
-				System.out.println("「25," + log + "」を送信");
-				//out2.close();
+				out2.writeUTF("25," + chat);	//クライアントに失敗を送信
+				System.out.println(PlayerName2 + "に「25," + chat + "」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -164,10 +151,8 @@ public class matchroom {
 		for(int i = 0;i < 10; i++) {
 			if(watchdos[i] != null) {
 				try{
-					//DataOutputStream out = new DataOutputStream(watchsocket[i].getOutputStream());
-					watchdos[i].writeUTF("25," + log);
-					System.out.println("「25," + log + "」を観客に送信");
-					//out.close();
+					watchdos[i].writeUTF("25," + chat);
+					System.out.println("観客に「25," + chat + "」を送信");
 				}catch(IOException e) {
 					e.printStackTrace();
 					watchout(i);
@@ -179,19 +164,15 @@ public class matchroom {
 	public void sendgiveup(String PN) {
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("23");	//クライアントに送信
-				System.out.println("「23」を送信");
-				//out1.close();
+				System.out.println(PlayerName1 + "に「23」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
 				out2.writeUTF("23");	//クライアントに失敗を送信
-				System.out.println("「23」を送信");
-				//out2.close();
+				System.out.println(PlayerName2 + "に「23」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -200,10 +181,8 @@ public class matchroom {
 				for(int i = 0;i < 10; i++) {
 					if(watchdos[i] != null) {
 						try{
-							//DataOutputStream out = new DataOutputStream(watchsocket[i].getOutputStream());
 							watchdos[i].writeUTF("23");
 							System.out.println("「23」を観客に送信");
-							//out.close();
 						}catch(IOException e) {
 							e.printStackTrace();
 							watchout(i);
@@ -229,7 +208,6 @@ public class matchroom {
 			}
 		}
 		if(flag == 0) {
-			//watchdos[socketNo] = new DataOutputStream();
 			watchdos[socketNo] = dos;
 			watchNo = socketNo;
 			socketNo++;
@@ -245,19 +223,15 @@ public class matchroom {
 	public void sendpass(String PN) {
 		if(PN.equals(PlayerName2)) {
 			try {
-				//DataOutputStream out1 = new DataOutputStream(socket1.getOutputStream());
 				out1.writeUTF("22");	//クライアントに送信
-				System.out.println("「22」を送信");
-				//out1.close();
+				System.out.println(PlayerName1 + "に「22」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				//DataOutputStream out2 = new DataOutputStream(socket2.getOutputStream());
 				out2.writeUTF("22");	//クライアントに失敗を送信
-				System.out.println("「22」を送信");
-				//out2.close();
+				System.out.println(PlayerName2 + "に「22」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
