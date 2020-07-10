@@ -15,31 +15,31 @@ import java.io.*;
 // クラス定義
 public class Client extends JFrame implements MouseListener, ActionListener{
 	// 共通して用いるフィールド //////////////////////////////////////////////////////////////////////////////////////////////////
-	//関連するクラス
+	//クラス関連
 	private Player player;							//プレイヤ
 	private Othello othello;						//オセロ
 	private javax.swing.Timer timer;				//タイマー
 	//表示関連
-	final private int WIDTH = 630, HEIGHT = 600;	//ウィンドウの大きさ
-	final private int FIELD_W = 200, FIELD_H = 30;	//テキストフィールドの大きさ
+	final private int WIDTH = 630, HEIGHT = 600;	//フレームの大きさ
+	final private int FIELD_W = 200, FIELD_H = 30;	//テキストフィールドが収まる縦幅
 	final private int TABLE_W = 370, TABLE_H = 370;	//盤面の大きさ
-	final private String[] CLM = {"A","B","C","D","E","F","G","H"};
-	final private String[] ROW = {"1","2","3","4","5","6","7","8"};
+	final private String[] CLM = {"A","B","C","D","E","F","G","H"};//盤面の横軸
+	final private String[] ROW = {"1","2","3","4","5","6","7","8"};//盤面の縦軸
 	final private String RULE = "";					//遊び方
 	final private String TITLE[] = {				//タイトル一覧
 		"ようこそ","ログイン","新規登録","メニュー",
-		"対局","対局","対局","対局","対局","対局","対局","対局",
-		"観戦","観戦",
-		"記録","記録","記録","記録",
+		"対局","マッチング中","対局","部屋の設定","マッチング中","部屋を選択","パスワード入力","対局",
+		"部屋を選択","観戦",
+		"記録を選択","総合記録","相手別記録","相手別記録",
 		"遊び方"
 	};
 	private Container pane;							//コンテナ
 	private ImagePanel[] panel = new ImagePanel[19];//画面パネル
-	private JPanel listPanel9,listPanel12;			//リスト表示用パネル
-	private JLabel label1_3, label2_3, label7_6, label10_2;	//照合結果表示ラベル
+	private JPanel listPanel9,listPanel12;			//鍵部屋リスト表示用パネル、観戦部屋リスト表示用パネル
+	private JLabel label1, label2, label7_6, label10_2;	//入力情報照合結果表示ラベル
 	private JLabel label15_1, label15_2, label15_3, label15_4;//総合戦績表示ラベル
 	private JLabel label17_1, label17_2, label17_3, label17_4;//対人別戦績表示ラベル
-	private JTextField field1, field2, passfield7, field16;		//入力フィールド
+	private JTextField field1, field2, passfield7, field16;		//テキスト入力フィールド
 	private JPasswordField passfield1, passfield2, passfield10;	//パスワード入力フィールド
 	private JRadioButton rb71,rb72;					//ラジオボタン
 	private JComboBox<String> box7;					//コンボボックス
@@ -50,15 +50,17 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	private JTextField chatField;					//チャットフィールド
 	private JLabel label11_1,label11_2,label11_4,label11_5,label11_6,label11_7,label11_8;//対局情報表示ラベル
 	//素材
-	final private String SRC_IMG = ".\\img\\";
-	final private String SRC_SND = ".\\sounds\\";
-	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;		//アイコン
-	File backImage;												//画像
-	File SE_switch;												//音
+	final private String SRC_IMG = ".\\img\\";		//画像へのパス
+	final private String SRC_SND = ".\\sounds\\";	//音へのパス
+	File gameIcon, standIcon, recordIcon, ruleIcon, logoutIcon;		//メニューボタン用アイコン
+	File buttonIcon1, buttonIcon2;									//その他ボタン用アイコン
+	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;			//盤面ボタン用アイコン
+	File backImageLogin, backImageMenu, backImageGame;				//ログイン画面背景、メニュー画面背景、対局画面背景
+	File SE_switch;													//音
 	//処理関連
 	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
-	private int minutes, seconds;											//時間
+	private int minutes, seconds;											//対局用経過時間
 	private HashMap<String,String> dataID = new HashMap<String,String>(20);	//コマンド・データ対応表
 	{dataID.put("Register","0");
 	dataID.put("Login","1");
@@ -80,9 +82,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	dataID.put("Reaction","92");
 	dataID.put("GetoutWatchroom","93");
 	dataID.put("Logout","100");}
-	// 通信用ストリーム
-	private DataOutputStream out;					//送信用
-	private DataInputStream in;						//受信用
+	// 通信関連
+	private DataOutputStream out;					//送信用ストリーム
+	private DataInputStream in;						//受信用ストリーム
 	private Receiver receiver;						//受信スレッド
 	// コンストラクタ/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public Client() {
@@ -90,17 +92,26 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		player = new Player();						//プレイヤ生成
 		othello = new Othello();					//オセロ生成
 		timer = new javax.swing.Timer(1000,this);	//タイマー生成
-		//画像設定
+		//画像読み込み
+		gameIcon = new File(SRC_IMG+"BUTTON_GAME.jpg");
+		standIcon = new File(SRC_IMG+"BUTTON_STAND.jpg");
+		recordIcon = new File(SRC_IMG+"BUTTON_RECORD.jpg");
+		ruleIcon = new File(SRC_IMG+"BUTTON_RULE.jpg");
+		logoutIcon = new File(SRC_IMG+"BUTTON_LOGOUT.jpg");
+		buttonIcon1 = new File(SRC_IMG+"BUTTON_1.jpg");
+		buttonIcon2 = new File(SRC_IMG+"BUTTON_2.jpg");
 		whiteIcon = new ImageIcon(SRC_IMG+"White.jpg");
 		blackIcon = new ImageIcon(SRC_IMG+"Black.jpg");
 		boardIcon = new ImageIcon(SRC_IMG+"GreenFrame.jpg");
 		canPutIcon = new ImageIcon(SRC_IMG+"canPut.jpg");
-		backImage = new File(SRC_IMG+"back2.png");
-		//音設定
+		backImageLogin = new File(SRC_IMG+"BACK_LOGIN.jpg");
+		backImageMenu = new File(SRC_IMG+"BACK_MENU.jpg");
+		backImageGame = new File(SRC_IMG+"BACK_GAME.jpg");
+		//音読み込み
 //		SE_switch = new File(SRC_SND+"keyboard1.wav");
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(WIDTH, HEIGHT);
+		setSize(WIDTH+24, HEIGHT+48);
 		//ペイン設定
 		pane = getContentPane();
 		pane.setLayout(null);
@@ -116,108 +127,85 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b02.setFont(new Font("MSゴシック",Font.PLAIN,24));
 		b02.setActionCommand("Switch,2");
 		b02.addMouseListener(this);
-		panel[0] = new ImagePanel(backImage);
+		panel[0] = new ImagePanel(backImageMenu);
 		panel[0].setSize(WIDTH,HEIGHT);
 		panel[0].setLayout(null);
 		panel[0].add(b01);
 		panel[0].add(b02);
 		//ログイン画面
-		JLabel label1_1 = new JLabel("プレイヤ名");
 		field1 = new JTextField(20);
-		JLabel label1_2 = new JLabel("パスワード");
+		field1.setBounds(260,250,300,40);
 		passfield1 = new JPasswordField(20);
-		label1_3 = new JLabel(" ");
-		label1_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		JButton b11 = new JButton("OK");
-		b11.setActionCommand("Login,-1");
+		passfield1.setBounds(260,320,300,40);
+		label1 = new JLabel(" ");
+		label1.setFont(new Font(Font.SANS_SERIF,Font.BOLD,36));
+		label1.setForeground(Color.WHITE);
+		label1.setBounds(WIDTH/2-300,370,600,36);
+		ImageButton b11 = new ImageButton("戻る",buttonIcon1,Color.WHITE,0.2f,0.7f,24);
+		b11.setBounds(WIDTH/2-90,0,80,40);
+		b11.setActionCommand("Switch,-1");
 		b11.addMouseListener(this);
-		JButton b12 = new JButton("戻る");
-		b12.setActionCommand("Switch,0");
+		ImageButton b12 = new ImageButton("OK",buttonIcon1,Color.WHITE,0.2f,0.7f,24);
+		b12.setBounds(WIDTH/2+10,0,80,40);
+		b12.setActionCommand("Login,0");
 		b12.addMouseListener(this);
-		JPanel panel1_1 = new JPanel();
-		panel1_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel1_1.setOpaque(false);
-		panel1_1.add(label1_1);
-		panel1_1.add(field1);
-		JPanel panel1_2 = new JPanel();
-		panel1_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel1_2.setOpaque(false);
-		panel1_2.add(label1_2);
-		panel1_2.add(passfield1);
-		JPanel panel1_3 = new JPanel();
-		panel1_3.setMaximumSize(new Dimension(WIDTH,FIELD_H));
-		panel1_3.setOpaque(false);
-		panel1_3.add(b11);
-		panel1_3.add(b12);
-		panel[1] = new ImagePanel(backImage);
-		panel[1].setSize(WIDTH,HEIGHT);
-		panel[1].setLayout(new BoxLayout(panel[1], BoxLayout.Y_AXIS));
-		panel[1].add(panel1_1);
-		panel[1].add(panel1_2);
-		panel[1].add(label1_3);
-		panel[1].add(panel1_3);
+		JPanel panel1 = new JPanel();
+		panel1.setBounds(0,430,WIDTH,40);
+		panel1.setOpaque(false);
+		panel1.setLayout(null);
+		panel1.add(b11);
+		panel1.add(b12);
+		panel[1] = new ImagePanel(backImageLogin);
+		panel[1].setBounds(0,0,WIDTH,HEIGHT);
+		panel[1].repaint();
+		panel[1].setLayout(null);
+		panel[1].add(field1);
+		panel[1].add(passfield1);
+		panel[1].add(label1);
+		panel[1].add(panel1);
 		//新規登録画面
-		JLabel label2_1 = new JLabel("プレイヤ名");
 		field2 = new JTextField(20);
-		JLabel label2_2 = new JLabel("パスワード");
 		passfield2 = new JPasswordField(20);
-		label2_3 = new JLabel(" ");
-		label2_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
+		label2 = new JLabel(" ");
 		JButton b21 = new JButton("OK");
 		b21.setActionCommand("Register,-1");
 		b21.addMouseListener(this);
 		JButton b22 = new JButton("戻る");
 		b22.setActionCommand("Switch,0");
 		b22.addMouseListener(this);
-		JPanel panel2_1 = new JPanel();
-		panel2_1.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel2_1.setOpaque(false);
-		panel2_1.add(label2_1);
-		panel2_1.add(field2);
-		JPanel panel2_2 = new JPanel();
-		panel2_2.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel2_2.setOpaque(false);
-		panel2_2.add(label2_2);
-		panel2_2.add(passfield2);
-		JPanel panel2_3 = new JPanel();
-		panel2_3.setMaximumSize(new Dimension(WIDTH, FIELD_H));
-		panel2_3.setOpaque(false);
-		panel2_3.add(b21);
-		panel2_3.add(b22);
-		panel[2] = new ImagePanel(backImage);
+		JPanel panel2 = new JPanel();
+		panel2.setOpaque(false);
+		panel2.add(b21);
+		panel2.add(b22);
+		panel[2] = new ImagePanel(backImageLogin);
 		panel[2].setSize(WIDTH,HEIGHT);
-		panel[2].setLayout(new BoxLayout(panel[2], BoxLayout.Y_AXIS));
-		panel[2].add(panel2_1);
-		panel[2].add(panel2_2);
-		panel[2].add(label2_3);
-		panel[2].add(panel2_3);
+		panel[2].setLayout(new FlowLayout());
+		panel[2].add(field2);
+		panel[2].add(passfield2);
+		panel[2].add(label2);
+		panel[2].add(panel2);
 		//メニュー画面
-		JButton b31 = new JButton("対局する");
-		b31.setBounds(WIDTH/16, HEIGHT/2-WIDTH/4, WIDTH/4, WIDTH/8);
-		b31.setFont(new Font("MSゴシック",Font.PLAIN,24));
+		ImageButton b31 = new ImageButton("対局する",gameIcon,Color.WHITE,0.35f,0.6f,36);
+		b31.setBounds(WIDTH/5, HEIGHT/28*2, WIDTH/5*3, HEIGHT/7);
 		b31.setActionCommand("Switch,4");
 		b31.addMouseListener(this);
-		JButton b32 = new JButton("観戦する");
-		b32.setBounds(WIDTH*3/8, HEIGHT/2-WIDTH/4, WIDTH/4, WIDTH/8);
-		b32.setFont(new Font("MSゴシック",Font.PLAIN,24));
+		ImageButton b32 = new ImageButton("観戦する",standIcon,Color.WHITE,0.35f,0.6f,36);
+		b32.setBounds(WIDTH/5, HEIGHT/28*7, WIDTH/5*3, HEIGHT/7);
 		b32.setActionCommand("WatchroomList,-1");
 		b32.addMouseListener(this);
-		JButton b33 = new JButton("記録を見る");
-		b33.setBounds(WIDTH*11/16, HEIGHT/2-WIDTH/4, WIDTH/4, WIDTH/8);
-		b33.setFont(new Font("MSゴシック",Font.PLAIN,24));
+		ImageButton b33 = new ImageButton("記録を見る",recordIcon,Color.WHITE,0.35f,0.6f,36);
+		b33.setBounds(WIDTH/5, HEIGHT/28*12, WIDTH/5*3, HEIGHT/7);
 		b33.setActionCommand("Switch,14");
 		b33.addMouseListener(this);
-		JButton b34 = new JButton("遊び方");
-		b34.setBounds(WIDTH*7/32, HEIGHT*3/4-WIDTH/4, WIDTH/4, WIDTH/8);
-		b34.setFont(new Font("MSゴシック",Font.PLAIN,24));
+		ImageButton b34 = new ImageButton("遊び方",ruleIcon,Color.WHITE,0.35f,0.6f,36);
+		b34.setBounds(WIDTH/5, HEIGHT/28*17, WIDTH/5*3, HEIGHT/7);
 		b34.setActionCommand("Switch,18");
 		b34.addMouseListener(this);
-		JButton b35 = new JButton("ログアウト");
-		b35.setBounds(WIDTH*17/32, HEIGHT*3/4-WIDTH/4, WIDTH/4, WIDTH/8);
-		b35.setFont(new Font("MSゴシック",Font.PLAIN,24));
+		ImageButton b35 = new ImageButton("ログアウト",logoutIcon,Color.WHITE,0.35f,0.6f,36);
+		b35.setBounds(WIDTH/5, HEIGHT/28*22, WIDTH/5*3, HEIGHT/7);
 		b35.setActionCommand("Logout,-1");
 		b35.addMouseListener(this);
-		panel[3] = new ImagePanel(backImage);
+		panel[3] = new ImagePanel(backImageMenu);
 		panel[3].setSize(WIDTH,HEIGHT);
 		panel[3].setLayout(null);
 		panel[3].add(b31);
@@ -226,19 +214,19 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel[3].add(b34);
 		panel[3].add(b35);
 		//ランダム・プライベート選択画面
-		JButton b41 = new JButton("ランダムマッチ");
+		ImageButton b41 = new ImageButton("ランダムマッチ",buttonIcon2,Color.WHITE,0.1f,0.5f,14);
 		b41.setMaximumSize(new Dimension(150, 50));
 		b41.setActionCommand("RandomMatch,-1");
 		b41.addMouseListener(this);
-		JButton b42 = new JButton("プライベートマッチ");
+		ImageButton b42 = new ImageButton("プライベートマッチ",buttonIcon2,Color.WHITE,0.1f,0.5f,14);
 		b42.setMaximumSize(new Dimension(150, 50));
 		b42.setActionCommand("Switch,6");
 		b42.addMouseListener(this);
-		JButton b43 = new JButton("戻る");
+		ImageButton b43 = new ImageButton("戻る",buttonIcon2,Color.WHITE,0.1f,0.5f,14);
 		b43.setMaximumSize(new Dimension(150, 50));
 		b43.setActionCommand("Switch,3");
 		b43.addMouseListener(this);
-		panel[4] = new ImagePanel(backImage);
+		panel[4] = new ImagePanel(backImageMenu);
 		panel[4].setSize(WIDTH,HEIGHT);
 		panel[4].setLayout(new BoxLayout(panel[4], BoxLayout.Y_AXIS));
 		panel[4].add(b41);
@@ -250,7 +238,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b51.setSize(100,50);
 		b51.setActionCommand("CancelMatch,-1");
 		b51.addMouseListener(this);
-		panel[5] = new ImagePanel(backImage);
+		panel[5] = new ImagePanel(backImageMenu);
 		panel[5].setSize(WIDTH,HEIGHT);
 		panel[5].add(label5);
 		panel[5].add(b51);
@@ -267,7 +255,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b63.setMaximumSize(new Dimension(150, 50));
 		b63.setActionCommand("Switch,4");
 		b63.addMouseListener(this);
-		panel[6] = new ImagePanel(backImage);
+		panel[6] = new ImagePanel(backImageMenu);
 		panel[6].setSize(WIDTH,HEIGHT);
 		panel[6].setLayout(new BoxLayout(panel[6], BoxLayout.Y_AXIS));
 		panel[6].add(b61);
@@ -337,7 +325,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel7_6.setAlignmentX(0.0f);
 		panel7_6.add(b71);
 		panel7_6.add(b72);
-		panel[7] = new ImagePanel(backImage);
+		panel[7] = new ImagePanel(backImageMenu);
 		panel[7].setSize(WIDTH,HEIGHT);
 		panel[7].setLayout(new BoxLayout(panel[7], BoxLayout.Y_AXIS));
 		panel[7].add(panel7_1);
@@ -352,7 +340,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b81.setSize(100,50);
 		b81.setActionCommand("DeleteKeyroom,-1");
 		b81.addMouseListener(this);
-		panel[8] = new ImagePanel(backImage);
+		panel[8] = new ImagePanel(backImageMenu);
 		panel[8].setSize(WIDTH,HEIGHT);
 		panel[8].add(label8);
 		panel[8].add(b81);
@@ -370,7 +358,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel9_1.setOpaque(false);
 		panel9_1.setOpaque(false);
 		panel9_1.add(b91);
-		panel[9] = new ImagePanel(backImage);
+		panel[9] = new ImagePanel(backImageMenu);
 		panel[9].setSize(WIDTH,HEIGHT);
 		panel[9].setLayout(new BoxLayout(panel[9], BoxLayout.Y_AXIS));
 		panel[9].add(sp9);
@@ -401,7 +389,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel10_3.setOpaque(false);
 		panel10_3.add(b101);
 		panel10_3.add(b102);
-		panel[10] = new ImagePanel(backImage);
+		panel[10] = new ImagePanel(backImageMenu);
 		panel[10].setSize(WIDTH,HEIGHT);
 		panel[10].setLayout(new BoxLayout(panel[10], BoxLayout.Y_AXIS));
 		panel[10].add(panel10_1);
@@ -415,18 +403,26 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		JLabel columnNumber = new JLabel(CLM[0]+"　　"+CLM[1]+"　　"+CLM[2]+"　　"+CLM[3]+"　　"+CLM[4]+"　　"+CLM[5]+"　　"+CLM[6]+"　　"+CLM[7]);//列番号の表示
 		columnNumber.setBounds(35, 0, TABLE_W, FIELD_H);
 		columnNumber.setFont(new Font("MSゴシック",Font.PLAIN,18));
+		columnNumber.setForeground(Color.WHITE);
 		JLabel rowNumber = new JLabel("<html>"+ROW[0]+"<br/><br/>"+ROW[1]+"<br/><br/>"+ROW[2]+"<br/><br/>"+ROW[3]+"<br/><br/>"+ROW[4]+"<br/><br/>"+ROW[5]+"<br/><br/>"+ROW[6]+"<br/><br/>"+ROW[7]+"</html>");//行番号の表示
 		rowNumber.setBounds(7, 15, FIELD_W, TABLE_H);
 		rowNumber.setFont(new Font("MSゴシック",Font.PLAIN,17));
+		rowNumber.setForeground(Color.WHITE);
 		JPanel infoPanel = new JPanel();//対局情報表示パネル
 		infoPanel.setBounds(TABLE_W+20,10,200,160);
 		infoPanel.setOpaque(false);
 		label11_1 = new JLabel("          ");
+		label11_1.setForeground(Color.WHITE);
 		label11_2 = new JLabel("黒：２");
+		label11_2.setForeground(Color.WHITE);
 		JLabel label11_3 = new JLabel("vs");
+		label11_3.setForeground(Color.WHITE);
 		label11_4 = new JLabel("白：２");
+		label11_4.setForeground(Color.WHITE);
 		label11_5 = new JLabel("          ");
+		label11_5.setForeground(Color.WHITE);
 		label11_6 = new JLabel("制限時間：0分0秒");
+		label11_6.setForeground(Color.WHITE);
 		JPanel infoPanel1 = new JPanel();
 		infoPanel1.setOpaque(false);
 		infoPanel1.add(label11_1);
@@ -527,7 +523,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		chatPanel.add(chatPanel1);
 		chatPanel.add(chatPanel2);
 		chatPanel.add(chatPanel3);
-		panel[11] = new ImagePanel(backImage);//追加
+		panel[11] = new ImagePanel(backImageGame);//追加
 		panel[11].setLayout(null);
 		panel[11].setBounds(0,0,WIDTH,HEIGHT);
 		panel[11].add(tablePanel);
@@ -552,7 +548,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel12_1.setMaximumSize(new Dimension(WIDTH,FIELD_H));
 		panel12_1.setOpaque(false);
 		panel12_1.add(b121);
-		panel[12] = new ImagePanel(backImage);
+		panel[12] = new ImagePanel(backImageMenu);
 		panel[12].setSize(WIDTH,HEIGHT);
 		panel[12].setLayout(new BoxLayout(panel[12], BoxLayout.Y_AXIS));
 		panel[12].add(sp12);
@@ -570,7 +566,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b143.setMaximumSize(new Dimension(150,50));
 		b143.setActionCommand("Switch,3");
 		b143.addMouseListener(this);
-		panel[14] = new ImagePanel(backImage);
+		panel[14] = new ImagePanel(backImageMenu);
 		panel[14].setSize(WIDTH,HEIGHT);
 		panel[14].setLayout(new BoxLayout(panel[14], BoxLayout.Y_AXIS));
 		panel[14].add(b141);
@@ -600,7 +596,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel15_1.setLayout(new BoxLayout(panel15_1, BoxLayout.Y_AXIS));
 		panel15_1.add(panel15_2);
 		panel15_1.add(panel15_3);
-		panel[15] = new ImagePanel(backImage);
+		panel[15] = new ImagePanel(backImageMenu);
 		panel[15].setSize(WIDTH,HEIGHT);
 		panel[15].add(panel15_1, BorderLayout.CENTER);
 		panel[15].add(panel15_4, BorderLayout.PAGE_END);
@@ -615,7 +611,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b162.setSize(100,50);
 		b162.setActionCommand("Switch,14");
 		b162.addMouseListener(this);
-		panel[16] = new ImagePanel(backImage);
+		panel[16] = new ImagePanel(backImageMenu);
 		panel[16].setSize(WIDTH,HEIGHT);
 		panel[16].add(field16);
 		panel[16].add(b161);
@@ -644,7 +640,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	    panel17_1.setLayout(new BoxLayout(panel17_1, BoxLayout.Y_AXIS));
 	    panel17_1.add(panel17_2);
 	    panel17_1.add(panel17_3);
-		panel[17] = new ImagePanel(backImage);
+		panel[17] = new ImagePanel(backImageMenu);
 		panel[17].setSize(WIDTH,HEIGHT);
 	    panel[17].add(panel17_1, BorderLayout.CENTER);
 	    panel[17].add(panel17_4, BorderLayout.PAGE_END);
@@ -654,7 +650,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b181.setSize(100,50);
 		b181.setActionCommand("Switch,3");
 		b181.addMouseListener(this);
-		panel[18] = new ImagePanel(backImage);
+		panel[18] = new ImagePanel(backImageMenu);
 		panel[18].setSize(WIDTH,HEIGHT);
 		panel[18].add(label18);
 		panel[18].add(b181);
@@ -733,8 +729,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				switchDisplay();																	//画面遷移
 			}
 			else{																				//ログイン失敗
-				if(msg.equals("name")) label1_3.setText("そのようなプレイヤ名は存在しません");		//メッセージ表示
-				if(msg.equals("pass")) label1_3.setText("パスワードが違います");					//メッセージ表示
+				if(msg.equals("name")) label1.setText("そのようなプレイヤ名は存在しません");		//メッセージ表示
+				if(msg.equals("pass")) label1.setText("パスワードが違います");						//メッセージ表示
 				player.setName(null);																//プレイヤ名リセット
 				player.setPass(null);																//パスワードリセット
 			}
@@ -747,7 +743,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				sendMessage(dataID.get("Login")+","+player.getName()+","+player.getPass());
 			}
 			else{														//登録失敗
-				label2_3.setText("そのプレイヤ名は既に使われています");		//メッセージ表示
+				label2.setText("そのプレイヤ名は既に使われています");		//メッセージ表示
 				player.setName(null);										//プレイヤ名リセット
 				player.setPass(null);										//パスワードリセット
 			}
@@ -1088,8 +1084,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			case "Login":
 				String logname = field1.getText();									//プレイヤ名読み取り
 				String logpass = new String(passfield1.getPassword());				//パスワード読み取り
-				if(checkString(logname,"プレイヤ名",label1_3)){
-					if(checkString(logpass,"パスワード",label1_3)){
+				if(checkString(logname,"プレイヤ名",label1)){
+					if(checkString(logpass,"パスワード",label1)){
 						player.setName(logname);									//プレイヤ名保存
 						player.setPass(logpass);									//パスワード保存
 						sendMessage(dataID.get(command)+","+logname+","+logpass);	//サーバへ送信
@@ -1101,8 +1097,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			case "Register":
 				String regname = field2.getText();									//プレイヤ名読み取り
 				String regpass = new String(passfield2.getPassword());				//パスワード読み取り
-				if(checkString(regname,"プレイヤ名",label2_3)){
-					if(checkString(regpass,"パスワード",label2_3)){
+				if(checkString(regname,"プレイヤ名",label2)){
+					if(checkString(regpass,"パスワード",label2)){
 						player.setName(regname);									//プレイヤ名保存
 						player.setPass(regpass);									//パスワード保存
 						sendMessage(dataID.get(command)+","+regname+","+regpass);	//サーバへ送信
@@ -1447,9 +1443,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	}
 	//背景が描画できる拡張パネル
 	public class ImagePanel extends JPanel {
-    	private BufferedImage image;
-    	public ImagePanel(File image) {
-        	try {
+		private BufferedImage image;
+		public ImagePanel(File image) {
+			try {
             	this.image = ImageIO.read(image);
         	}
         	catch (IOException e) {
@@ -1466,6 +1462,41 @@ public class Client extends JFrame implements MouseListener, ActionListener{
         	double sy = (panelHeight / imageHeight);
         	AffineTransform af = AffineTransform.getScaleInstance(sx, sy);
         	g2D.drawImage(image, af, this);
+    	}
+    }
+    //画像を表示できる拡張ボタン
+    public class ImageButton extends JButton {
+    	private BufferedImage image;//ボタンの背景画像
+    	private String label;//表示する文字列(表示したくなかったら""を渡す)
+    	private Color color;//文字色
+    	private float x,y;//文字列の先頭のボタン内の相対位置
+    	private int size;//文字の大きさ
+    	public ImageButton(String label, File image, Color color, float x, float y,int size) {
+    		this.color = color;
+    		this.label = label;
+    		this.x = x;
+    		this.y = y;
+    		this.size = size;
+        	try {
+            	this.image = ImageIO.read(image);
+        	}
+        	catch (IOException e) {
+            	this.image = null;
+        	}
+    	}
+    	public void paintComponent(Graphics g) {
+        	Graphics2D g2D = (Graphics2D)g;
+        	double imageWidth = image.getWidth();
+        	double imageHeight = image.getHeight();
+        	double panelWidth = this.getWidth();
+        	double panelHeight = this.getHeight();
+        	double sx = (panelWidth / imageWidth);
+        	double sy = (panelHeight / imageHeight);
+        	AffineTransform af = AffineTransform.getScaleInstance(sx, sy);
+        	g2D.drawImage(image, af, this);									//アスペクト比を調整して画像描画
+        	setForeground(color);											//文字色指定
+        	setFont(new Font(Font.SANS_SERIF,Font.BOLD,size));				//フォント指定
+        	g.drawString(label,(int)(getWidth()*x),(int)(getHeight()*y));	//文字列描画
     	}
     }
 	// メイン ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
