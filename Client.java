@@ -25,7 +25,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	final private int TABLE_W = 370, TABLE_H = 370;	//盤面の大きさ
 	final private String[] CLM = {"A","B","C","D","E","F","G","H"};//盤面の横軸
 	final private String[] ROW = {"1","2","3","4","5","6","7","8"};//盤面の縦軸
-	final private String RULE = "";					//遊び方
+	final private String RULE = "遊び方\n\n＊オセロのルール\n・黒が先攻、白が後攻です。\n・相手の石を挟める場所でないと打つことができません。\n・相手の石を挟むと相手の石がひっくり返り自分の石になります。\n・挟む方向は縦、横、斜めのいずれでも可能です。\n・どこにもおける場所がない場合パスになります。\n・お互いどこにも置ける場所が無くなった時に石の数が多いほうが勝ちとなります。\n\n＊メニューについて\n・対局する\n→通常対局とプライベート対局を選べます。\n→→通常対局はオンラインでランダムにマッチングした相手と対局します。\n→→プライベート対局ではパスワード付きの対局部屋を作成または入室して対局します。\n　　対局時間やチャット機能の有無について設定することができます。\n・観戦する\n→対局中の部屋のリストから好きな対局を選択し、他プレイヤーの対局を観戦することが\n　できます。\n→→対局に対してリアクションを送信することができます。\n・記録を見る\n→これまでの戦績の全記録やプレイヤーごとの対局記録を閲覧することができます。\n\n＊対局中について\n・盤面をクリックすることで石を置きます。置けない場所をクリックしても何も起きません。\n・石を置ける場所には赤い表示がされます。これは設定で消すことができます。\n・1分以内に石を置かないとパスになります。プライベート対局では時間を変更できます。\n・相手とチャットをすることができます。閲覧したくない場合はログ画面を閉じることが\n　できます。\n・投了すると負けとなり、対局を終了します。";//遊び方
 	final private String TITLE[] = {				//タイトル一覧
 		"ようこそ","ログイン","新規登録","メニュー",
 		"対局","マッチング中","対局","部屋の設定","マッチング中","部屋を選択","パスワード入力","対局",
@@ -678,14 +678,19 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	    panel[17].add(panel17_1, BorderLayout.CENTER);
 	    panel[17].add(panel17_4, BorderLayout.PAGE_END);
 		//遊び方表示画面
-		JLabel label18 = new JLabel(RULE);
-		JButton b181 = new JButton("OK");
-		b181.setSize(100,50);
+		JTextArea ruleArea = new JTextArea(30,100);
+		ruleArea.setText(RULE);
+		ruleArea.setEditable(false);
+		JScrollPane sp18 = new JScrollPane(ruleArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		sp18.setBounds(50,50,WIDTH-100,400);
+		ImageButton b181 = new ImageButton("戻る",buttonIcon1,20,false);
+		b181.setBounds(470,480,120,60);
 		b181.setActionCommand("Switch,3");
 		b181.addMouseListener(this);
 		panel[18] = new ImagePanel(backImage[18]);
 		panel[18].setSize(WIDTH,HEIGHT);
-		panel[18].add(label18);
+		panel[18].setLayout(null);
+		panel[18].add(sp18);
 		panel[18].add(b181);
 		/**********************************************************************************/
 		//初期画面描画
@@ -757,7 +762,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		//ログイン結果
 		if(command.equals("Login")){
 			if(msg.equals("true")){																//ログイン成功
-				showDialog("ログインしました");														//ダイアログの表示
+				showDialog(backImage[0]);															//ダイアログの表示
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
 			}
@@ -771,7 +776,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		//登録結果
 		else if(command.equals("Register")){
 			if(msg.equals("true")){										//登録許可
-				showDialog("登録しました");									//ダイアログの表示
+				showDialog(backImage[0]);									//ダイアログの表示
 				Operation = "Login,-1";										//ログインオペレーション実行
 				sendMessage(dataID.get("Login")+","+player.getName()+","+player.getPass());
 			}
@@ -810,7 +815,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				panelID = 11;												//対局画面へ
 			}
 			if(info[0].equals("false")){								//マッチング失敗
-				showDialog("マッチングに失敗しました");						//ダイアログの表示
+				showDialog(backImage[0]);									//ダイアログの表示
 				panelID = 4;												//ランダム・プライベート選択画面へ
 			}
 			switchDisplay();											//画面遷移
@@ -835,7 +840,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		//鍵部屋リスト
 		else if(command.equals("KeyroomList")){
 			if(msg.equals("no")){										//リストが無かったら
-				showDialog("現在 鍵部屋はありません");						//ダイアログ表示
+				showDialog(backImage[0]);									//ダイアログ表示
 				panelID = 6;												//部屋の作成・入室選択画面へ
 				switchDisplay();											//画面遷移
 			}
@@ -877,7 +882,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			}
 			if(info[0].equals("false")){								//入室失敗
 				resetRoom();												//部屋情報リセット
-				showDialog("入室に失敗しました");							//ダイアログの表示
+				showDialog(backImage[0]);									//ダイアログの表示
 				panelID = 3;												//メニュー画面へ
 			}
 			switchDisplay();											//画面遷移
@@ -885,7 +890,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		//観戦部屋リスト
 		else if(command.equals("WatchroomList")){
 			if(msg.equals("no")){										//リストが無かったら
-				showDialog("現在 観戦できる部屋はありません");				//ダイアログ表示
+				showDialog(backImage[0]);									//ダイアログ表示
 				panelID = 3;												//メニュー画面へ
 				switchDisplay();											//画面遷移
 			}
@@ -908,7 +913,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		else if(command.equals("EnterWatchroom")){
 			if(msg.equals("false")){									//入室失敗
 				resetRoom();												//部屋情報リセット
-				showDialog("入室に失敗しました");							//ダイアログの表示
+				showDialog(backImage[0]);									//ダイアログの表示
 				panelID = 3;												//メニュー画面へ
 			}
 			else{														//入室許可
@@ -983,22 +988,22 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					if(!player.isStand()){													//対局者の場合
 						if(result.equals("draw")) {								//引き分け
 							sendMessage(dataID.get("Finish")+",3");				//サーバに送信
-							showDialog("引き分け");								//ダイアログ表示
+							showDialog(backImage[0]);							//ダイアログ表示
 						}
 						if(result.equals(player.getColor())) {					//勝ち
 							sendMessage(dataID.get("Finish")+",1");				//サーバに送信
-							showDialog("あなたの勝ちです");						//ダイアログ表示
+							showDialog(backImage[0]);							//ダイアログ表示
 						}
 						else{													//負け
 							sendMessage(dataID.get("Finish")+",2");				//サーバに送信
-							showDialog("あなたの負けです");						//ダイアログ表示
+							showDialog(backImage[0]);							//ダイアログ表示
 						}
 					}
 					else{																	//観戦者の場合
 						sendMessage(dataID.get("GetoutWatchroom"));				//サーバに送信
-						if(result.equals("draw")) showDialog("引き分け");		//ダイアログ表示
-						if(result.equals("black")) showDialog("先手の勝ちです");//ダイアログ表示
-						else showDialog("後手の勝ちです");						//ダイアログ表示
+						if(result.equals("draw")) showDialog(backImage[0]);	//ダイアログ表示
+						if(result.equals("black")) showDialog(backImage[0]);	//ダイアログ表示
+						else showDialog(backImage[0]);							//ダイアログ表示
 					}
 					panelID = 3;																//メニュー画面へ
 					switchDisplay();															//画面遷移
@@ -1019,15 +1024,15 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					String result = othello.checkWinner();						//勝敗確認
 					if(result.equals("draw")) {									//引き分け
 						sendMessage(dataID.get("Finish")+",3");					//サーバに送信
-						showDialog("引き分け");									//ダイアログ表示
+						showDialog(backImage[0]);								//ダイアログ表示
 					}
 					if(result.equals(player.getColor())) {						//勝ち
 						sendMessage(dataID.get("Finish")+",1");					//サーバに送信
-						showDialog("あなたの勝ちです");							//ダイアログ表示
+						showDialog(backImage[0]);								//ダイアログ表示
 					}
 					else{														//負け
 						sendMessage(dataID.get("Finish")+",2");					//サーバに送信
-						showDialog("あなたの負けです");							//ダイアログ表示
+						showDialog(backImage[0]);								//ダイアログ表示
 					}
 					panelID = 3;												//メニュー画面へ
 					switchDisplay();											//画面遷移
@@ -1036,8 +1041,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			}
 			//投了受信
 			else if(info[0].equals(dataID.get("Giveup"))){
-				if(!player.isStand()) showDialog("対戦相手が投了しました");							//ダイアログ表示
-				else showDialog("対戦者が投了しました");											//ダイアログ表示
+				if(!player.isStand()) showDialog(backImage[0]);										//ダイアログ表示
+				else showDialog(backImage[0]);														//ダイアログ表示
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
 				resetRoom();																		//部屋情報リセット
@@ -1187,15 +1192,15 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 							String result = othello.checkWinner();						//勝敗確認
 							if(result.equals("draw")) {						//引き分け
 								sendMessage(dataID.get("Finish")+",3");		//サーバに送信
-								showDialog("引き分け");						//ダイアログ表示
+								showDialog(backImage[0]);					//ダイアログ表示
 							}
 							if(result.equals(player.getColor())) {			//勝ち
 								sendMessage(dataID.get("Finish")+",1");		//サーバに送信
-								showDialog("あなたの勝ちです");				//ダイアログ表示
+								showDialog(backImage[0]);					//ダイアログ表示
 							}
 							else{											//負け
 								sendMessage(dataID.get("Finish")+",2");		//サーバに送信
-								showDialog("あなたの負けです");				//ダイアログ表示
+								showDialog(backImage[0]);					//ダイアログ表示
 							}
 							panelID = 3;												//メニュー画面へ
 							switchDisplay();											//画面遷移
@@ -1221,7 +1226,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			//投了
 			case "Giveup":
 				sendMessage(dataID.get(command));															//サーバへ送信
-				showDialog("投了しました");																	//ダイアログ表示
+				showDialog(backImage[0]);																	//ダイアログ表示
 				panelID = 3;																				//メニュー画面へ
 				switchDisplay();																			//画面遷移
 				resetRoom();																				//部屋情報リセット
@@ -1447,22 +1452,19 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	}
 	//メッセージダイアログ
 	class MessageDialog extends JDialog implements ActionListener{
-		public MessageDialog(JFrame mainframe,String message){
+		public MessageDialog(JFrame mainframe, File image){
 			super(mainframe,"メッセージ",ModalityType.APPLICATION_MODAL);//モーダルに設定
-			this.setSize(300, 150);
 			this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			this.setResizable(false);
-			JLabel label = new JLabel(message);
-			label.setMaximumSize(new Dimension(300,FIELD_H));
-			JButton button = new JButton("OK");
+			ImagePanel panel = new ImagePanel(image);
+			panel.setSize(300,150);
+			panel.setBounds(0,0,300,150);
+			ImageButton button = new ImageButton("OK",buttonIcon2,16,false);
+			button.setBounds(75,50,90,40);
 			button.addActionListener(this);
-			JPanel subpanel = new JPanel();
-			subpanel.setMaximumSize(new Dimension(300,FIELD_H));
-			subpanel.add(button);
-			JPanel panel = new JPanel();
-			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-			panel.add(label);
-			panel.add(subpanel);
+			panel.setLayout(null);
+			panel.add(button);
+			this.setLayout(null);
 			this.add(panel);
 		}
 		public void actionPerformed(ActionEvent e) {
@@ -1470,8 +1472,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		}
 	}
 	//ダイアログの表示
-	public void showDialog(String str){
-		MessageDialog dialog = new MessageDialog(this,str);
+	public void showDialog(File file){
+		MessageDialog dialog = new MessageDialog(this,file);
+		dialog.setBounds(getBounds().x+WIDTH/2-150,getBounds().y+HEIGHT/2-75,300,150);
 		dialog.setVisible(true);
 	}
 	//背景が描画できる拡張パネル
