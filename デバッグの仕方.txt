@@ -1,13 +1,15 @@
-�f�o�b�O�̎d��
+デバッグの仕方
 
-�P�DGitHub�ɏオ���Ă���\�[�X�R�[�h���_�E�����[�h����
-�@�@(Player.java, Client.java, Server.java, Othello.java, matchroom.java, secretroom.java�̂U��)
-�Q�DGitHub�ɏオ���Ă���摜��S�ă_�E�����[�h���C�ӂ̏ꏊ�ɒu��
-�R�DClient.java��53�s�ځASRC_IMG���摜�̂���f�B���N�g���ւ̃p�X�ɏ���������B
-�S�D�C�ӂ̃f�B���N�g����PlayerData.txt�Ƃ������O�̃e�L�X�g�t�@�C�����쐬����(���ɂ���ꍇ�͕s�v)�B
-�T�DServer.java��48�s�ځAPlayerData��PlayerData.txt�ւ̃p�X�ɏ���������
+１．GitHubに上がっているソースコードをダウンロードする
+　　(Player.java, Client.java, Server.java, Othello.java, matchroom.java, secretroom.javaの６つ)
+２．GitHubに上がっている画像を全てダウンロードし任意の場所に置く
+３．Client.javaの53行目、SRC_IMGを画像のあるディレクトリへのパスに書き換える。
+４．任意のディレクトリにPlayerData.txtという名前のテキストファイルを作成する(既にある場合は不要)。
+５．Server.javaの48行目、PlayerDataをPlayerData.txtへのパスに書き換える
 
-�U�D�N�����ăf�o�b�O����
-�@�@Eclipse�̎d�l�͒m���
+６．起動してデバッグする
+　　Eclipseの仕様は知らん
 
-�V�D�o�O����������GitHub�ɂ���o�O�ꗗ�ɏ�������
+７．バグを見つけたらGitHubにあるバグ一覧に書き足す
+
+８．クライアントプログラムを修正したらクライアント.txtをバージョンアップさせるので、最新版かどうかはそこで確認して
