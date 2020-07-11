@@ -45,7 +45,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	private JComboBox<String> box7;					//コンボボックス
 	private JPanel tablePanel,playerPanel,reactPanel,logPanel,chatPanel;//盤面配置用パネル、対局者操作パネル、観戦者操作パネル、ログエリア表示パネル、チャット表示パネル
 	private ImageButton b11_1;							//パスボタン
-	private boolean pathFlag;						//パスフラグ
 	private JTextArea logArea;						//ログエリア
 	private JTextField chatField;					//チャットフィールド
 	private JLabel label11_1,label11_2,label11_4,label11_5,label11_6,label11_7,label11_8;//対局情報表示ラベル
@@ -55,11 +54,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	File gameIcon, standIcon, recordIcon, ruleIcon, logoutIcon;		//メニューボタン用アイコン
 	File buttonIcon1, buttonIcon2;									//その他ボタン用アイコン
 	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;			//盤面ボタン用アイコン
-	File[] backImage = new File[19];								//背景画像
+	File[] backImage = new File[19];								//フレーム背景画像
+	File dialogImage;
 	File SE_switch;													//音
 	//処理関連
 	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
+	private boolean pathFlag;												//パスフラグ
 	private int minutes, seconds;											//対局用経過時間
 	private HashMap<String,String> dataID = new HashMap<String,String>(20);	//コマンド・データ対応表
 	{dataID.put("Register","0");
@@ -71,6 +72,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	dataID.put("Giveup","23");
 	dataID.put("Finish","24");
 	dataID.put("Chat","25");
+	dataID.put("Disconnected","26");
 	dataID.put("TotalRecord","3");
 	dataID.put("IdRecord","4");
 	dataID.put("MakeKeyroom","5");
@@ -123,6 +125,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		backImage[16] = new File(SRC_IMG+"BACK_MENU.jpg");
 		backImage[17] = new File(SRC_IMG+"BACK_MENU.jpg");
 		backImage[18] = new File(SRC_IMG+"BACK_MENU.jpg");
+		dialogImage = new File(SRC_IMG+"BACK_DIALOG.jpg");
 		//音読み込み
 //		SE_switch = new File(SRC_SND+"keyboard1.wav");
 		//フレーム設定
@@ -744,6 +747,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				while(true) {
 					String inputLine = in.readUTF();			//バッファを読み込み
 					if (inputLine != null){						//データ受信したら
+						System.out.println(player.isOppose());
 						System.out.println("受信：" +inputLine);//テスト出力
 						receiveMessage(inputLine);				//処理
 					}
@@ -759,209 +763,211 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		String[] c = Operation.split(",",2);							//オペレーションをコマンドと付属情報に分解
 		String command = c[0];	//コマンド
 		String subc = c[1];		//付属情報
-		//ログイン結果
-		if(command.equals("Login")){
-			if(msg.equals("true")){																//ログイン成功
-				showDialog(backImage[0]);															//ダイアログの表示
-				panelID = 3;																		//メニュー画面へ
-				switchDisplay();																	//画面遷移
-			}
-			else{																				//ログイン失敗
-				if(msg.equals("name")) label1.setText("そのようなプレイヤ名は存在しません");		//メッセージ表示
-				if(msg.equals("pass")) label1.setText("パスワードが違います");						//メッセージ表示
-				player.setName(null);																//プレイヤ名リセット
-				player.setPass(null);																//パスワードリセット
-			}
-		}
-		//登録結果
-		else if(command.equals("Register")){
-			if(msg.equals("true")){										//登録許可
-				showDialog(backImage[0]);									//ダイアログの表示
-				Operation = "Login,-1";										//ログインオペレーション実行
-				sendMessage(dataID.get("Login")+","+player.getName()+","+player.getPass());
-			}
-			else{														//登録失敗
-				label2.setText("そのプレイヤ名は既に使われています");		//メッセージ表示
-				player.setName(null);										//プレイヤ名リセット
-				player.setPass(null);										//パスワードリセット
-			}
-		}
-		//ランダムマッチング結果
-		else if(command.equals("RandomMatch")){
-			String[] info = msg.split(",",3);
-			if(info[0].equals("true")){									//マッチング成功
-				if(info[2].equals("0")){									//先手だった場合
-					player.setColor("black");									//手番保存
-					othello.setBlackName(player.getName());						//先手名保存
-					label11_1.setText(player.getName());						//先手名表示
-					othello.setWhiteName(info[1]);								//後手名保存
-					label11_5.setText(info[1]);									//後手名表示
+		//対局情報以外
+		if(!player.isOppose()) {
+			//ログイン結果
+			if(command.equals("Login")){
+				if(msg.equals("true")){																//ログイン成功
+					showDialog("ログインしました");														//ダイアログの表示
+					panelID = 3;																		//メニュー画面へ
+					switchDisplay();																	//画面遷移
 				}
-				if(info[2].equals("1")){									//後手だった場合
+				else{																				//ログイン失敗
+					if(msg.equals("name")) label1.setText("そのようなプレイヤ名は存在しません");		//メッセージ表示
+					if(msg.equals("pass")) label1.setText("パスワードが違います");						//メッセージ表示
+					player.setName(null);																//プレイヤ名リセット
+					player.setPass(null);																//パスワードリセット
+				}
+			}
+			//登録結果
+			else if(command.equals("Register")){
+				if(msg.equals("true")){										//登録許可
+					showDialog("新規登録しました");								//ダイアログの表示
+					Operation = "Login,-1";										//ログインオペレーション実行
+					sendMessage(dataID.get("Login")+","+player.getName()+","+player.getPass());
+				}
+				else{														//登録失敗
+					label2.setText("そのプレイヤ名は既に使われています");		//メッセージ表示
+					player.setName(null);										//プレイヤ名リセット
+					player.setPass(null);										//パスワードリセット
+				}
+			}
+			//ランダムマッチング結果
+			else if(command.equals("RandomMatch")){
+				String[] info = msg.split(",",3);
+				if(info[0].equals("true")){									//マッチング成功
+					if(info[2].equals("0")){									//先手だった場合
+						player.setColor("black");									//手番保存
+						othello.setBlackName(player.getName());						//先手名保存
+						label11_1.setText(player.getName());						//先手名表示
+						othello.setWhiteName(info[1]);								//後手名保存
+						label11_5.setText(info[1]);									//後手名表示
+					}
+					if(info[2].equals("1")){									//後手だった場合
+						player.setColor("white");									//手番保存
+						othello.setBlackName(info[1]);								//先手名保存
+						label11_1.setText(info[1]);									//先手名表示
+						othello.setWhiteName(player.getName());						//後手名保存
+						label11_5.setText(player.getName());						//後手名表示
+						playerPanel.setVisible(false);								//操作無効化
+					}
+					player.beOppose(true);										//対局モードへ
+					reactPanel.setVisible(false);								//リアクションパネル無効化
+					player.setChat(true);										//チャットの有無保存
+					player.setTime(1);											//制限時間保存
+					updateTable();												//盤面表示
+					resetTimer();												//タイマーリセット
+					timer.start();												//タイマースタート
+					panelID = 11;												//対局画面へ
+				}
+				if(info[0].equals("false")){								//マッチング失敗
+					showDialog("マッチングに失敗しました");						//ダイアログの表示
+					panelID = 4;												//ランダム・プライベート選択画面へ
+				}
+				switchDisplay();											//画面遷移
+			}
+			//鍵部屋マッチング結果
+			else if(command.equals("MakeKeyroom")){
+				String[] info = msg.split(",",2);
+				player.beOppose(true);										//対局モードへ
+				player.setColor("black");									//手番保存
+				othello.setBlackName(player.getName());						//先手名保存
+				label11_1.setText(player.getName());						//先手名表示
+				othello.setWhiteName(info[1]);								//後手名保存
+				label11_5.setText(info[1]);									//後手名表示
+				updateTable();												//盤面表示
+				reactPanel.setVisible(false);								//リアクションパネル無効化
+				if(!player.getChat()) chatPanel.setVisible(false);			//チャット無ならチャットパネル無効化
+				resetTimer();												//タイマーリセット
+				timer.start();												//タイマースタート
+				panelID = 11;												//対局画面へ
+				switchDisplay();											//画面遷移
+			}
+			//鍵部屋リスト
+			else if(command.equals("KeyroomList")){
+				if(msg.equals("no")){										//リストが無かったら
+					showDialog("現在、入室できる部屋がありません");				//ダイアログ表示
+					panelID = 6;												//部屋の作成・入室選択画面へ
+					switchDisplay();											//画面遷移
+				}
+				else{														//リストがあれば
+					String[] keyroom = msg.split(",",0);
+					String[] info;	//部屋情報
+					String strchat;	//チャットの有無
+					listPanel9.removeAll();										//選択肢ボタンリセット
+					for(int i=0;i<keyroom.length;i++){							//選択肢ボタン生成
+						info = keyroom[i].split(Pattern.quote("."),4);
+						if(info[2].equals("true")) strchat = "あり";
+						else strchat = "なし";
+						JButton bi = new JButton("<html>作成者："+info[1]+"<br/>チャット："+strchat+" 制限時間："+info[3]+"分</html>");
+						bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
+						bi.addMouseListener(this);
+						listPanel9.add(bi);
+					}
+					panelID = 9;												//鍵部屋リスト表示画面へ
+					switchDisplay();											//画面遷移
+				}
+			}
+			//鍵部屋への入室
+			else if(command.equals("EnterKeyroom")){
+				String[] info = msg.split(",",2);
+				if(info[0].equals("true")){									//入室許可
+					player.beOppose(true);										//対局モードへ
 					player.setColor("white");									//手番保存
 					othello.setBlackName(info[1]);								//先手名保存
 					label11_1.setText(info[1]);									//先手名表示
 					othello.setWhiteName(player.getName());						//後手名保存
 					label11_5.setText(player.getName());						//後手名表示
+					updateTable();												//盤面表示
+					reactPanel.setVisible(false);								//リアクションパネル無効化
+					if(!player.getChat()) chatPanel.setVisible(false);			//チャット無ならチャットパネル無効化
 					playerPanel.setVisible(false);								//操作無効化
+					resetTimer();												//タイマーリセット
+					timer.start();												//タイマースタート
+					panelID = 11;												//対局画面へ
 				}
-				reactPanel.setVisible(false);								//リアクションパネル無効化
-				player.setChat(true);										//チャットの有無保存
-				player.setTime(1);											//制限時間保存
-				updateTable();												//盤面表示
-				resetTimer();												//タイマーリセット
-				timer.start();												//タイマースタート
-				Operation = "Game,-1";										//対局オペレーション実行
-				panelID = 11;												//対局画面へ
-			}
-			if(info[0].equals("false")){								//マッチング失敗
-				showDialog(backImage[0]);									//ダイアログの表示
-				panelID = 4;												//ランダム・プライベート選択画面へ
-			}
-			switchDisplay();											//画面遷移
-		}
-		//鍵部屋マッチング結果
-		else if(command.equals("MakeKeyroom")){
-			String[] info = msg.split(",",2);
-			player.setColor("black");									//手番保存
-			othello.setBlackName(player.getName());						//先手名保存
-			label11_1.setText(player.getName());						//先手名表示
-			othello.setWhiteName(info[1]);								//後手名保存
-			label11_5.setText(info[1]);									//後手名表示
-			updateTable();												//盤面表示
-			reactPanel.setVisible(false);								//リアクションパネル無効化
-			if(!player.getChat()) chatPanel.setVisible(false);			//チャット無ならチャットパネル無効化
-			resetTimer();												//タイマーリセット
-			timer.start();												//タイマースタート
-			Operation = "Game,-1";										//対局オペレーション実行
-			panelID = 11;												//対局画面へ
-			switchDisplay();											//画面遷移
-		}
-		//鍵部屋リスト
-		else if(command.equals("KeyroomList")){
-			if(msg.equals("no")){										//リストが無かったら
-				showDialog(backImage[0]);									//ダイアログ表示
-				panelID = 6;												//部屋の作成・入室選択画面へ
+				if(info[0].equals("false")){								//入室失敗
+					resetRoom();												//部屋情報リセット
+					showDialog("入室に失敗しました");							//ダイアログの表示
+					panelID = 6;												//メニュー画面へ
+				}
 				switchDisplay();											//画面遷移
 			}
-			else{														//リストがあれば
-				String[] keyroom = msg.split(",",0);
-				String[] info;	//部屋情報
-				String strchat;	//チャットの有無
-				listPanel9.removeAll();										//選択肢ボタンリセット
-				for(int i=0;i<keyroom.length;i++){							//選択肢ボタン生成
-					info = keyroom[i].split(Pattern.quote("."),4);
-					if(info[2].equals("true")) strchat = "あり";
-					else strchat = "なし";
-					JButton bi = new JButton("<html>作成者："+info[1]+"<br/>チャット："+strchat+" 制限時間："+info[3]+"分</html>");
-					bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
-					bi.addMouseListener(this);
-					listPanel9.add(bi);
+			//観戦部屋リスト
+			else if(command.equals("WatchroomList")){
+				if(msg.equals("no")){										//リストが無かったら
+					showDialog("現在、観戦できる部屋がありません");				//ダイアログ表示
+					panelID = 3;												//メニュー画面へ
+					switchDisplay();											//画面遷移
 				}
-				panelID = 9;												//鍵部屋リスト表示画面へ
+				else{														//リストがあったら
+					String[] room = msg.split(",",0);
+					String[] info;//部屋情報
+					listPanel12.removeAll();									//選択肢ボタンリセット
+					for(int i=0;i<room.length;i++){								//選択肢ボタン生成
+						info = room[i].split(Pattern.quote("."),5);
+						JButton bi = new JButton("<html>先手："+info[1]+" 後手："+info[2]+"<br/>黒石："+info[3]+" 白石："+info[4]+"</html>");
+						bi.setActionCommand("EnterWatchroom,"+room[i]);
+						bi.addMouseListener(this);
+						listPanel12.add(bi);
+					}
+					panelID = 12;												//観戦部屋リスト表示画面へ
+					switchDisplay();											//画面遷移
+				}
+			}
+			//観戦部屋への入室
+			else if(command.equals("EnterWatchroom")){
+				if(msg.equals("false")){									//入室失敗
+					resetRoom();												//部屋情報リセット
+					showDialog("入室に失敗しました");							//ダイアログの表示
+					panelID = 3;												//メニュー画面へ
+				}
+				else{														//入室許可
+					player.beOppose(true);										//対局モードへ
+					player.beStand(true);										//観戦モードへ
+					player.setAssist(false);									//アシスト無効化
+					playerPanel.setVisible(false);								//操作無効化
+					chatPanel.setVisible(false);								//チャットパネル無効化
+					player.setColor("black");									//手番保存
+					label11_1.setText(othello.getBlackName());					//先手名表示
+					label11_5.setText(othello.getWhiteName());					//後手名表示
+					String[] grids = msg.split(",");
+					for(int i=0;i<othello.getRow()*othello.getRow();i++){		//盤面変換
+						if(grids[i].equals("0")) grids[i] = "board";//空
+						if(grids[i].equals("1")) grids[i] = "black";//黒
+						if(grids[i].equals("2")) grids[i] = "white";//白
+					}
+					othello.setGrids(grids);									//盤面反映
+					updateTable();												//盤面更新
+					sendMessage(dataID.get("Reaction")+","+player.getName()+"が入室しました");
+					panelID = 11;												//観戦画面へ
+				}
 				switchDisplay();											//画面遷移
 			}
-		}
-		//鍵部屋への入室
-		else if(command.equals("EnterKeyroom")){
-			String[] info = msg.split(",",2);
-			if(info[0].equals("true")){									//入室許可
-				player.setColor("white");									//手番保存
-				othello.setBlackName(info[1]);								//先手名保存
-				label11_1.setText(info[1]);									//先手名表示
-				othello.setWhiteName(player.getName());						//後手名保存
-				label11_5.setText(player.getName());						//後手名表示
-				updateTable();												//盤面表示
-				reactPanel.setVisible(false);								//リアクションパネル無効化
-				if(!player.getChat()) chatPanel.setVisible(false);			//チャット無ならチャットパネル無効化
-				playerPanel.setVisible(false);								//操作無効化
-				resetTimer();												//タイマーリセット
-				timer.start();												//タイマースタート
-				Operation = "Game,-1";										//対局オペレーション実行
-				panelID = 11;												//対局画面へ
-			}
-			if(info[0].equals("false")){								//入室失敗
-				resetRoom();												//部屋情報リセット
-				showDialog(backImage[0]);									//ダイアログの表示
-				panelID = 3;												//メニュー画面へ
-			}
-			switchDisplay();											//画面遷移
-		}
-		//観戦部屋リスト
-		else if(command.equals("WatchroomList")){
-			if(msg.equals("no")){										//リストが無かったら
-				showDialog(backImage[0]);									//ダイアログ表示
-				panelID = 3;												//メニュー画面へ
+			//総合記録
+			else if(command.equals("TotalRecord")){
+				String[] info = msg.split(",",4);
+				label15_1.setText("勝ち数："+info[0]);						//記録表示
+				label15_2.setText("負け数："+info[1]);
+				label15_3.setText("引分数："+info[2]);
+				label15_4.setText("投了数："+info[3]);
+				panelID = 15;												//総合戦績画面へ
 				switchDisplay();											//画面遷移
 			}
-			else{														//リストがあったら
-				String[] room = msg.split(",",0);
-				String[] info;//部屋情報
-				listPanel12.removeAll();									//選択肢ボタンリセット
-				for(int i=0;i<room.length;i++){								//選択肢ボタン生成
-					info = room[i].split(Pattern.quote("."),5);
-					JButton bi = new JButton("<html>先手："+info[1]+" 後手："+info[2]+"<br/>黒石："+info[3]+" 白石："+info[4]+"</html>");
-					bi.setActionCommand("EnterWatchroom,"+room[i]);
-					bi.addMouseListener(this);
-					listPanel12.add(bi);
-				}
-				panelID = 12;												//観戦部屋リスト表示画面へ
+			//対人別記録
+			else if(command.equals("IdRecord")){
+				String[] info = msg.split(",",4);
+				label17_1.setText("勝ち数："+info[0]);						//記録表示
+				label17_2.setText("負け数："+info[1]);
+				label17_3.setText("引分数："+info[2]);
+				label17_4.setText("投了数："+info[3]);
+				panelID = 17;												//相手別戦績画面へ
 				switchDisplay();											//画面遷移
 			}
-		}
-		//観戦部屋への入室
-		else if(command.equals("EnterWatchroom")){
-			if(msg.equals("false")){									//入室失敗
-				resetRoom();												//部屋情報リセット
-				showDialog(backImage[0]);									//ダイアログの表示
-				panelID = 3;												//メニュー画面へ
-			}
-			else{														//入室許可
-				player.beStand(true);										//観戦モードへ
-				player.setAssist(false);									//アシスト無効化
-				playerPanel.setVisible(false);								//操作無効化
-				chatPanel.setVisible(false);								//チャットパネル無効化
-				player.setColor("black");									//手番保存
-				label11_1.setText(othello.getBlackName());					//先手名表示
-				label11_5.setText(othello.getWhiteName());					//後手名表示
-				String[] grids = msg.split(",");
-				for(int i=0;i<othello.getRow()*othello.getRow();i++){		//盤面変換
-					if(grids[i].equals("0")) grids[i] = "board";//空
-					if(grids[i].equals("1")) grids[i] = "black";//黒
-					if(grids[i].equals("2")) grids[i] = "white";//白
-				}
-				othello.setGrids(grids);									//盤面反映
-				updateTable();												//盤面更新
-				Operation = "Game,-1";										//対局オペレーション実行
-				sendMessage(dataID.get("Reaction")+","+player.getName()+"が入室しました");
-				panelID = 11;												//観戦画面へ
-			}
-			switchDisplay();											//画面遷移
-		}
-		//総合記録
-		else if(command.equals("TotalRecord")){
-			String[] info = msg.split(",",4);
-			label15_1.setText("勝ち数："+info[0]);						//記録表示
-			label15_2.setText("負け数："+info[1]);
-			label15_3.setText("引分数："+info[2]);
-			label15_4.setText("投了数："+info[3]);
-			panelID = 15;												//総合戦績画面へ
-			switchDisplay();											//画面遷移
-		}
-		//対人別記録
-		else if(command.equals("IdRecord")){
-			String[] info = msg.split(",",4);
-			label17_1.setText("勝ち数："+info[0]);						//記録表示
-			label17_2.setText("負け数："+info[1]);
-			label17_3.setText("引分数："+info[2]);
-			label17_4.setText("投了数："+info[3]);
-			panelID = 17;												//相手別戦績画面へ
-			switchDisplay();											//画面遷移
 		}
 		//対局(観戦)情報
-		else if(command.equals("Game")){
+		else if(player.isOppose()){
 			String[] info = msg.split(",",0);							//以下、受信内容で場合分け
-//			System.out.println("コマンドGame内で"+info[0]+"を受信");
 			//盤面・ログ受信
 			if(info[0].equals(dataID.get("Table"))){
 				String table = info[1];																//盤面取得
@@ -988,22 +994,22 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					if(!player.isStand()){													//対局者の場合
 						if(result.equals("draw")) {								//引き分け
 							sendMessage(dataID.get("Finish")+",3");				//サーバに送信
-							showDialog(backImage[0]);							//ダイアログ表示
+							showDialog("引き分け");								//ダイアログ表示
 						}
 						if(result.equals(player.getColor())) {					//勝ち
 							sendMessage(dataID.get("Finish")+",1");				//サーバに送信
-							showDialog(backImage[0]);							//ダイアログ表示
+							showDialog("あなたの勝ちです");						//ダイアログ表示
 						}
 						else{													//負け
 							sendMessage(dataID.get("Finish")+",2");				//サーバに送信
-							showDialog(backImage[0]);							//ダイアログ表示
+							showDialog("あなたの負けです");						//ダイアログ表示
 						}
 					}
 					else{																	//観戦者の場合
 						sendMessage(dataID.get("GetoutWatchroom"));				//サーバに送信
-						if(result.equals("draw")) showDialog(backImage[0]);	//ダイアログ表示
-						if(result.equals("black")) showDialog(backImage[0]);	//ダイアログ表示
-						else showDialog(backImage[0]);							//ダイアログ表示
+						if(result.equals("draw")) showDialog("引き分け");		//ダイアログ表示
+						if(result.equals("black")) showDialog(othello.getBlackName()+"の勝ちです");	//ダイアログ表示
+						else showDialog(othello.getWhiteName()+"の勝ちです");						//ダイアログ表示
 					}
 					panelID = 3;																//メニュー画面へ
 					switchDisplay();															//画面遷移
@@ -1024,15 +1030,15 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					String result = othello.checkWinner();						//勝敗確認
 					if(result.equals("draw")) {									//引き分け
 						sendMessage(dataID.get("Finish")+",3");					//サーバに送信
-						showDialog(backImage[0]);								//ダイアログ表示
+						showDialog("引き分け");									//ダイアログ表示
 					}
 					if(result.equals(player.getColor())) {						//勝ち
 						sendMessage(dataID.get("Finish")+",1");					//サーバに送信
-						showDialog(backImage[0]);								//ダイアログ表示
+						showDialog("あなたの勝ちです");							//ダイアログ表示
 					}
 					else{														//負け
 						sendMessage(dataID.get("Finish")+",2");					//サーバに送信
-						showDialog(backImage[0]);								//ダイアログ表示
+						showDialog("あなたの負けです");							//ダイアログ表示
 					}
 					panelID = 3;												//メニュー画面へ
 					switchDisplay();											//画面遷移
@@ -1041,8 +1047,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			}
 			//投了受信
 			else if(info[0].equals(dataID.get("Giveup"))){
-				if(!player.isStand()) showDialog(backImage[0]);										//ダイアログ表示
-				else showDialog(backImage[0]);														//ダイアログ表示
+				if(!player.isStand()) showDialog("対戦相手が投了しました");							//ダイアログ表示
+				else showDialog("投了");															//ダイアログ表示
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
 				resetRoom();																		//部屋情報リセット
@@ -1060,6 +1066,14 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				logArea.setEditable(true);															//リアクション反映
 				logArea.append("\n> "+reaction);
 				logArea.setEditable(false);
+			}
+			//切断受信
+			else if(info[0].equals(dataID.get("Disconnected"))){
+				if(!player.isStand()) showDialog("対戦相手が切断しました");							//ダイアログ表示
+				else showDialog("切断が行われました");												//ダイアログ表示
+				panelID = 3;																		//メニュー画面へ
+				switchDisplay();																	//画面遷移
+				resetRoom();																		//部屋情報リセット
 			}
 		}
 	}
@@ -1186,21 +1200,20 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 						resetTimer();															//タイマーリセット
 						timer.restart();														//タイマーリスタート
 						othello.changeTurn();													//ターン変更
-						Operation = "Game,-1";													//対局オペレーション実行
 						sendMessage(dataID.get(command)+","+table+","+log);						//サーバへ送信
 						if(othello.isGameover()) {												//決着がついたら
 							String result = othello.checkWinner();						//勝敗確認
 							if(result.equals("draw")) {						//引き分け
 								sendMessage(dataID.get("Finish")+",3");		//サーバに送信
-								showDialog(backImage[0]);					//ダイアログ表示
+								showDialog("引き分け");						//ダイアログ表示
 							}
 							if(result.equals(player.getColor())) {			//勝ち
 								sendMessage(dataID.get("Finish")+",1");		//サーバに送信
-								showDialog(backImage[0]);					//ダイアログ表示
+								showDialog("あなたの勝ちです");				//ダイアログ表示
 							}
 							else{											//負け
 								sendMessage(dataID.get("Finish")+",2");		//サーバに送信
-								showDialog(backImage[0]);					//ダイアログ表示
+								showDialog("あなたの負けです");				//ダイアログ表示
 							}
 							panelID = 3;												//メニュー画面へ
 							switchDisplay();											//画面遷移
@@ -1220,20 +1233,18 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				resetTimer();																				//タイマーリセット
 				timer.restart();																			//タイマーリスタート
 				othello.changeTurn();																		//手番変更
-				Operation = "Game,-1";																		//対局オペレーション実行
 				sendMessage(dataID.get(command));															//サーバへ送信
 				break;
 			//投了
 			case "Giveup":
 				sendMessage(dataID.get(command));															//サーバへ送信
-				showDialog(backImage[0]);																	//ダイアログ表示
+				showDialog("投了しました");																	//ダイアログ表示
 				panelID = 3;																				//メニュー画面へ
 				switchDisplay();																			//画面遷移
 				resetRoom();																				//部屋情報リセット
 				break;
 			//チャット
 			case "Chat":
-				Operation = "Game,-1";																		//対局オペレーション実行
 				String str = player.getName()+": "+chatField.getText();										//チャット内容読み取り
 				logArea.setEditable(true);																	//チャット反映
 				logArea.append("\n"+str);
@@ -1243,7 +1254,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//アシスト切替
 			case "Assist":
-				Operation = "Game,-1";																		//対局オペレーション実行
 				player.changeAssist();																		//アシスト切替
 				if(player.getAssist()==true) label11_7.setText("：ON");										//表示変更
 				if(player.getAssist()==false) label11_7.setText("：OFF");
@@ -1251,7 +1261,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//ログ表示切替
 			case "Showlog":
-				Operation = "Game,-1";																		//対局オペレーション実行
 				if(player.getShowlog()==true) {																//ONだったら
 					player.setShowlog(false);														//OFFにする
 					label11_8.setText("：OFF");														//表示変更
@@ -1320,7 +1329,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//リアクション
 			case "Reaction":
-				Operation = "Game,-1";										//対局オペレーション実行
 				String reaction = player.getName()+subc;					//リアクション変換
 				logArea.setEditable(true);									//リアクション反映
 				logArea.append("\n> "+reaction);
@@ -1345,7 +1353,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//ログアウト
 			case "Logout":
-//				sendMessage(dataID.get(command));							//サーバへ送信
 				player.setName(null);										//プレイヤ名リセット
 				player.setPass(null);										//パスワードリセット
 				panelID = 0;												//タイトル画面へ
@@ -1370,10 +1377,11 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		othello.resetGrids();				//盤面・ターンリセット
 		if(timer.isRunning()) timer.stop();	//タイマーストップ
 		resetTimer();						//タイマーリセット
+		player.beOppose(false);				//対局モード終了
+		player.beStand(false);				//観戦モード終了
 		//画面の初期化
 		logArea.setText("");				//ログエリアリセット
 		chatField.setText("");				//チャット入力欄リセット
-		player.beStand(false);				//観戦モード終了
 		playerPanel.setVisible(true);		//操作有効化
 		reactPanel.setVisible(true);		//リアクションパネル有効化
 		logPanel.setVisible(true);			//ログパネル有効化
@@ -1452,13 +1460,16 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	}
 	//メッセージダイアログ
 	class MessageDialog extends JDialog implements ActionListener{
-		public MessageDialog(JFrame mainframe, File image){
+		public MessageDialog(JFrame mainframe, String message){
 			super(mainframe,"メッセージ",ModalityType.APPLICATION_MODAL);//モーダルに設定
 			this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			this.setResizable(false);
-			ImagePanel panel = new ImagePanel(image);
+			ImagePanel panel = new ImagePanel(dialogImage);
 			panel.setSize(300,150);
 			panel.setBounds(0,0,300,150);
+			JLabel label = new JLabel(message);
+			label.setForeground(Color.WHITE);
+			label.setBounds(0,0,150,40);
 			ImageButton button = new ImageButton("OK",buttonIcon2,16,false);
 			button.setBounds(75,50,90,40);
 			button.addActionListener(this);
@@ -1472,8 +1483,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		}
 	}
 	//ダイアログの表示
-	public void showDialog(File file){
-		MessageDialog dialog = new MessageDialog(this,file);
+	public void showDialog(String message){
+		MessageDialog dialog = new MessageDialog(this,message);
 		dialog.setBounds(getBounds().x+WIDTH/2-150,getBounds().y+HEIGHT/2-75,300,150);
 		dialog.setVisible(true);
 	}
