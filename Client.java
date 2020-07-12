@@ -749,7 +749,15 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					if (inputLine != null){						//データ受信したら
 						System.out.println(player.isOppose());
 						System.out.println("受信：" +inputLine);//テスト出力
-						receiveMessage(inputLine);				//処理
+						try{
+							receiveMessage(inputLine);				//処理
+						}
+						catch (ArrayIndexOutOfBoundsException e){
+							System.out.println("受信データ処理中にエラーが発生しました: " + e);
+							panelID = 3;
+							switchDisplay();
+							resetRoom();
+						}
 					}
 				}
 			}
@@ -759,7 +767,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		}
 	}
 	//受信データの判別・処理
-	public void receiveMessage(String msg){
+	public void receiveMessage(String msg) throws ArrayIndexOutOfBoundsException {
 		String[] c = Operation.split(",",2);							//オペレーションをコマンドと付属情報に分解
 		String command = c[0];	//コマンド
 		String subc = c[1];		//付属情報
@@ -1465,15 +1473,19 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			this.setResizable(false);
 			ImagePanel panel = new ImagePanel(dialogImage);
-			panel.setSize(300,150);
+			panel.setSize(300,180);
 			panel.setBounds(0,0,300,150);
 			JLabel label = new JLabel(message);
 			label.setForeground(Color.WHITE);
-			label.setBounds(0,0,150,40);
+			Font font = new Font("ヒラギノ明朝W６",Font.BOLD,18);
+			label.setFont(font);
+			FontMetrics fm = label.getFontMetrics(font);
+			label.setBounds(150-fm.stringWidth(message)/2,40,300,fm.getHeight());
 			ImageButton button = new ImageButton("OK",buttonIcon2,16,false);
-			button.setBounds(75,50,90,40);
+			button.setBounds(150-45,90,90,40);
 			button.addActionListener(this);
 			panel.setLayout(null);
+			panel.add(label);
 			panel.add(button);
 			this.setLayout(null);
 			this.add(panel);
@@ -1485,7 +1497,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	//ダイアログの表示
 	public void showDialog(String message){
 		MessageDialog dialog = new MessageDialog(this,message);
-		dialog.setBounds(getBounds().x+WIDTH/2-150,getBounds().y+HEIGHT/2-75,300,150);
+		dialog.setBounds(getBounds().x+WIDTH/2-150,getBounds().y+HEIGHT/2-75,300+24,180+16);
 		dialog.setVisible(true);
 	}
 	//背景が描画できる拡張パネル
