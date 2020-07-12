@@ -36,7 +36,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	private Container pane;							//コンテナ
 	private ImagePanel[] panel = new ImagePanel[19];//画面パネル
 	private JPanel listPanel9,listPanel12;			//鍵部屋リスト表示用パネル、観戦部屋リスト表示用パネル
-	private JLabel label1, label2, label7_5, label10_2;	//入力情報照合結果表示ラベル
+	private JLabel label1, label2, label7_5, label10_2, label16_2;	//入力情報照合結果表示ラベル
 	private JLabel label15_1, label15_2, label15_3, label15_4;//総合戦績表示ラベル
 	private JLabel label17_1, label17_2, label17_3, label17_4;//対人別戦績表示ラベル
 	private JTextField field1, field2, passfield7, field16;		//テキスト入力フィールド
@@ -395,7 +395,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		label10_2.setFont(new Font(Font.SANS_SERIF,Font.BOLD,24));
 		label10_2.setForeground(Color.WHITE);
 		label10_2.setBounds(100,330,WIDTH,50);
-		ImageButton b101 = new ImageButton("決定",buttonIcon1,20,false);
+		ImageButton b101 = new ImageButton("OK",buttonIcon1,20,false);
 		b101.setBounds(320,480,120,60);
 		b101.setActionCommand("EnterKeyroom,-1");
 		b101.addMouseListener(this);
@@ -590,96 +590,113 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel[12].add(sp12);
 		panel[12].add(b121);
 		//記録選択画面
-		JButton b141 = new JButton("総合戦績");
-		b141.setMaximumSize(new Dimension(150,50));
+		ImageButton b141 = new ImageButton("総合戦績",buttonIcon2,28,false);
+		b141.setBounds(WIDTH/2-280,370,270,80);
 		b141.setActionCommand("TotalRecord,-1");
 		b141.addMouseListener(this);
-		JButton b142 = new JButton("対人戦績");
-		b142.setMaximumSize(new Dimension(150,50));
+		ImageButton b142 = new ImageButton("相手別戦績",buttonIcon2,28,false);
+		b142.setBounds(WIDTH/2+10,370,270,80);
 		b142.setActionCommand("Switch,16");
 		b142.addMouseListener(this);
-		JButton b143 = new JButton("戻る");
-		b143.setMaximumSize(new Dimension(150,50));
+		ImageButton b143 = new ImageButton("戻る",buttonIcon1,20,false);
+		b143.setBounds(470,480,120,60);
 		b143.setActionCommand("Switch,3");
 		b143.addMouseListener(this);
 		panel[14] = new ImagePanel(backImage[14]);
 		panel[14].setSize(WIDTH,HEIGHT);
-		panel[14].setLayout(new BoxLayout(panel[14], BoxLayout.Y_AXIS));
+		panel[14].setLayout(null);
 		panel[14].add(b141);
 		panel[14].add(b142);
 		panel[14].add(b143);
 		//総合成績画面
 		label15_1 = new JLabel("勝ち数：");
+		label15_1.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_1.setForeground(Color.WHITE);
+		label15_1.setBounds(50,200,250,100);
 		label15_2 = new JLabel("負け数：");
+		label15_2.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_2.setForeground(Color.WHITE);
+		label15_2.setBounds(360,200,250,100);
 		label15_3 = new JLabel("引分数：");
+		label15_3.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_3.setForeground(Color.WHITE);
+		label15_3.setBounds(50,350,250,100);
 		label15_4 = new JLabel("投了数：：");
-		JButton b151=new JButton("OK");
-		b151.setSize(100,50);
+		label15_4.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_4.setForeground(Color.WHITE);
+		label15_4.setBounds(360,350,250,100);
+		ImageButton b151 = new ImageButton("OK",buttonIcon1,20,false);
+		b151.setBounds(470,480,120,60);
 		b151.setActionCommand("Switch,14");
 		b151.addMouseListener(this);
-		JPanel panel15_2 = new JPanel();
-		panel15_2.add(label15_1);
-		panel15_2.add(label15_2);
-		JPanel panel15_3 = new JPanel();
-		panel15_3.add(label15_3);
-		panel15_3.add(label15_4);
-		JPanel panel15_4 = new JPanel();
-		FlowLayout layout15 = new FlowLayout();
-		layout15.setAlignment(FlowLayout.RIGHT);
-		panel15_4.setLayout(layout15);
-		panel15_4.add(b151);
-		JPanel panel15_1 = new JPanel();
-		panel15_1.setLayout(new BoxLayout(panel15_1, BoxLayout.Y_AXIS));
-		panel15_1.add(panel15_2);
-		panel15_1.add(panel15_3);
 		panel[15] = new ImagePanel(backImage[15]);
 		panel[15].setSize(WIDTH,HEIGHT);
-		panel[15].add(panel15_1, BorderLayout.CENTER);
-		panel[15].add(panel15_4, BorderLayout.PAGE_END);
+		panel[15].setLayout(null);
+		panel[15].add(label15_1);
+		panel[15].add(label15_2);
+		panel[15].add(label15_3);
+		panel[15].add(label15_4);
+		panel[15].add(b151);
 		//相手名入力画面
-		field16 = new JTextField("opponent");
-		field16.setMaximumSize(new Dimension(FIELD_W, FIELD_H));
-		JButton b161 = new JButton("OK");
-		b161.setSize(100,50);
+		JLabel label16_1 = new JLabel("相手名：");
+		label16_1.setFont(new Font(Font.SANS_SERIF,Font.BOLD,24));
+		label16_1.setForeground(Color.WHITE);
+		field16 = new JPasswordField(20);
+		field16.setFont(new Font(Font.SANS_SERIF,Font.BOLD,24));
+		field16.setSize(300,40);
+		label16_2 = new JLabel("");
+		label16_2.setFont(new Font(Font.SANS_SERIF,Font.BOLD,24));
+		label16_2.setForeground(Color.WHITE);
+		label16_2.setBounds(100,330,WIDTH,50);
+		ImageButton b161 = new ImageButton("OK",buttonIcon1,20,false);
+		b161.setBounds(320,480,120,60);
 		b161.setActionCommand("IdRecord,-1");
 		b161.addMouseListener(this);
-		JButton b162 = new JButton("戻る");
-		b162.setSize(100,50);
+		ImageButton b162 = new ImageButton("戻る",buttonIcon1,20,false);
+		b162.setBounds(470,480,120,60);
 		b162.setActionCommand("Switch,14");
 		b162.addMouseListener(this);
+		JPanel panel16_1 = new JPanel();
+		panel16_1.setBounds(0,280,WIDTH,50);
+		panel16_1.setOpaque(false);
+		panel16_1.add(label16_1);
+		panel16_1.add(field16);
 		panel[16] = new ImagePanel(backImage[16]);
 		panel[16].setSize(WIDTH,HEIGHT);
-		panel[16].add(field16);
+		panel[16].setLayout(null);
+		panel[16].add(panel16_1);
+		panel[16].add(label16_2);
 		panel[16].add(b161);
 		panel[16].add(b162);
 		//相手別戦績画面
 		label17_1 = new JLabel("勝ち数：");
+		label17_1.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label17_1.setForeground(Color.WHITE);
+		label17_1.setBounds(50,200,250,100);
 		label17_2 = new JLabel("負け数：");
+		label17_2.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label17_2.setForeground(Color.WHITE);
+		label17_2.setBounds(360,200,250,100);
 		label17_3 = new JLabel("引分数：");
+		label17_3.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label17_3.setForeground(Color.WHITE);
+		label17_3.setBounds(50,350,250,100);
 		label17_4 = new JLabel("投了数：：");
-		JButton b171=new JButton("OK");
-	    b171.setSize(100,50);
+		label17_4.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label17_4.setForeground(Color.WHITE);
+		label17_4.setBounds(360,350,250,100);
+		ImageButton b171 = new ImageButton("OK",buttonIcon1,20,false);
+		b171.setBounds(470,480,120,60);
 		b171.setActionCommand("Switch,16");
 		b171.addMouseListener(this);
-	    JPanel panel17_2 = new JPanel();
-	    panel17_2.add(label17_1);
-	    panel17_2.add(label17_2);
-	    JPanel panel17_3 = new JPanel();
-	    panel17_3.add(label17_3);
-	    panel17_3.add(label17_4);
-	    JPanel panel17_4 = new JPanel();
-	    FlowLayout layout17 = new FlowLayout();
-	    layout17.setAlignment(FlowLayout.RIGHT);
-	    panel17_4.setLayout(layout17);
-	    panel17_4.add(b171);
-	    JPanel panel17_1 = new JPanel();
-	    panel17_1.setLayout(new BoxLayout(panel17_1, BoxLayout.Y_AXIS));
-	    panel17_1.add(panel17_2);
-	    panel17_1.add(panel17_3);
-		panel[17] = new ImagePanel(backImage[17]);
+		panel[17] = new ImagePanel(backImage[15]);
 		panel[17].setSize(WIDTH,HEIGHT);
-	    panel[17].add(panel17_1, BorderLayout.CENTER);
-	    panel[17].add(panel17_4, BorderLayout.PAGE_END);
+		panel[17].setLayout(null);
+		panel[17].add(label17_1);
+		panel[17].add(label17_2);
+		panel[17].add(label17_3);
+		panel[17].add(label17_4);
+		panel[17].add(b171);
 		//遊び方表示画面
 		JTextArea ruleArea = new JTextArea(30,100);
 		ruleArea.setText(RULE);
@@ -1361,7 +1378,11 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//対人別記録要求
 			case "IdRecord":
-				sendMessage(dataID.get(command)+","+field16.getText());		//サーバへ送信
+				String nameOpponent = field16.getText();
+				if(checkString(nameOpponent,"相手の名前",label16_2)) {
+					sendMessage(dataID.get(command)+","+nameOpponent);		//サーバへ送信
+					break;
+				}
 				break;
 			//ログアウト
 			case "Logout":
