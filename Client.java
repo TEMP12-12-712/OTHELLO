@@ -763,6 +763,10 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			}
 			catch (IOException e){
 				System.err.println("データ受信時にエラーが発生しました: " + e);
+				Client.this.connectServer("localhost",10000);
+				panelID = 0;
+				switchDisplay();
+				resetRoom();
 			}
 		}
 	}
