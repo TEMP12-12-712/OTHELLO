@@ -191,6 +191,40 @@ public class matchroom {
 				}
 	}
 
+	public void sendgameout(String PN) {
+		if(PN.equals(PlayerName1)) {
+			if(PlayerName2 != null) {
+				try {
+					out2.writeUTF("26");	//クライアントに送信
+					System.out.println(PlayerName2 + "に「26」を送信");
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}else {
+				deletePN1();
+			}
+		}else {
+			try {
+				out1.writeUTF("26");	//クライアントに失敗を送信
+				System.out.println(PlayerName1 + "に「26」を送信");
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		//観客にも送る
+				for(int i = 0;i < 10; i++) {
+					if(watchdos[i] != null) {
+						try{
+							watchdos[i].writeUTF("26");
+							System.out.println("「26」を観客に送信");
+						}catch(IOException e) {
+							e.printStackTrace();
+							watchout(i);
+						}
+					}
+				}
+	}
+
 	public String sendfield() {
 		return grids;
 	}
@@ -213,6 +247,12 @@ public class matchroom {
 			socketNo++;
 			flag++;
 		}
+		try {
+			watchdos[watchNo].writeUTF(grids);
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+
 		return watchNo;
 	}
 

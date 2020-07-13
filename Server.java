@@ -19,6 +19,7 @@ import java.net.Socket;
   public static int srNo = 0;			//今newで作られた部屋数+1
   public static matchroom[] mr = new matchroom[1000];
   public static int mrNo = 0;			//今newで作られた部屋数+1
+  public static StringBuffer loginlist = new StringBuffer();
 
 
   public static void main(String args[]) {
@@ -62,7 +63,8 @@ class EchoThread extends Thread {
   }
 
   public void run() {
-    try {
+    while(true) {
+	  try {
     	in = new DataInputStream(socket.getInputStream());
 		out = new DataOutputStream(socket.getOutputStream());
     	while(true) {
@@ -84,8 +86,10 @@ class EchoThread extends Thread {
   		in.close();
         }
       } catch (IOException e) {}
-      System.out.println("切断されました "
+      	System.out.println("切断されました "
                          + socket.getRemoteSocketAddress());
+      	logout(PlayerName);
+    }
     }
   }
 
@@ -100,7 +104,7 @@ class EchoThread extends Thread {
 		  }
 		  break;
 
-	  case "1":		//ログイン|rogin
+	  case "1":		//ログイン|login
 		  Re = login(check[1], check[2]);		//成功true:プレイヤー名がないname:パスワードが違うpass
 		  break;
 
@@ -206,14 +210,23 @@ class EchoThread extends Thread {
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String str;
 				while((str = br.readLine()) != null) {
-					//System.out.println(str);
 					String[] check = str.split(",", 0);
-					//System.out.println(check[0]);
 					if(check[0].equals(PN)) {
 						judge = "pass";
 						if(check[1].equals(PW)) {
 							judge = "true";
-							PlayerName = PN;
+							if(!Server.loginlist.toString().equals("")) {
+								String checklogin[] = Server.loginlist.toString().split(",", 0);
+								for(int i = 0; i < checklogin.length; i++) {
+									if(checklogin[i].equals(PN)) {
+										judge = "login";
+									}
+								}
+							}
+							if(judge.equals("true")) {
+								PlayerName = PN;
+								Server.loginlist.append(PN + ",");
+							}
 						}
 					}
 				}
@@ -296,6 +309,18 @@ class EchoThread extends Thread {
 		}
 		newrecord(PlayerName, "4");
 	}
+
+	//ログアウトによる敗北
+		public void gameout() {
+			//もうひとりのプレイヤーと観客に投了したことを伝える
+			if(myroom == 1) {
+				Server.mr[myroomNo].sendgameout(PlayerName);
+			}else if(myroom == 2) {
+				Server.sr[myroomNo].sendgameout(PlayerName);
+			}
+			newrecord(PlayerName, "4");
+		}
+
 
 	//24:対局が終了
 	public void newrecord(String PN, String flag) {//flag = 1なら勝ち、2なら負け、3なら引き分け、4なら投了
@@ -443,7 +468,7 @@ class EchoThread extends Thread {
 					Server.srlist.append(Integer.toString(i) + "." + Server.sr[i].getlistData());
 				}
 			}
-			if(Server.srlist != null) {
+			if(!Server.srlist.toString().equals("")) {
 				str = Server.srlist.toString();
 				Server.srlist.delete(0, Server.srlist.length());
 			}
@@ -493,7 +518,7 @@ class EchoThread extends Thread {
 						+ Server.mr[i].getPN2() + "." + Integer.toString(black) + "." + Integer.toString(white) + ",");
 			}
 		}
-		if(Server.mrlist != null) {
+		if(!Server.mrlist.toString().equals("")) {
 			str = Server.mrlist.toString();
 			Server.mrlist.delete(0, Server.mrlist.length());
 		}
@@ -514,8 +539,27 @@ class EchoThread extends Thread {
 	//93観戦退室
 	public void watchout() {
 		Server.mr[myroomNo].watchout(watchNo);
+		watchNo = 1001;
 	}
 
+	public void logout(String PN) {
+		if(watchNo != 1001) {	//観戦なら観戦離脱
+				watchout();
+		}
+		else if(myroom != 0) {	//対戦部屋から離脱
+			gameout();
+		}
+		String[] look = Server.loginlist.toString().split(",", 0);
+		StringBuffer aa = new StringBuffer();
+		for(int i = 0; i < look.length; i++) {
+			if(look[i].equals(PN)) {
 
+			}
+			else {
+				aa.append(look[i]);
+			}
+		}
+		Server.loginlist = aa;		//ログイン者情報の修正
+	}
 
 }
