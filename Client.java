@@ -526,6 +526,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		logPanel.setBounds(20,TABLE_H+20,TABLE_W,170);
 		logPanel.setOpaque(false);
 		logArea = new JTextArea(8,34);
+		logArea.setFont(new Font(Font.SANS_SERIF,Font.BOLD,10));
 		logArea.setEditable(false);
 		JScrollPane sp = new JScrollPane(logArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		logPanel.setLayout(new FlowLayout());
@@ -699,6 +700,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel[17].add(b171);
 		//—V‚Ñ•û•\Ž¦‰æ–Ê
 		JTextArea ruleArea = new JTextArea(30,100);
+		ruleArea.setFont(new Font(Font.SANS_SERIF,Font.BOLD,12));
+		ruleArea.setBackground(new Color(0.1f,0.1f,0.1f));
+		ruleArea.setForeground(Color.WHITE);
 		ruleArea.setText(RULE);
 		ruleArea.setEditable(false);
 		JScrollPane sp18 = new JScrollPane(ruleArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
