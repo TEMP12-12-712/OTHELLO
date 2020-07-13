@@ -52,6 +52,7 @@ class EchoThread extends Thread {
   private int myroomNo = 1001;
   private int myroom = 0;	//0なら対戦してない、１ならマッチ、２なら鍵部屋マッチ
   private int watchNo = 1001;	//観戦しているときの番号
+  private boolean runflag = true;
   DataInputStream in;
   DataOutputStream out;
 
@@ -63,7 +64,7 @@ class EchoThread extends Thread {
   }
 
   public void run() {
-    while(true) {
+    while(runflag) {
 	  try {
     	in = new DataInputStream(socket.getInputStream());
 		out = new DataOutputStream(socket.getOutputStream());
@@ -89,7 +90,8 @@ class EchoThread extends Thread {
       	System.out.println("切断されました "
                          + socket.getRemoteSocketAddress());
       	logout(PlayerName);
-    }
+      	runflag = false;
+    	}
     }
   }
 
@@ -110,6 +112,10 @@ class EchoThread extends Thread {
 
 	  case "2":		//マッチング|match
 		  match();
+		  break;
+
+	  case "20":
+		  outmatch();
 		  break;
 
 	  case "21":		//盤面・ログの送信
@@ -279,6 +285,13 @@ class EchoThread extends Thread {
 		System.out.println(PlayerName + "," + myroomNo + ",ok");
 	}
 
+	//20:マッチングをやめる
+	public void outmatch() {
+		Server.mr[myroomNo].deletePN1();
+		myroom = 0;
+		myroomNo = 1001;
+	}
+
 
 	//21:盤面を送信する
 	public void field(String field, String log) {		//盤面を受信。対戦相手に送る
@@ -318,7 +331,7 @@ class EchoThread extends Thread {
 			}else if(myroom == 2) {
 				Server.sr[myroomNo].sendgameout(PlayerName);
 			}
-			newrecord(PlayerName, "4");
+			newrecord(PlayerName, "2");
 		}
 
 
@@ -384,7 +397,6 @@ class EchoThread extends Thread {
 		catch(IOException e){
 				e.printStackTrace();
 		}
-	//System.out.println(sb.toString());
 	//部屋のプレイヤー名を空にする。
 		if(myroom == 1) {
 			Server.mr[myroomNo].deletePN1();
@@ -456,6 +468,8 @@ class EchoThread extends Thread {
 	//6:鍵部屋からプレイヤーネームを削除
 	public void delete() {
 		Server.sr[myroomNo].deletePN1();
+		myroom = 0;
+		myroomNo = 0;
 	}
 
 	//7:鍵部屋リストの閲覧

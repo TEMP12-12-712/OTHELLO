@@ -11,10 +11,7 @@ public class matchroom {
 	private String grids;					//局面データ
 	private String PlayerName1 = null;		//プレイヤ１(先手)
 	private String PlayerName2 = null;		//プレイヤ２(後手)
-	//private Socket socket1, socket2;
 	private DataOutputStream out1 = null, out2 = null;
-	private String[] view;						//観戦者
-	//private Socket[] watchsocket = new Socket[10];
 	private DataOutputStream[] watchdos = new DataOutputStream[10];
 	private int socketNo = 0;		//観戦者のソケット配列の数
 	int flag;						//手番
@@ -39,35 +36,12 @@ public class matchroom {
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
-	/*		} finally {
-				try {
-					if (socket1 != null) {
-						socket1.close();
-					}else if(socket2 != null) {
-						socket2.close();
-					}
-				} catch (IOException e) {}
-				System.out.println("切断されました "
-	                         + socket1.getRemoteSocketAddress());
-			}
-	*/
 		}else {
 			try {
-				//out2 = new DataOutputStream(s.getOutputStream());
 				out2.writeUTF("false");	//クライアントに失敗を送信
-				//out2.close();
 			}catch (IOException e) {
 				e.printStackTrace();
-			}/*
-			finally {
-				try {
-					if (socket1 != null) {
-						socket1.close();
-					}else if(s != null) {
-						s.close();
-					}
-				} catch (IOException e) {}
-			}*/
+			}
 		}
 	}
 
@@ -92,7 +66,7 @@ public class matchroom {
 	}
 
 	public void deletewatcher() {
-		for(int i = 0;i < socketNo; i++) {
+		for(int i = 0;i < watchdos.length; i++) {
 			if(watchdos[i] != null) {
 				watchdos[i] = null;
 			}
@@ -193,6 +167,7 @@ public class matchroom {
 
 	public void sendgameout(String PN) {
 		if(PN.equals(PlayerName1)) {
+			deletePN1();
 			if(PlayerName2 != null) {
 				try {
 					out2.writeUTF("26");	//クライアントに送信
@@ -200,10 +175,9 @@ public class matchroom {
 				}catch (IOException e) {
 					e.printStackTrace();
 				}
-			}else {
-				deletePN1();
 			}
 		}else {
+			deletePN2();
 			try {
 				out1.writeUTF("26");	//クライアントに失敗を送信
 				System.out.println(PlayerName1 + "に「26」を送信");
