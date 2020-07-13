@@ -8,6 +8,7 @@ public class Player {
 	private int myTime = -1;//制限時間
 	private boolean myAssist = true;//アシストの有無
 	private boolean myShowlog = true;//ログ表示の有無
+	private boolean gaming = false;//対局モード
 	private boolean standing = false;//観戦モード
 
 	// メソッド
@@ -62,5 +63,11 @@ public class Player {
 	}
 	public boolean isStand(){
 		return standing;
+	}
+	public void beOppose(boolean opp){
+		gaming = opp;
+	}
+	public boolean isOppose(){
+		return gaming;
 	}
 }
