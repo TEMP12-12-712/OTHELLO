@@ -808,6 +808,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				else{																				//ログイン失敗
 					if(msg.equals("name")) label1.setText("そのようなプレイヤ名は存在しません");		//メッセージ表示
 					if(msg.equals("pass")) label1.setText("パスワードが違います");						//メッセージ表示
+					if(msg.equals("login")) label1.setText("そのユーザは既にログインされています");
 					player.setName(null);																//プレイヤ名リセット
 					player.setPass(null);																//パスワードリセット
 				}
@@ -1082,6 +1083,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			else if(info[0].equals(dataID.get("Giveup"))){
 				if(!player.isStand()) showDialog("対戦相手が投了しました");							//ダイアログ表示
 				else showDialog("投了");															//ダイアログ表示
+				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
 				resetRoom();																		//部屋情報リセット
@@ -1104,6 +1106,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			else if(info[0].equals(dataID.get("Disconnected"))){
 				if(!player.isStand()) showDialog("対戦相手が切断しました");							//ダイアログ表示
 				else showDialog("切断が行われました");												//ダイアログ表示
+				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
 				resetRoom();																		//部屋情報リセット
