@@ -1460,8 +1460,10 @@ public class Client extends JFrame implements MouseListener, ActionListener{
         	AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sound.getAbsoluteFile());
         	Clip clip = AudioSystem.getClip();
         	clip.open(audioInputStream);
+        	return clip;
     	} catch(Exception e) {
         	System.out.println("効果音生成時にエラーが発生しました："+e);
+        	return null;
     	}
 	}
 	// 表示 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
