@@ -53,7 +53,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	final private String SRC_SND = ".\\sounds\\";	//音へのパス
 	File gameIcon, standIcon, recordIcon, ruleIcon, logoutIcon;		//メニューボタン用アイコン
 	File buttonIcon1, buttonIcon2;									//その他ボタン用アイコン
-	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;			//盤面ボタン用アイコン
+	File whiteIcon, blackIcon, boardIcon, canPutIcon;				//盤面ボタン用アイコン
 	File[] backImage = new File[19];								//フレーム背景画像
 	File dialogImage;
 	Clip SE_switch, SE_put;											//効果音
@@ -103,10 +103,10 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		logoutIcon = new File(SRC_IMG+"BUTTON_LOGOUT.jpg");
 		buttonIcon1 = new File(SRC_IMG+"BUTTON_1.jpg");
 		buttonIcon2 = new File(SRC_IMG+"BUTTON_2.jpg");
-		whiteIcon = new ImageIcon(SRC_IMG+"White.jpg");
-		blackIcon = new ImageIcon(SRC_IMG+"Black.jpg");
-		boardIcon = new ImageIcon(SRC_IMG+"GreenFrame.jpg");
-		canPutIcon = new ImageIcon(SRC_IMG+"canPut.jpg");
+		whiteIcon = new File(SRC_IMG+"White.jpg");
+		blackIcon = new File(SRC_IMG+"Black.jpg");
+		boardIcon = new File(SRC_IMG+"GreenFrame.jpg");
+		canPutIcon = new File(SRC_IMG+"canPut.jpg");
 		backImage[0] = new File(SRC_IMG+"BACK_TITLE.jpg");
 		backImage[1] = new File(SRC_IMG+"BACK_LOGIN.jpg");
 		backImage[2] = new File(SRC_IMG+"BACK_LOGIN.jpg");
@@ -1478,23 +1478,23 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	}
 	//盤面更新(対局開始時・観戦開始時・石を置いた時・盤面受信時)
 	public boolean updateTable(){
-		boolean canPut = false;													//置けるフラグ
-		tablePanel.removeAll();													//ボタンを全て消去
-		othello.canPutGrids();													//置ける箇所を更新
-		JButton[] buttonArray = new JButton[othello.getRow()*othello.getRow()];		//ボタンの配列を作成
-		String[] grids = othello.getGrids();										//盤面取得
+		boolean canPut = false;																//置けるフラグ
+		tablePanel.removeAll();																//ボタンを全て消去
+		othello.canPutGrids();																//置ける箇所を更新
+		ImageButton[] buttonArray = new ImageButton[othello.getRow()*othello.getRow()];		//ボタンの配列を作成
+		String[] grids = othello.getGrids();												//盤面取得
 		for(int i=0;i<othello.getRow()*othello.getRow();i++){
-			if(grids[i].equals("board")) buttonArray[i] = new JButton(boardIcon);	//空
-			if(grids[i].equals("black")) buttonArray[i] = new JButton(blackIcon);	//黒
-			if(grids[i].equals("white")) buttonArray[i] = new JButton(whiteIcon);	//白
+			if(grids[i].equals("board")) buttonArray[i] = new ImageButton("",boardIcon,0,false);	//空
+			if(grids[i].equals("black")) buttonArray[i] = new ImageButton("",blackIcon,0,false);	//黒
+			if(grids[i].equals("white")) buttonArray[i] = new ImageButton("",whiteIcon,0,false);	//白
 			if(grids[i].equals("canPut")) {
-				if(player.getAssist()==true) buttonArray[i] = new JButton(canPutIcon);	//置ける箇所
-				if(player.getAssist()==false) buttonArray[i] = new JButton(boardIcon);	//空
-				canPut = true;															//置けるフラグを立てる
+				if(player.getAssist()==true) buttonArray[i] = new ImageButton("",canPutIcon,0,false);	//置ける箇所
+				if(player.getAssist()==false) buttonArray[i] = new ImageButton("",boardIcon,0,false);	//空
+				canPut = true;																//置けるフラグを立てる
 			}
 			int x = (i%othello.getRow())*45;
 			int y = (int) (i/othello.getRow())*45;
-			buttonArray[i].setBounds(x, y, 45, 45);
+			buttonArray[i].setBounds(x, y, 45, 45);			//位置
 			buttonArray[i].setActionCommand("Table,"+Integer.toString(i));
 			if(!player.isStand()) buttonArray[i].addMouseListener(this);		//観戦モードならアクションリスナーは無効
 			tablePanel.add(buttonArray[i]);
@@ -1589,6 +1589,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
         	double sy = (panelHeight / imageHeight);
         	AffineTransform af = AffineTransform.getScaleInstance(sx, sy);
         	g2D.drawImage(image, af, this);									//アスペクト比を調整して画像描画
+        	setBorderPainted(false);										//枠線なし
+        	setMargin(new Insets(0,0,0,0));									//余白なし
         	setForeground(Color.WHITE);										//文字色指定
         	Font font = new Font(Font.SANS_SERIF,Font.BOLD,size);			//フォント指定
         	g.setFont(font);
