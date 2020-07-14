@@ -76,21 +76,24 @@ class EchoThread extends Thread {
     			out.writeUTF(Return);	//クライアントに送信
     			System.out.println(Return);
     		}
-        	}
+        }
     } catch (IOException e) {
       e.printStackTrace();
+      runflag = false;
+      //System.out.println("aaaa");
+      logout(PlayerName);
     } finally {
       try {
         if (socket != null) {
-          socket.close();
-        out.close();
-  		in.close();
+        	out.close();
+        	in.close();
+        	socket.close();
         }
       } catch (IOException e) {}
       	System.out.println("切断されました "
                          + socket.getRemoteSocketAddress());
-      	logout(PlayerName);
-      	runflag = false;
+      	//System.out.println("bbbb");
+      	//runflag = false;
     	}
     }
   }
@@ -135,7 +138,7 @@ class EchoThread extends Thread {
 		  break;
 
 	  case "25":		//チャット
-		  chat(check[1]);
+		  chat(check[0], check[1]);
 		  break;
 
 	  case "3":		//対戦記録|record
@@ -166,9 +169,9 @@ class EchoThread extends Thread {
 		  watch(check[1]);
 		  break;
 
-	  case "92":		//リアクション|reaction
-		  //未定
-		  break;
+	 // case "92":		//リアクション|reaction
+		//  reaction
+	//	  break;
 
 	  default:
 
@@ -412,9 +415,9 @@ class EchoThread extends Thread {
 	}
 
 	//25:チャット
-	public void chat(String chat){
+	public void chat(String No, String chat){
 		if(myroom == 1) {
-			Server.mr[myroomNo].chat(PlayerName, chat);
+			Server.mr[myroomNo].chat(PlayerName, No, chat);
 		}else {
 			Server.sr[myroomNo].chat(PlayerName, chat);
 		}
@@ -496,7 +499,7 @@ class EchoThread extends Thread {
 		int No = Integer.parseInt(roomNo);
 		String password = Server.sr[No].getpass();
 		System.out.println(password +","+ pass);
-		if(pass.equals(password)) {
+		if(pass.equals(password) && Server.sr[No].getPN1() != null) {
 			myroomNo = No;
 			Server.sr[myroomNo].set2P(PlayerName, out);
 			myroom = 2;		//鍵部屋にいる状態
@@ -556,6 +559,7 @@ class EchoThread extends Thread {
 		watchNo = 1001;
 	}
 
+	//接続が切れたときの処理
 	public void logout(String PN) {
 		if(watchNo != 1001) {	//観戦なら観戦離脱
 				watchout();

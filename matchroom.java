@@ -66,7 +66,7 @@ public class matchroom {
 	}
 
 	public void deletewatcher() {
-		for(int i = 0;i < watchdos.length; i++) {
+		for(int i = 0;i < socketNo; i++) {
 			if(watchdos[i] != null) {
 				watchdos[i] = null;
 			}
@@ -105,18 +105,18 @@ public class matchroom {
 		}
 	}
 
-	public void chat(String PN, String chat) {//チャットの送信
+	public void chat(String PN,String No, String chat) {//チャットの送信
 		if(PN.equals(PlayerName2)) {
 			try {
-				out1.writeUTF("25," + chat);	//クライアントに送信
-				System.out.println(PlayerName1 + "に「25," + chat + "」を送信");
+				out1.writeUTF(No +"," + chat);	//クライアントに送信
+				System.out.println(PlayerName1 + "に「"+ No +"," + chat + "」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else {
 			try {
-				out2.writeUTF("25," + chat);	//クライアントに失敗を送信
-				System.out.println(PlayerName2 + "に「25," + chat + "」を送信");
+				out2.writeUTF(No + "," + chat);	//クライアントに失敗を送信
+				System.out.println(PlayerName2 + "に「"+ No +"," + chat + "」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -125,8 +125,8 @@ public class matchroom {
 		for(int i = 0;i < 10; i++) {
 			if(watchdos[i] != null) {
 				try{
-					watchdos[i].writeUTF("25," + chat);
-					System.out.println("観客に「25," + chat + "」を送信");
+					watchdos[i].writeUTF(No +"," + chat);
+					System.out.println("観客に「" + No + "," + chat + "」を送信");
 				}catch(IOException e) {
 					e.printStackTrace();
 					watchout(i);
