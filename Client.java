@@ -773,7 +773,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				while(true) {
 					String inputLine = in.readUTF();			//バッファを読み込み
 					if (inputLine != null){						//データ受信したら
-						System.out.println(player.isOppose());
 						System.out.println("受信：" +inputLine);//テスト出力
 						try{
 							receiveMessage(inputLine);				//処理
