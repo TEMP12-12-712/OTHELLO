@@ -50,13 +50,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	private JLabel label11_1,label11_2,label11_4,label11_5,label11_6,label11_7,label11_8;//対局情報表示ラベル
 	//素材
 	final private String SRC_IMG = ".\\img\\";		//画像へのパス
-//	final private String SRC_SND = ".\\sounds\\";	//音へのパス
+	final private String SRC_SND = ".\\sounds\\";	//音へのパス
 	File gameIcon, standIcon, recordIcon, ruleIcon, logoutIcon;		//メニューボタン用アイコン
 	File buttonIcon1, buttonIcon2;									//その他ボタン用アイコン
 	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;			//盤面ボタン用アイコン
 	File[] backImage = new File[19];								//フレーム背景画像
 	File dialogImage;
-	File SE_switch, SE_put;											//音
+	Clip SE_switch, SE_put;											//音
 	//処理関連
 	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
@@ -127,8 +127,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		backImage[18] = new File(SRC_IMG+"BACK_MENU.jpg");
 		dialogImage = new File(SRC_IMG+"BACK_DIALOG.jpg");
 		//音読み込み
-//		SE_switch = new File(SRC_SND+"keyboard1.wav");
-//		SE_put = new File(SRC_SND+"put1.wav");
+//		SE_switch = createClip("keyboard1.wav");
+//		SE_put = createClip("put1.wav");
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(WIDTH+24, HEIGHT+48);
@@ -1006,7 +1006,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			String[] info = msg.split(",",0);							//以下、受信内容で場合分け
 			//盤面・ログ受信
 			if(info[0].equals(dataID.get("Table"))){
-//				playSound(SE_put);																	//効果音再生
+//				SE_put.start();																		//効果音再生
 				String table = info[1];																//盤面取得
 				String[] grids = table.split(Pattern.quote("."),othello.getRow()*othello.getRow()); //盤面変換
 				for(int i=0;i<othello.getRow()*othello.getRow();i++){
@@ -1169,7 +1169,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		switch(command){													//以下、コマンドで場合分け
 			//画面遷移のみ
 			case "Switch":
-//				playSound(SE_switch);												//効果音再生
+//				SE_switch.start();													//効果音再生
 				panelID = Integer.parseInt(subc);
 				switchDisplay();
 				break;
@@ -1219,7 +1219,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					StringBuffer table = new StringBuffer("");//盤面
 					Boolean canPut = othello.putStone(grid,player.getColor(),true);						//石を置いてみる
 					if(canPut){																			//置けるマスなら
-//						playSound(SE_put);														//効果音再生
+//						SE_put.start();															//効果音再生
 						updateTable();															//盤面反映
 						String[] grids = othello.getGrids();									//盤面情報取得
 						for(int i=0;i<othello.getRow()*othello.getRow();i++){					//盤面情報変換
@@ -1453,15 +1453,15 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			return true;
 		}
 	}
-	//効果音再生
-	public void playSound(File sound) {
+	//効果音生成
+	public Clip createClip(String file) {
     	try {
+    		File sound = new File(SRC_SND+file);
         	AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sound.getAbsoluteFile());
         	Clip clip = AudioSystem.getClip();
         	clip.open(audioInputStream);
-        	clip.start();
     	} catch(Exception e) {
-        	System.out.println("効果音再生時にエラーが発生しました："+e);
+        	System.out.println("効果音生成時にエラーが発生しました："+e);
     	}
 	}
 	// 表示 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
