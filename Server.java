@@ -169,9 +169,9 @@ class EchoThread extends Thread {
 		  watch(check[1]);
 		  break;
 
-	 // case "92":		//リアクション|reaction
-		//  reaction
-	//	  break;
+	  case "92":		//リアクション|reaction
+		  chat(check[0], check[1]);
+		  break;
 
 	  default:
 
@@ -546,6 +546,7 @@ class EchoThread extends Thread {
 	public void watch(String roomNumber) {
 		watchNo = Server.mr[Integer.valueOf(roomNumber)].setwatcher(PlayerName, out);
 		myroomNo = Integer.parseInt(roomNumber);
+		myroom = 1;
 	}
 
 	//92:観客がリアクションを送る
@@ -557,6 +558,8 @@ class EchoThread extends Thread {
 	public void watchout() {
 		Server.mr[myroomNo].watchout(watchNo);
 		watchNo = 1001;
+		myroom = 0;
+		myroomNo = 1001;
 	}
 
 	//接続が切れたときの処理

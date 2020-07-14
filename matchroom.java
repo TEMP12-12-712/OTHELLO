@@ -7,8 +7,15 @@ public class matchroom {
 		PlayerName1 = PN1;
 		out1 = dos1;
 	}
-
-	private String grids;					//局面データ
+	//局面データ
+	private String grids = "0.0.0.0.0.0.0.0."
+			              + "0.0.0.0.0.0.0.0."
+			              + "0.0.0.0.0.0.0.0."
+			              + "0.0.0.1.2.0.0.0."
+			              + "0.0.0.2.1.0.0.0."
+			              + "0.0.0.0.0.0.0.0."
+			              + "0.0.0.0.0.0.0.0."
+			              + "0.0.0.0.0.0.0.0";
 	private String PlayerName1 = null;		//プレイヤ１(先手)
 	private String PlayerName2 = null;		//プレイヤ２(後手)
 	private DataOutputStream out1 = null, out2 = null;
@@ -113,11 +120,20 @@ public class matchroom {
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
-		}else {
+		}else if(PN.equals(PlayerName1)) {
 			try {
 				out2.writeUTF(No + "," + chat);	//クライアントに失敗を送信
 				System.out.println(PlayerName2 + "に「"+ No +"," + chat + "」を送信");
 			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}else {
+			try {
+				out1.writeUTF(No+","+chat);
+				System.out.println(PlayerName1 + "に「"+ No +"," + chat + "」を送信");
+				out2.writeUTF(No + "," + chat);	//クライアントに失敗を送信
+				System.out.println(PlayerName2 + "に「"+ No +"," + chat + "」を送信");
+			}catch(IOException e) {
 				e.printStackTrace();
 			}
 		}

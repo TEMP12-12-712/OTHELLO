@@ -145,7 +145,7 @@ public class secretroom{
 			}
 		}else {
 			try {
-				out2.writeUTF("23");	//クライアントに失敗を送信
+				out2.writeUTF("23");	
 				System.out.println(PlayerName2 +"に「23」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();
