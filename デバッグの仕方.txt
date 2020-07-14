@@ -1,15 +1,15 @@
-ãƒ‡ãƒãƒƒã‚°ã®ä»•æ–¹
+ƒfƒoƒbƒO‚ÌŽd•û
 
-ï¼‘ï¼ŽGitHubã«ä¸ŠãŒã£ã¦ã„ã‚‹ã‚½ãƒ¼ã‚¹ã‚³ãƒ¼ãƒ‰ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã™ã‚‹
-ã€€ã€€(Player.java, Client.java, Server.java, Othello.java, matchroom.java, secretroom.javaã®ï¼–ã¤)
-ï¼’ï¼ŽGitHubã«ä¸ŠãŒã£ã¦ã„ã‚‹ç”»åƒã‚’å…¨ã¦ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ä»»æ„ã®å ´æ‰€ã«ç½®ã
-ï¼“ï¼ŽClient.javaã®53è¡Œç›®ã€SRC_IMGã‚’ç”»åƒã®ã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã¸ã®ãƒ‘ã‚¹ã«æ›¸ãæ›ãˆã‚‹ã€‚
-ï¼”ï¼Žä»»æ„ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«PlayerData.txtã¨ã„ã†åå‰ã®ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹(æ—¢ã«ã‚ã‚‹å ´åˆã¯ä¸è¦)ã€‚
-ï¼•ï¼ŽServer.javaã®48è¡Œç›®ã€PlayerDataã‚’PlayerData.txtã¸ã®ãƒ‘ã‚¹ã«æ›¸ãæ›ãˆã‚‹
+‚PDGitHub‚Éã‚ª‚Á‚Ä‚¢‚éƒ\[ƒXƒR[ƒh‚ðƒ_ƒEƒ“ƒ[ƒh‚·‚é
+@@(Player.java, Client.java, Server.java, Othello.java, matchroom.java, secretroom.java‚Ì‚U‚Â)
+‚QDGitHub‚Éã‚ª‚Á‚Ä‚¢‚é‰æ‘œ‚ð‘S‚Äƒ_ƒEƒ“ƒ[ƒh‚µ”CˆÓ‚ÌêŠ‚É’u‚­
+‚RDClient.java‚Ì53s–ÚASRC_IMG‚ð‰æ‘œ‚Ì‚ ‚éƒfƒBƒŒƒNƒgƒŠ‚Ö‚ÌƒpƒX‚É‘‚«Š·‚¦‚é(––”ö‚É‚à\\‚ð‚Â‚¯‚é)
+‚SD”CˆÓ‚ÌƒfƒBƒŒƒNƒgƒŠ‚ÉPlayerData.txt‚Æ‚¢‚¤–¼‘O‚ÌƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚ðì¬‚·‚é(Šù‚É‚ ‚éê‡‚Í•s—v)
+‚TDServer.java‚Ì48s–ÚAPlayerData‚ðPlayerData.txt‚Ö‚ÌƒpƒX‚É‘‚«Š·‚¦‚é(ƒtƒ@ƒCƒ‹–¼‚Ü‚ÅŠÜ‚Þ)
 
-ï¼–ï¼Žèµ·å‹•ã—ã¦ãƒ‡ãƒãƒƒã‚°ã™ã‚‹
-ã€€ã€€Eclipseã®ä»•æ§˜ã¯çŸ¥ã‚‰ã‚“
+‚UD‹N“®‚µ‚ÄƒfƒoƒbƒO‚·‚é
+@@Eclipse‚ÌŽd—l‚Í’m‚ç‚ñ
 
-ï¼—ï¼Žãƒã‚°ã‚’è¦‹ã¤ã‘ãŸã‚‰GitHubã«ã‚ã‚‹ãƒã‚°ä¸€è¦§ã«æ›¸ãè¶³ã™
+‚VDƒoƒO‚ðŒ©‚Â‚¯‚½‚çGitHub‚É‚ ‚éƒoƒOˆê——‚É‘‚«‘«‚·
 
-æœ€æ–°ç‰ˆã‹ã©ã†ã‹ã¯ã€GitHubã®æ›´æ–°æ—¥æ™‚ã‚’ã¿ã¦ç¢ºèªã—ã¦ãã ã•ã„
+ƒNƒ‰ƒCƒAƒ“ƒgƒvƒƒOƒ‰ƒ€‚ðC³‚µ‚½‚çƒNƒ‰ƒCƒAƒ“ƒg.txt‚ðƒo[ƒWƒ‡ƒ“ƒAƒbƒv‚³‚¹‚é‚Ì‚ÅAÅV”Å‚©‚Ç‚¤‚©‚Í‚»‚±‚ÅŠm”F‚µ‚Ä
