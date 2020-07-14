@@ -56,7 +56,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;			//盤面ボタン用アイコン
 	File[] backImage = new File[19];								//フレーム背景画像
 	File dialogImage;
-	Clip SE_switch, SE_put;											//音
+	Clip SE_switch, SE_put;											//効果音
+	Clip BGM_menu, BGM_game;										//BGM
 	//処理関連
 	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
@@ -129,6 +130,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		//音読み込み
 //		SE_switch = createClip("keyboard1.wav");
 //		SE_put = createClip("put1.wav");
+//		BGM_menu = createClip("TwentyOne.wav");
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(WIDTH+24, HEIGHT+48);
@@ -723,6 +725,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panelID = 0;
 		switchDisplay();
 		resetRoom();
+//		BGM_menu.loop(0);
 	}
 	// 通信 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//サーバに接続
@@ -1372,9 +1375,6 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			//リアクション
 			case "Reaction":
 				String reaction = player.getName()+subc;					//リアクション変換
-				logArea.setEditable(true);									//リアクション反映
-				logArea.append("\n> "+reaction);
-				logArea.setEditable(false);
 				sendMessage(dataID.get(command)+","+reaction);				//サーバへ送信
 				break;
 			//観戦途中退出
