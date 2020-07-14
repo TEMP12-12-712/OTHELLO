@@ -50,13 +50,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	private JLabel label11_1,label11_2,label11_4,label11_5,label11_6,label11_7,label11_8;//対局情報表示ラベル
 	//素材
 	final private String SRC_IMG = ".\\img\\";		//画像へのパス
-	final private String SRC_SND = ".\\sounds\\";	//音へのパス
+//	final private String SRC_SND = ".\\sounds\\";	//音へのパス
 	File gameIcon, standIcon, recordIcon, ruleIcon, logoutIcon;		//メニューボタン用アイコン
 	File buttonIcon1, buttonIcon2;									//その他ボタン用アイコン
 	ImageIcon whiteIcon, blackIcon, boardIcon, canPutIcon;			//盤面ボタン用アイコン
 	File[] backImage = new File[19];								//フレーム背景画像
 	File dialogImage;
-	File SE_switch;													//音
+	File SE_switch, SE_put;											//音
 	//処理関連
 	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
@@ -128,6 +128,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		dialogImage = new File(SRC_IMG+"BACK_DIALOG.jpg");
 		//音読み込み
 //		SE_switch = new File(SRC_SND+"keyboard1.wav");
+//		SE_put = new File(SRC_SND+"put1.wav");
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(WIDTH+24, HEIGHT+48);
@@ -227,7 +228,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		b32.addMouseListener(this);
 		ImageButton b33 = new ImageButton("記録を見る",recordIcon,36,true);
 		b33.setBounds(WIDTH/5, HEIGHT/28*12, WIDTH/5*3, HEIGHT/7);
-		b33.setActionCommand("Switch,14");
+		b33.setActionCommand("TotalRecord,-1");
 		b33.addMouseListener(this);
 		ImageButton b34 = new ImageButton("遊び方",ruleIcon,36,true);
 		b34.setBounds(WIDTH/5, HEIGHT/28*17, WIDTH/5*3, HEIGHT/7);
@@ -629,7 +630,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		label15_4.setBounds(360,350,250,100);
 		ImageButton b151 = new ImageButton("OK",buttonIcon1,20,false);
 		b151.setBounds(470,480,120,60);
-		b151.setActionCommand("Switch,14");
+		b151.setActionCommand("Switch,3");
 		b151.addMouseListener(this);
 		panel[15] = new ImagePanel(backImage[15]);
 		panel[15].setSize(WIDTH,HEIGHT);
@@ -913,7 +914,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					label11_1.setText(info[1]);									//先手名表示
 					othello.setWhiteName(player.getName());						//後手名保存
 					label11_5.setText(player.getName());						//後手名表示
-					updateTable();												//盤面表示
+					updateTable();												//盤面更新
 					reactPanel.setVisible(false);								//リアクションパネル無効化
 					if(!player.getChat()) chatPanel.setVisible(false);			//チャット無ならチャットパネル無効化
 					playerPanel.setVisible(false);								//操作無効化
@@ -966,7 +967,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					player.setColor("black");									//手番保存
 					label11_1.setText(othello.getBlackName());					//先手名表示
 					label11_5.setText(othello.getWhiteName());					//後手名表示
-					String[] grids = msg.split(",");
+					String[] grids = msg.split(Pattern.quote("."),0);
 					for(int i=0;i<othello.getRow()*othello.getRow();i++){		//盤面変換
 						if(grids[i].equals("0")) grids[i] = "board";//空
 						if(grids[i].equals("1")) grids[i] = "black";//黒
@@ -1005,6 +1006,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			String[] info = msg.split(",",0);							//以下、受信内容で場合分け
 			//盤面・ログ受信
 			if(info[0].equals(dataID.get("Table"))){
+//				playSound(SE_put);																	//効果音再生
 				String table = info[1];																//盤面取得
 				String[] grids = table.split(Pattern.quote("."),othello.getRow()*othello.getRow()); //盤面変換
 				for(int i=0;i<othello.getRow()*othello.getRow();i++){
@@ -1021,9 +1023,11 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				logArea.setEditable(true);															//ログ反映
 				logArea.append("\n"+log);
 				logArea.setEditable(false);
-				playerPanel.setVisible(true);														//操作有効化
-				resetTimer();																		//タイマーリセット
-				timer.restart();																	//タイマーリスタート
+				if(!player.isStand()) {
+					playerPanel.setVisible(true);													//操作有効化
+					resetTimer();																	//タイマーリセット
+					timer.restart();																//タイマーリスタート
+				}
 				if(othello.isGameover()) {															//決着がついたら
 					String result = othello.checkWinner();										//勝敗確認
 					if(!player.isStand()){													//対局者の場合
@@ -1215,6 +1219,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					StringBuffer table = new StringBuffer("");//盤面
 					Boolean canPut = othello.putStone(grid,player.getColor(),true);						//石を置いてみる
 					if(canPut){																			//置けるマスなら
+//						playSound(SE_put);														//効果音再生
 						updateTable();															//盤面反映
 						String[] grids = othello.getGrids();									//盤面情報取得
 						for(int i=0;i<othello.getRow()*othello.getRow();i++){					//盤面情報変換
