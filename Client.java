@@ -587,6 +587,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		sp12.setMaximumSize(new Dimension(WIDTH-200,HEIGHT-200));
 		sp12.setBounds(100,50,WIDTH-200,HEIGHT-200);
 		panel[12] = new ImagePanel(backImage[12]);
+		panel[12].setSize(WIDTH,HEIGHT);
 		panel[12].setLayout(null);
 		panel[12].add(sp12);
 		panel[12].add(b121);
