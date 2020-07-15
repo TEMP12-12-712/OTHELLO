@@ -116,10 +116,10 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		backImage[4] = new File(SRC_IMG+"BACK_SELECTMATCH.jpg");
 		backImage[5] = new File(SRC_IMG+"BACK_RANDOMWAIT.jpg");
 		backImage[6] = new File(SRC_IMG+"BACK_SELECTHOW.jpg");
-		backImage[7] = new File(SRC_IMG+"BACK_MENU.jpg");
+		backImage[7] = new File(SRC_IMG+"BACK_KEYROOMSET.jpg");
 		backImage[8] = new File(SRC_IMG+"BACK_KEYROOMWAIT.jpg");
 		backImage[9] = new File(SRC_IMG+"BACK_MENU.jpg");
-		backImage[10] = new File(SRC_IMG+"BACK_MENU.jpg");
+		backImage[10] = new File(SRC_IMG+"BACK_KEYROOMPASS.jpg");
 		backImage[11] = new File(SRC_IMG+"BACK_GAME.jpg");
 		backImage[12] = new File(SRC_IMG+"BACK_MENU.jpg");
 		backImage[13] = new File(SRC_IMG+"BACK_MENU.jpg");
@@ -136,7 +136,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 //		BGM_menu = createClip("TwentyOne.wav");
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(WIDTH+24, HEIGHT+48);
+		//setSize(WIDTH+24, HEIGHT+48);
+		setSize(WIDTH, HEIGHT);
 		setResizable(false);
 		//ペイン設定
 		pane = getContentPane();
