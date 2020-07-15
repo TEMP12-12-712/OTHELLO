@@ -36,7 +36,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	};
 	private Container pane;							//コンテナ
 	private ImagePanel[] panel = new ImagePanel[19];//画面パネル
-	private JPanel listPanel9,listPanel12;			//鍵部屋リスト表示用パネル、観戦部屋リスト表示用パネル
+	private ImagePanel listPanel9,listPanel12;		//鍵部屋リスト表示用パネル、観戦部屋リスト表示用パネル
 	private JLabel label1, label2, label7_5, label10_2, label16_2;	//入力情報照合結果表示ラベル
 	private JLabel label15_1, label15_2, label15_3, label15_4;//総合戦績表示ラベル
 	private JLabel label17_1, label17_2, label17_3, label17_4;//対人別戦績表示ラベル
@@ -56,7 +56,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	File buttonIcon1, buttonIcon2;									//その他ボタン用アイコン
 	File whiteIcon, blackIcon, boardIcon, canPutIcon;				//盤面ボタン用アイコン
 	File[] backImage = new File[19];								//フレーム背景画像
-	File dialogImage;
+	File listImage;													//リスト表示用パネル背景画像
+	File dialogImage;												//ダイアログ背景画像
 	Clip SE_switch, SE_put;											//効果音
 	Clip BGM_menu, BGM_game;										//BGM
 	//処理関連
@@ -123,10 +124,11 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		backImage[12] = new File(SRC_IMG+"BACK_MENU.jpg");
 		backImage[13] = new File(SRC_IMG+"BACK_MENU.jpg");
 		backImage[14] = new File(SRC_IMG+"BACK_MENU.jpg");
-		backImage[15] = new File(SRC_IMG+"BACK_MENU.jpg");
+		backImage[15] = new File(SRC_IMG+"BACK_RECORD.jpg");
 		backImage[16] = new File(SRC_IMG+"BACK_MENU.jpg");
 		backImage[17] = new File(SRC_IMG+"BACK_MENU.jpg");
 		backImage[18] = new File(SRC_IMG+"BACK_MENU.jpg");
+		listImage = new File(SRC_IMG+"BACK_LISTPANEL.jpg");
 		dialogImage = new File(SRC_IMG+"BACK_DIALOG.jpg");
 		//音読み込み
 //		SE_switch = createClip("keyboard1.wav");
@@ -373,9 +375,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel[8].setLayout(null);
 		panel[8].add(b81);
 		//鍵部屋選択画面
-		listPanel9 = new JPanel();
+		listPanel9 = new ImagePanel(listImage);
 		listPanel9.setMinimumSize(new Dimension(WIDTH-200,HEIGHT-200));
-		listPanel9.setLayout(new BoxLayout(listPanel9,BoxLayout.Y_AXIS));
+		listPanel9.setLayout(null);
 		ImageButton b91 = new ImageButton("戻る",buttonIcon1,20,false);
 		b91.setBounds(470,480,120,60);
 		b91.setActionCommand("Switch,6");
@@ -580,9 +582,9 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		panel[11].add(chatPanel);
 		othello.resetGrids();
 		//観戦部屋選択画面
-		listPanel12 = new JPanel();
+		listPanel12 = new ImagePanel(listImage);
 		listPanel12.setMinimumSize(new Dimension(WIDTH-200,HEIGHT-200));
-		listPanel12.setLayout(new BoxLayout(listPanel12,BoxLayout.Y_AXIS));
+		listPanel12.setLayout(null);
 		ImageButton b121 = new ImageButton("戻る",buttonIcon1,20,false);
 		b121.setBounds(470,480,120,60);
 		b121.setActionCommand("Switch,3");
@@ -898,7 +900,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 						info = keyroom[i].split(Pattern.quote("."),4);
 						if(info[2].equals("true")) strchat = "あり";
 						else strchat = "なし";
-						JButton bi = new JButton("<html>作成者："+info[1]+"<br/>チャット："+strchat+" 制限時間："+info[3]+"分</html>");
+						ImageButton bi = new ImageButton("作成者："+info[1]+" チャット："+strchat+" 制限時間："+info[3]+"分",buttonIcon1,12,false);
+						bi.setBounds(0,50*i,WIDTH-220,50);
 						bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
 						bi.addMouseListener(this);
 						listPanel9.add(bi);
@@ -945,7 +948,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					listPanel12.removeAll();									//選択肢ボタンリセット
 					for(int i=0;i<room.length;i++){								//選択肢ボタン生成
 						info = room[i].split(Pattern.quote("."),5);
-						JButton bi = new JButton("<html>先手："+info[1]+" 後手："+info[2]+"<br/>黒石："+info[3]+" 白石："+info[4]+"</html>");
+						ImageButton bi = new ImageButton("先手："+info[1]+" 後手："+info[2]+" 黒石："+info[3]+" 白石："+info[4],buttonIcon1,12,false);
+						bi.setBounds(0,50*i,WIDTH-220,50);
 						bi.setActionCommand("EnterWatchroom,"+room[i]);
 						bi.addMouseListener(this);
 						listPanel12.add(bi);
@@ -1553,8 +1557,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			try {
             	this.image = ImageIO.read(image);
         	}
-        	catch (IOException e) {
+        	catch (IllegalArgumentException e) {
+        		System.out.println("画像のバッファリングに失敗しました："+e);
             	this.image = null;
+        	}
+        	catch (IOException e){
+				System.out.println("画像の読み込み時にエラーが発生しました："+e);
+				this.image = null;
         	}
     	}
     	public void paintComponent(Graphics g) {
