@@ -5,6 +5,7 @@ import javax.imageio.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -425,7 +426,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		tablePanel.setLayout(null);
 		JLabel columnNumber = new JLabel(CLM[0]+"　　"+CLM[1]+"　　"+CLM[2]+"　　"+CLM[3]+"　　"+CLM[4]+"　　"+CLM[5]+"　　"+CLM[6]+"　　"+CLM[7]);//列番号の表示
 		columnNumber.setBounds(35, 0, TABLE_W, FIELD_H);
-		columnNumber.setFont(new Font(Font.SANS_SERIF,Font.BOLD,18));
+		columnNumber.setFont(new Font(Font.SANS_SERIF,Font.BOLD,17));
 		columnNumber.setForeground(Color.WHITE);
 		JLabel rowNumber = new JLabel("<html>"+ROW[0]+"<br/><br/>"+ROW[1]+"<br/><br/>"+ROW[2]+"<br/><br/>"+ROW[3]+"<br/><br/>"+ROW[4]+"<br/><br/>"+ROW[5]+"<br/><br/>"+ROW[6]+"<br/><br/>"+ROW[7]+"</html>");//行番号の表示
 		rowNumber.setBounds(7, 15, FIELD_W, TABLE_H);
@@ -1127,8 +1128,14 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		Operation = button.getActionCommand();				//実行オペレーション特定
 		acceptOperation(Operation);							//処理
 	}
-	public void mouseEntered(MouseEvent e) {}
-	public void mouseExited(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {
+		ImageButton button = (ImageButton)e.getComponent();
+		button.entered();
+	}
+	public void mouseExited(MouseEvent e) {
+		ImageButton button = (ImageButton)e.getComponent();
+		button.exited();
+	}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
 	//タイムリスナー
@@ -1564,11 +1571,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
     }
     //画像を表示できる拡張ボタン
     public class ImageButton extends JButton {
+    	private boolean isMouse;
     	private BufferedImage image;	//ボタンの背景画像
     	private String label;			//表示する文字列(表示したくなかったら""を渡す)
     	private int size;				//文字の大きさ
     	boolean isMenu;					//メニューボタンならtrue
     	public ImageButton(String label, File image, int size, boolean isMenu) {
+    		isMouse = false;
     		this.label = label;
     		this.size = size;
     		this.isMenu = isMenu;
@@ -1581,19 +1590,21 @@ public class Client extends JFrame implements MouseListener, ActionListener{
     	}
     	public void paintComponent(Graphics g) {
         	Graphics2D g2D = (Graphics2D)g;
-        	double imageWidth = image.getWidth();
+        	double imageWidth = image.getWidth();							//画像の大きさ取得
         	double imageHeight = image.getHeight();
-        	double panelWidth = this.getWidth();
-        	double panelHeight = this.getHeight();
-        	double sx = (panelWidth / imageWidth);
-        	double sy = (panelHeight / imageHeight);
+        	double sx = (getWidth() / imageWidth);							//比率計算
+        	double sy = (getHeight() / imageHeight);
         	AffineTransform af = AffineTransform.getScaleInstance(sx, sy);
-        	g2D.drawImage(image, af, this);									//アスペクト比を調整して画像描画
+        	g2D.drawImage(image, af, this);									//比率を調整して画像描画
+        	if(isMouse){													//マウスが中にいたら強調
+        		g2D.setColor(new Color(1.0f,1.0f,1.0f,0.5f));
+				g2D.draw(new Rectangle(0,0,getWidth(),getHeight()));
+        	}
         	setBorderPainted(false);										//枠線なし
         	setMargin(new Insets(0,0,0,0));									//余白なし
         	setForeground(Color.WHITE);										//文字色指定
         	Font font = new Font(Font.SANS_SERIF,Font.BOLD,size);			//フォント指定
-        	g.setFont(font);
+        	g.setFont(font);												//以下、文字の描画
         	if(isMenu){
         		g.drawString(label,(int)(getWidth()*0.35),(int)(getHeight()*0.6));
         	}
@@ -1601,7 +1612,15 @@ public class Client extends JFrame implements MouseListener, ActionListener{
         		FontMetrics fm = g.getFontMetrics(font);
 				g.drawString(label,(int)(getWidth()*0.5-fm.stringWidth(label)*0.5),(int)(getHeight()*0.5+fm.getHeight()*0.3));
         	}
-    	}
+        }
+        public void entered(){
+    		isMouse = true;
+    		repaint();
+		}
+		public void exited(){
+			isMouse = false;
+			repaint();
+		}
     }
 	// メイン ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String args[]){
