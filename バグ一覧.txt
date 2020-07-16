@@ -16,3 +16,4 @@
 〇サインアウトしてすぐにログインしようとするとすでにログインされていると出る
 12時9分に更新したクライアントプログラムで実行するとException in thread "AWT-EventQueue-0" java.lang.NullPointerException	at Client$ImagePanel.paintComponent(Client.java:1602)が出る
 〇記録を見るをクリックするとフリーズする(2020/07/16 16:26)
+〇部屋リストを表示する際リストの描画がうまくなされず、ClientプログラムにException in thread "AWT-EventQueue-0" java.lang.NullPointerExceptionが出る(2020/07/16 19:54)
