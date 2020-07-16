@@ -173,6 +173,14 @@ class EchoThread extends Thread {
 		  chat(check[0], check[1]);
 		  break;
 
+	  case "93":		//観戦退出
+		  watchout();
+		  break;
+
+	  case "100":
+		  logout(PlayerName);
+		  break;
+
 	  default:
 
 	  }
@@ -253,6 +261,8 @@ class EchoThread extends Thread {
 
 	//2:マッチングをする
 	public void match() {
+		System.out.println("server.mrNo=" + Server.mrNo);
+		System.out.println("myroomNo(1)=" + myroomNo);
 		if(Server.mrNo != 0) {
 			if (myroomNo == 1001) {
 				//一人しかいない部屋があったらそこに入る
@@ -260,10 +270,12 @@ class EchoThread extends Thread {
 					if (Server.mr[i].getPN1() != null && Server.mr[i].getPN2() == null) {
 						Server.mr[i].set2P(PlayerName,  out);
 						myroomNo = i;
+						System.out.println("found1: myroomNo=" + myroomNo);
 						break;
 					}
 				}
 			}
+			System.out.println("myroomNo(2)=" + myroomNo);
 			if (myroomNo == 1001) {
 				//一人しかいない部屋はなかった
 				//二人ともいない部屋があったらその最初の部屋に
@@ -271,18 +283,21 @@ class EchoThread extends Thread {
 					if (Server.mr[i].getPN1() == null) {
 						Server.mr[i].set1P(PlayerName,  out);
 						myroomNo = i;
+						System.out.println("found2: myroomNo=" + myroomNo);
 						break;
 					}
 				}
 			}
 		}
+		System.out.println("myroomNo(3)=" + myroomNo);
 		//空き部屋がなければ新しい部屋を作る
 		if (myroomNo == 1001) {
 			Server.mr[Server.mrNo] = new matchroom(PlayerName, out);
 			myroomNo = Server.mrNo;
 			Server.mrNo++;
 			//で、そこの1Pにする
-			Server.mr[myroomNo].set1P(PlayerName, out);
+			//Server.mr[myroomNo].set1P(PlayerName, out);
+			System.out.println("create: myroomNo=" + myroomNo);
 		}
 		myroom = 1;
 		System.out.println(PlayerName + "," + myroomNo + ",ok");
@@ -470,9 +485,11 @@ class EchoThread extends Thread {
 
 	//6:鍵部屋からプレイヤーネームを削除
 	public void delete() {
+		System.out.println("delete called");
 		Server.sr[myroomNo].deletePN1();
 		myroom = 0;
-		myroomNo = 0;
+		myroomNo = 1001;
+		System.out.println(" myroomNo=" + myroomNo);
 	}
 
 	//7:鍵部屋リストの閲覧
@@ -549,11 +566,6 @@ class EchoThread extends Thread {
 		myroom = 1;
 	}
 
-	//92:観客がリアクションを送る
-	public void reaction() {
-
-	}
-
 	//93観戦退室
 	public void watchout() {
 		Server.mr[myroomNo].watchout(watchNo);
@@ -581,6 +593,10 @@ class EchoThread extends Thread {
 			}
 		}
 		Server.loginlist = aa;		//ログイン者情報の修正
+		myroom = 0;
+		myroomNo = 1001;
+		PlayerName = null;
+		watchNo = 1001;
 	}
 
 }
