@@ -23,3 +23,5 @@
 
 〇部屋リストを表示する際リストの描画がうまくなされず、ClientプログラムにException in thread "AWT-EventQueue-0" java.lang.NullPointerExceptionが出る(2020/07/16 19:54)
 →素材アップし忘れ。ごめん。BACK_LISTPANEL.jpgをダウンロードして！
+
+〇戦績が二桁に達すると記録画面で上手く表示されない
