@@ -8,10 +8,18 @@
 
 ＜一覧＞
 ◯対局中、両者とも手番でなくなるバグが発生する
+→発生条件確認中
+
 〇一度対局をし試合を終えた状態で、鍵部屋を作り待機画面に入ってから戻る(鍵部屋を削除する)と、稀に、
 　サーバは、6を受信したあとにSocketExceptionが発生しる
 　クライアントは、EOFExceptionが発生する。
-〇サインアウトしてすぐにログインしようとするとすでにログインされていると出る
+ 
+〇サインアウトしてすぐにログインしようとするとすでにログインされていると出る ←
 12時9分に更新したクライアントプログラムで実行するとException in thread "AWT-EventQueue-0" java.lang.NullPointerException	at Client$ImagePanel.paintComponent(Client.java:1602)が出る
+→クライアント側は修正済。
+
 〇記録を見るをクリックするとフリーズする(2020/07/16 16:26)
+
+
 〇部屋リストを表示する際リストの描画がうまくなされず、ClientプログラムにException in thread "AWT-EventQueue-0" java.lang.NullPointerExceptionが出る(2020/07/16 19:54)
+→素材アップし忘れ。ごめん。BACK_PANEL.jpgをダウンロードして！
