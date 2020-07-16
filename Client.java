@@ -533,6 +533,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		logPanel.setBounds(20,TABLE_H+20,TABLE_W,170);
 		logPanel.setOpaque(false);
 		logArea = new JTextArea(8,34);
+		logArea.setForeground(Color.BLACK);
 		logArea.setFont(new Font(Font.SANS_SERIF,Font.BOLD,10));
 		logArea.setEditable(false);
 		JScrollPane sp = new JScrollPane(logArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -792,10 +793,13 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			}
 			catch (IOException e){
 				System.err.println("データ受信時にエラーが発生しました: " + e);
-				Client.this.connectServer("localhost",10000);
-				panelID = 0;
-				switchDisplay();
-				resetRoom();
+				Client.this.connectServer("localhost",10000);	//再接続
+				sendMessage(dataID.get("Logout"));				//ログアウト
+				player.setName(null);							//プレイヤ名リセット
+				player.setPass(null);							//パスワードリセット
+				panelID = 0;									//タイトル画面へ
+				switchDisplay();								//画面遷移
+				resetRoom();									//部屋情報リセット
 			}
 		}
 	}
@@ -1410,6 +1414,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//ログアウト
 			case "Logout":
+				sendMessage(dataID.get(command));
 				player.setName(null);										//プレイヤ名リセット
 				player.setPass(null);										//パスワードリセット
 				panelID = 0;												//タイトル画面へ
