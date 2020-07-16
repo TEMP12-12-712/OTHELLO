@@ -22,4 +22,4 @@
 →発生条件確認中
 
 〇部屋リストを表示する際リストの描画がうまくなされず、ClientプログラムにException in thread "AWT-EventQueue-0" java.lang.NullPointerExceptionが出る(2020/07/16 19:54)
-→素材アップし忘れ。ごめん。BACK_PANEL.jpgをダウンロードして！
+→素材アップし忘れ。ごめん。BACK_LISTPANEL.jpgをダウンロードして！
