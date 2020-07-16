@@ -15,4 +15,4 @@
 〇一度鍵部屋が作られたのち、対局や削除によって鍵部屋リストが再び空になった状態で、部屋リストを要求してもnoが返ってこない     ←修正済み
 〇サインアウトしてすぐにログインしようとするとすでにログインされていると出る
 12時9分に更新したクライアントプログラムで実行するとException in thread "AWT-EventQueue-0" java.lang.NullPointerException	at Client$ImagePanel.paintComponent(Client.java:1602)が出る
-
+〇記録を見るをクリックするとフリーズする(2020/07/16 16:26)
