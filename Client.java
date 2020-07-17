@@ -14,7 +14,7 @@ import java.io.*;
 
 
 // クラス定義
-public class Client extends JFrame implements MouseListener, ActionListener{
+public class Client extends JFrame implements MouseListener, ActionListener, LineListener {
 	// 共通して用いるフィールド //////////////////////////////////////////////////////////////////////////////////////////////////
 	//クラス関連
 	private Player player;							//プレイヤ
@@ -58,8 +58,8 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 	File[] backImage = new File[19];								//フレーム背景画像
 	File listImage;													//リスト表示用パネル背景画像
 	File dialogImage;												//ダイアログ背景画像
-	Clip SE_switch, SE_put;											//効果音
-	Clip BGM_menu, BGM_game;										//BGM
+	Clip SE_switch, SE_dialog, SE_win, SE_lose, SE_draw, SE_match, SE_put, SE_chat, SE_change;//効果音
+	Clip BGM_menu, BGM_match, BGM_game;//BGM
 	//処理関連
 	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
@@ -131,9 +131,12 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		listImage = new File(SRC_IMG+"BACK_LISTPANEL.jpg");
 		dialogImage = new File(SRC_IMG+"BACK_DIALOG.jpg");
 		//音読み込み
-//		SE_switch = createClip("keyboard1.wav");
-//		SE_put = createClip("put1.wav");
-//		BGM_menu = createClip("TwentyOne.wav");
+		SE_switch = createClip("switch.wav", 1.0f);
+		SE_match = createClip("match.wav", 1.0f);
+		SE_put = createClip("put.wav", 1.0f);
+		SE_chat = createClip("chat.wav", 1.0f);
+		SE_change = createClip("change.wav", 1.0f);
+		BGM_game = createClip("BGM_GAME.wav", 0.3f);
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//setSize(WIDTH+24, HEIGHT+48);
@@ -842,6 +845,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			else if(command.equals("RandomMatch")){
 				String[] info = msg.split(",",3);
 				if(info[0].equals("true")){									//マッチング成功
+					SE_match.start();											//効果音再生
 					if(info[2].equals("0")){									//先手だった場合
 						player.setColor("black");									//手番保存
 						othello.setBlackName(player.getName());						//先手名保存
@@ -871,10 +875,12 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					panelID = 4;												//ランダム・プライベート選択画面へ
 				}
 				switchDisplay();											//画面遷移
+				BGM_game.loop(0);											//BGMスタート
 			}
 			//鍵部屋マッチング結果
 			else if(command.equals("MakeKeyroom")){
 				String[] info = msg.split(",",2);
+				SE_match.start();											//効果音再生
 				player.beOppose(true);										//対局モードへ
 				player.setColor("black");									//手番保存
 				othello.setBlackName(player.getName());						//先手名保存
@@ -888,6 +894,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				timer.start();												//タイマースタート
 				panelID = 11;												//対局画面へ
 				switchDisplay();											//画面遷移
+				BGM_game.loop(0);											//BGMスタート
 			}
 			//鍵部屋リスト
 			else if(command.equals("KeyroomList")){
@@ -897,6 +904,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					switchDisplay();											//画面遷移
 				}
 				else{														//リストがあれば
+					SE_switch.start();										//効果音再生
 					String[] keyroom = msg.split(",",0);
 					String[] info;	//部屋情報
 					String strchat;	//チャットの有無
@@ -919,6 +927,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			else if(command.equals("EnterKeyroom")){
 				String[] info = msg.split(",",2);
 				if(info[0].equals("true")){									//入室許可
+					SE_match.start();											//効果音再生
 					player.beOppose(true);										//対局モードへ
 					player.setColor("white");									//手番保存
 					othello.setBlackName(info[1]);								//先手名保存
@@ -932,6 +941,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					resetTimer();												//タイマーリセット
 					timer.start();												//タイマースタート
 					panelID = 11;												//対局画面へ
+					BGM_game.loop(0);											//BGMスタート
 				}
 				if(info[0].equals("false")){								//入室失敗
 					resetRoom();												//部屋情報リセット
@@ -948,6 +958,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					switchDisplay();											//画面遷移
 				}
 				else{														//リストがあったら
+					SE_switch.start();										//効果音再生
 					String[] room = msg.split(",",0);
 					String[] info;//部屋情報
 					listPanel12.removeAll();									//選択肢ボタンリセット
@@ -971,6 +982,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					panelID = 3;												//メニュー画面へ
 				}
 				else{														//入室許可
+					SE_match.start();											//効果音再生
 					player.beOppose(true);										//対局モードへ
 					player.beStand(true);										//観戦モードへ
 					player.setAssist(false);									//アシスト無効化
@@ -994,6 +1006,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			}
 			//総合記録
 			else if(command.equals("TotalRecord")){
+				SE_switch.start();											//効果音再生
 				String[] info = msg.split(",",4);
 				label15_1.setText("勝ち数："+info[0]);						//記録表示
 				label15_2.setText("負け数："+info[1]);
@@ -1018,7 +1031,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 			String[] info = msg.split(",",0);							//以下、受信内容で場合分け
 			//盤面・ログ受信
 			if(info[0].equals(dataID.get("Table"))){
-//				SE_put.start();																		//効果音再生
+				SE_put.start();																		//効果音再生
 				String table = info[1];																//盤面取得
 				String[] grids = table.split(Pattern.quote("."),othello.getRow()*othello.getRow()); //盤面変換
 				for(int i=0;i<othello.getRow()*othello.getRow();i++){
@@ -1064,6 +1077,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					}
 					panelID = 3;																//メニュー画面へ
 					switchDisplay();															//画面遷移
+					BGM_game.stop();															//BGMストップ
 					resetRoom();																//部屋情報リセット
 				}
 			}
@@ -1093,6 +1107,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					}
 					panelID = 3;												//メニュー画面へ
 					switchDisplay();											//画面遷移
+					BGM_game.stop();											//BGMストップ
 					resetRoom();												//部屋情報リセット
 				}
 			}
@@ -1103,10 +1118,12 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
+				BGM_game.stop();																	//BGMストップ
 				resetRoom();																		//部屋情報リセット
 			}
 			//チャット受信
 			else if(info[0].equals(dataID.get("Chat"))){
+				SE_chat.start();																	//効果音再生
 				String chat = info[1];																//チャット保存
 				logArea.setEditable(true);															//チャット反映
 				logArea.append("\n"+chat);
@@ -1126,6 +1143,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
+				BGM_game.stop();																	//BGMストップ
 				resetRoom();																		//部屋情報リセット
 			}
 		}
@@ -1159,6 +1177,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				String[] grids = othello.getGrids();			//盤面取得
 				for(int i=0;i<othello.getRow()*othello.getRow();i++){
 					if(grids[i].equals("canPut")){				//置ける場所があるなら
+						SE_put.start();						//効果音再生
 						Operation = "Table,"+i;				//石を置くオペレーション実行
 						acceptOperation(Operation);
 						return;
@@ -1178,6 +1197,14 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		seconds = 0;											//秒リセット
 		label11_6.setText("制限時間：0分0秒");					//表示リセット
 	}
+	//オーディオリスナー
+	public void update(LineEvent e) {
+        if (e.getType() == LineEvent.Type.STOP) {	//再生し終えたら
+            Clip clip = (Clip) e.getSource();	//クリップ特定
+            clip.stop();						//再生停止
+            clip.setFramePosition(0); 			//再生位置を最初に戻す
+        }
+	}
 	//操作の受付・処理
 	public void acceptOperation(String operation){
 		System.out.println("実行：" +operation);//テスト出力
@@ -1187,7 +1214,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		switch(command){													//以下、コマンドで場合分け
 			//画面遷移のみ
 			case "Switch":
-//				SE_switch.start();													//効果音再生
+				SE_switch.start();													//効果音再生
 				panelID = Integer.parseInt(subc);
 				switchDisplay();
 				break;
@@ -1237,7 +1264,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 					StringBuffer table = new StringBuffer("");//盤面
 					Boolean canPut = othello.putStone(grid,player.getColor(),true);						//石を置いてみる
 					if(canPut){																			//置けるマスなら
-//						SE_put.start();															//効果音再生
+						SE_put.start();															//効果音再生
 						updateTable();															//盤面反映
 						String[] grids = othello.getGrids();									//盤面情報取得
 						for(int i=0;i<othello.getRow()*othello.getRow();i++){					//盤面情報変換
@@ -1277,6 +1304,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 							}
 							panelID = 3;												//メニュー画面へ
 							switchDisplay();											//画面遷移
+							BGM_game.stop();											//BGMストップ
 							resetRoom();												//部屋情報リセット
 						}
 					}
@@ -1301,10 +1329,12 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				showDialog("投了しました");																	//ダイアログ表示
 				panelID = 3;																				//メニュー画面へ
 				switchDisplay();																			//画面遷移
+				BGM_game.stop();																			//BGMストップ
 				resetRoom();																				//部屋情報リセット
 				break;
 			//チャット
 			case "Chat":
+				SE_chat.start();																			//効果音再生
 				String str = player.getName()+": "+chatField.getText();										//チャット内容読み取り
 				logArea.setEditable(true);																	//チャット反映
 				logArea.append("\n"+str);
@@ -1314,6 +1344,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//アシスト切替
 			case "Assist":
+				SE_change.start();																			//効果音再生
 				player.changeAssist();																		//アシスト切替
 				if(player.getAssist()==true) label11_7.setText("：ON");										//表示変更
 				if(player.getAssist()==false) label11_7.setText("：OFF");
@@ -1321,6 +1352,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//ログ表示切替
 			case "Showlog":
+				SE_change.start();																			//効果音再生
 				if(player.getShowlog()==true) {																//ONだったら
 					player.setShowlog(false);														//OFFにする
 					label11_8.setText("：OFF");														//表示変更
@@ -1360,6 +1392,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//鍵部屋リスト選択
 			case "SelectKeyroom":
+				SE_switch.start();											//効果音再生
 				String[] keyinfo = subc.split(Pattern.quote("."),4);
 				othello.setRoomID(Integer.parseInt(keyinfo[0]));			//部屋番号保存
 				player.setChat(Boolean.parseBoolean(keyinfo[2]));			//チャットの有無保存
@@ -1377,6 +1410,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//観戦部屋リスト要求
 			case "WatchroomList":
+				SE_switch.start();											//効果音再生
 				sendMessage(dataID.get(command));							//サーバへ送信
 				break;
 			//観戦部屋への入室要求
@@ -1402,6 +1436,7 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 				break;
 			//総合記録要求
 			case "TotalRecord":
+				SE_switch.start();											//効果音再生
 				sendMessage(dataID.get(command));							//サーバへ送信
 				break;
 			//対人別記録要求
@@ -1470,15 +1505,21 @@ public class Client extends JFrame implements MouseListener, ActionListener{
 		}
 	}
 	//効果音生成
-	public Clip createClip(String file) {
+	public Clip createClip(String file, float vol) {
     	try {
-    		File sound = new File(SRC_SND+file);
-        	AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sound.getAbsoluteFile());
-        	Clip clip = AudioSystem.getClip();
-        	clip.open(audioInputStream);
+    		File sound = new File(SRC_SND+file);								//ファイルを作成
+        	AudioInputStream ais = AudioSystem.getAudioInputStream(sound.getAbsoluteFile()); //ストリーム作成
+        	DataLine.Info info = new DataLine.Info(Clip.class,ais.getFormat());	//データライン用意
+        	Clip clip = (Clip)AudioSystem.getLine(info);						//空のクリップ作成
+            clip.addLineListener(this);											//クリップのラインイベント
+        	clip.open(ais);														//ストリームをクリップへ
+        	ais.close();														//ストリームクローズ
+        	//clipMap.put(file,clip);											//クリップ登録
+        	FloatControl control = (FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
+        	control.setValue((float)Math.log10(vol)*20);
         	return clip;
     	} catch(Exception e) {
-        	System.out.println("効果音生成時にエラーが発生しました："+e);
+        	System.out.println("効果音のクリッピングに失敗しました："+e);
         	return null;
     	}
 	}
