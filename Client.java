@@ -38,7 +38,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	private ImagePanel[] panel = new ImagePanel[19];//画面パネル
 	private ImagePanel listPanel9,listPanel12;		//鍵部屋リスト表示用パネル、観戦部屋リスト表示用パネル
 	private JLabel label1, label2, label7_5, label10_2, label16_2;	//入力情報照合結果表示ラベル
-	private JLabel label15_1, label15_2, label15_3, label15_4;//総合戦績表示ラベル
+	private JLabel label15_2, label15_4, label15_6, label15_8;//総合戦績表示ラベル
 	private JLabel label17_1, label17_2, label17_3, label17_4;//対人別戦績表示ラベル
 	private JTextField field1, field2, passfield7, field16;		//テキスト入力フィールド
 	private JPasswordField passfield1, passfield2, passfield10;	//パスワード入力フィールド
@@ -622,22 +622,38 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		panel[14].add(b142);
 		panel[14].add(b143);
 		//総合成績画面
-		label15_1 = new JLabel("勝ち数：");
+		JLabel label15_1 = new JLabel("勝ち数");
 		label15_1.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
 		label15_1.setForeground(Color.WHITE);
-		label15_1.setBounds(50,200,250,100);
-		label15_2 = new JLabel("負け数：");
+		label15_1.setBounds(50,150,250,100);
+		label15_2 = new JLabel("");
 		label15_2.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
 		label15_2.setForeground(Color.WHITE);
-		label15_2.setBounds(360,200,250,100);
-		label15_3 = new JLabel("引分数：");
+		label15_2.setBounds(50,220,250,100);
+		JLabel label15_3 = new JLabel("負け数");
 		label15_3.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
 		label15_3.setForeground(Color.WHITE);
-		label15_3.setBounds(50,350,250,100);
-		label15_4 = new JLabel("投了数：：");
+		label15_3.setBounds(360,150,250,100);
+		label15_4 = new JLabel("");
 		label15_4.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
 		label15_4.setForeground(Color.WHITE);
-		label15_4.setBounds(360,350,250,100);
+		label15_4.setBounds(360,220,250,100);
+		JLabel label15_5 = new JLabel("引分数");
+		label15_5.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_5.setForeground(Color.WHITE);
+		label15_5.setBounds(50,300,250,100);
+		label15_6 = new JLabel("");
+		label15_6.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_6.setForeground(Color.WHITE);
+		label15_6.setBounds(50,370,250,100);
+		JLabel label15_7 = new JLabel("投了数");
+		label15_7.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_7.setForeground(Color.WHITE);
+		label15_7.setBounds(360,300,250,100);
+		label15_8 = new JLabel("");
+		label15_8.setFont(new Font("ヒラギノ明朝W６",Font.BOLD,48));
+		label15_8.setForeground(Color.WHITE);
+		label15_8.setBounds(360,370,250,100);
 		ImageButton b151 = new ImageButton("OK",buttonIcon1,20,false);
 		b151.setBounds(470,480,120,60);
 		b151.setActionCommand("Switch,3");
@@ -649,6 +665,10 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		panel[15].add(label15_2);
 		panel[15].add(label15_3);
 		panel[15].add(label15_4);
+		panel[15].add(label15_5);
+		panel[15].add(label15_6);
+		panel[15].add(label15_7);
+		panel[15].add(label15_8);
 		panel[15].add(b151);
 		//相手名入力画面
 		JLabel label16_1 = new JLabel("相手名：");
@@ -1008,10 +1028,10 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			else if(command.equals("TotalRecord")){
 				SE_switch.start();											//効果音再生
 				String[] info = msg.split(",",4);
-				label15_1.setText("勝ち数："+info[0]);						//記録表示
-				label15_2.setText("負け数："+info[1]);
-				label15_3.setText("引分数："+info[2]);
-				label15_4.setText("投了数："+info[3]);
+				label15_2.setText("- "+info[0]+" -");
+				label15_4.setText("- "+info[1]+" -");
+				label15_6.setText("- "+info[2]+" -");
+				label15_8.setText("- "+info[3]+" -");
 				panelID = 15;												//総合戦績画面へ
 				switchDisplay();											//画面遷移
 			}
@@ -1055,6 +1075,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				}
 				if(othello.isGameover()) {															//決着がついたら
 					String result = othello.checkWinner();										//勝敗確認
+					if(timer.isRunning()) timer.stop();											//タイマーストップ
 					if(!player.isStand()){													//対局者の場合
 						if(result.equals("draw")) {								//引き分け
 							sendMessage(dataID.get("Finish")+",3");				//サーバに送信
@@ -1092,6 +1113,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				timer.restart();																	//タイマーリスタート
 				othello.changeTurn();																//ターン変更
 				if(pathFlag == true){																//直前に自分もパスしていたら試合終了
+					if(timer.isRunning()) timer.stop();							//タイマーストップ
 					String result = othello.checkWinner();						//勝敗確認
 					if(result.equals("draw")) {									//引き分け
 						sendMessage(dataID.get("Finish")+",3");					//サーバに送信
@@ -1113,6 +1135,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			}
 			//投了受信
 			else if(info[0].equals(dataID.get("Giveup"))){
+				if(timer.isRunning()) timer.stop();													//タイマーストップ
 				if(!player.isStand()) showDialog("対戦相手が投了しました");							//ダイアログ表示
 				else showDialog("投了");															//ダイアログ表示
 				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
@@ -1138,6 +1161,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			}
 			//切断受信
 			else if(info[0].equals(dataID.get("Disconnected"))){
+				if(timer.isRunning()) timer.stop();													//タイマーストップ
 				if(!player.isStand()) showDialog("対戦相手が切断しました");							//ダイアログ表示
 				else showDialog("切断が行われました");												//ダイアログ表示
 				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
@@ -1151,17 +1175,18 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	// 操作 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//マウスリスナー
 	public void mouseClicked(MouseEvent e) {
-		JButton button = (JButton)e.getComponent();			//ボタン特定
+		ImageButton button = (ImageButton)e.getComponent();	//ボタン特定
 		Operation = button.getActionCommand();				//実行オペレーション特定
 		acceptOperation(Operation);							//処理
+		button.exited();									//フィルター解除
 	}
 	public void mouseEntered(MouseEvent e) {
 		ImageButton button = (ImageButton)e.getComponent();
-		button.entered();
+		button.entered();									//フィルター
 	}
 	public void mouseExited(MouseEvent e) {
 		ImageButton button = (ImageButton)e.getComponent();
-		button.exited();
+		button.exited();									//フィルター解除
 	}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
@@ -1289,6 +1314,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 						othello.changeTurn();													//ターン変更
 						sendMessage(dataID.get(command)+","+table+","+log);						//サーバへ送信
 						if(othello.isGameover()) {												//決着がついたら
+							if(timer.isRunning()) timer.stop();							//タイマーストップ
 							String result = othello.checkWinner();						//勝敗確認
 							if(result.equals("draw")) {						//引き分け
 								sendMessage(dataID.get("Finish")+",3");		//サーバに送信
@@ -1326,6 +1352,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			//投了
 			case "Giveup":
 				sendMessage(dataID.get(command));															//サーバへ送信
+				if(timer.isRunning()) timer.stop();															//タイマーストップ
 				showDialog("投了しました");																	//ダイアログ表示
 				panelID = 3;																				//メニュー画面へ
 				switchDisplay();																			//画面遷移
