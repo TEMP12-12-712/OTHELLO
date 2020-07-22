@@ -8,7 +8,7 @@ public class matchroom {
 		out1 = dos1;
 	}
 	//局面データ
-	private String grids = "0.0.0.0.0.0.0.0."
+	private String grids0 = "0.0.0.0.0.0.0.0."
 			              + "0.0.0.0.0.0.0.0."
 			              + "0.0.0.0.0.0.0.0."
 			              + "0.0.0.1.2.0.0.0."
@@ -16,6 +16,7 @@ public class matchroom {
 			              + "0.0.0.0.0.0.0.0."
 			              + "0.0.0.0.0.0.0.0."
 			              + "0.0.0.0.0.0.0.0";
+	private String grids;
 	private String PlayerName1 = null;		//プレイヤ１(先手)
 	private String PlayerName2 = null;		//プレイヤ２(後手)
 	private DataOutputStream out1 = null, out2 = null;
@@ -34,7 +35,7 @@ public class matchroom {
 		if(PlayerName2 == null) {
 			PlayerName2 = PN2;
 			out2 = dos2;
-
+			grids = grids0;
 			try {
 				out1.writeUTF("true," + PlayerName2 + ",0");	//クライアントに送信
 				System.out.println(PlayerName1 + "に「" + "true," + PlayerName2 + ",0」を送信");
