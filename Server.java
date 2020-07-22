@@ -166,7 +166,7 @@ class EchoThread extends Thread {
 		  break;
 
 	  case "91":		//観戦|watch
-		  watch(check[1]);
+		  Re = watch(check[1]);
 		  break;
 
 	  case "92":		//リアクション|reaction
@@ -560,10 +560,16 @@ class EchoThread extends Thread {
 	}
 
 	//91:観戦入室
-	public void watch(String roomNumber) {
-		watchNo = Server.mr[Integer.valueOf(roomNumber)].setwatcher(PlayerName, out);
-		myroomNo = Integer.parseInt(roomNumber);
-		myroom = 1;
+	public String watch(String roomNumber) {
+		String re = null;
+		if(Server.mr[Integer.valueOf(roomNumber)].getPN2() != null) {
+			watchNo = Server.mr[Integer.valueOf(roomNumber)].setwatcher(PlayerName, out);
+			myroomNo = Integer.parseInt(roomNumber);
+			myroom = 1;
+		}else {
+			re = "error";
+		}
+		return re;
 	}
 
 	//93観戦退室
