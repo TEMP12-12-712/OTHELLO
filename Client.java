@@ -149,8 +149,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		BGM_menu = createClip("Space_Travel.wav",0.1f);
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(WIDTH+24, HEIGHT+48);
-//		setSize(WIDTH, HEIGHT);
+//		setSize(WIDTH+24, HEIGHT+48);
+		setSize(WIDTH, HEIGHT);
 		setResizable(false);
 		//ペイン設定
 		pane = getContentPane();
