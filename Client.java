@@ -149,8 +149,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		BGM_menu = createClip("Space_Travel.wav",0.1f);
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//setSize(WIDTH+24, HEIGHT+48);
-		setSize(WIDTH, HEIGHT);
+		setSize(WIDTH+24, HEIGHT+48);
+//		setSize(WIDTH, HEIGHT);
 		setResizable(false);
 		//ペイン設定
 		pane = getContentPane();
@@ -1020,7 +1020,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			}
 			//観戦部屋への入室
 			else if(command.equals("EnterWatchroom")){
-				if(msg.equals("false")){									//入室失敗
+				if(msg.equals("error")){									//入室失敗
 					resetRoom();												//部屋情報リセット
 					play(SE_dialog);											//効果音再生
 					showDialog("入室に失敗しました");							//ダイアログの表示
@@ -1421,11 +1421,11 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			case "Giveup":
 				sendMessage(dataID.get(command));															//サーバへ送信
 				if(timer.isRunning()) timer.stop();															//タイマーストップ
+				BGM_game.stop();																			//BGMストップ
 				play(SE_giveup);																			//効果音再生
 				showDialog("投了しました");																	//ダイアログ表示
 				panelID = 3;																				//メニュー画面へ
 				switchDisplay();																			//画面遷移
-				BGM_game.stop();																			//BGMストップ
 				BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);														//BGMスタート
 				resetRoom();																				//部屋情報リセット
 				break;
