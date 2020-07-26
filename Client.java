@@ -832,6 +832,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				player.setPass(null);							//パスワードリセット
 				if(BGM_game.isRunning()) BGM_game.stop();		//BGMストップ
 				if(BGM_menu.isRunning()) BGM_menu.stop();
+				if(BGM_wait.isRunning()) BGM_wait.stop();
 				BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);			//BGMスタート
 				panelID = 0;									//タイトル画面へ
 				switchDisplay();								//画面遷移
@@ -906,15 +907,17 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 					resetTimer();												//タイマーリセット
 					timer.start();												//タイマースタート
 					panelID = 11;												//対局画面へ
+					BGM_wait.stop();											//BGMストップ
+					BGM_game.loop(Clip.LOOP_CONTINUOUSLY);						//BGMスタート
 				}
 				if(info[0].equals("false")){								//マッチング失敗
+					BGM_wait.stop();											//BGMストップ
 					play(SE_dialog);											//効果音再生
 					showDialog("マッチングに失敗しました");						//ダイアログの表示
 					panelID = 4;												//ランダム・プライベート選択画面へ
+					BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);						//BGMスタート
 				}
 				switchDisplay();											//画面遷移
-				BGM_wait.stop();											//BGMストップ
-				BGM_game.loop(Clip.LOOP_CONTINUOUSLY);						//BGMスタート
 			}
 			//鍵部屋マッチング結果
 			else if(command.equals("MakeKeyroom")){
@@ -1145,6 +1148,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				timer.restart();																	//タイマーリスタート
 				othello.changeTurn();																//ターン変更
 				if(pathFlag == true){																//直前に自分もパスしていたら試合終了
+					pathFlag = false;
+					sendMessage(dataID.get("Pass"));							//相手にも通知
 					if(timer.isRunning()) timer.stop();							//タイマーストップ
 					BGM_game.stop();											//BGMストップ
 					String result = othello.checkWinner();						//勝敗確認
@@ -1174,9 +1179,14 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				if(timer.isRunning()) timer.stop();													//タイマーストップ
 				BGM_game.stop();																	//BGMストップ
 				play(SE_giveup);																	//効果音再生
-				if(!player.isStand()) showDialog("対戦相手が投了しました");							//ダイアログ表示
-				else showDialog("投了");															//ダイアログ表示
-				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
+				if(!player.isStand()) {																//対局者の場合
+					sendMessage(dataID.get("Finish")+",1");										//サーバに送信
+					showDialog("対戦相手が投了しました");										//ダイアログ表示
+				}
+				else {																				//観戦者の場合
+					sendMessage(dataID.get("GetoutWatchroom"));									//サーバに送信
+					showDialog("投了");															//ダイアログ表示
+				}
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
 				BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);												//BGMスタート
@@ -1203,9 +1213,14 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				if(timer.isRunning()) timer.stop();													//タイマーストップ
 				BGM_game.stop();																	//BGMストップ
 				play(SE_giveup);																	//効果音再生
-				if(!player.isStand()) showDialog("対戦相手が切断しました");							//ダイアログ表示
-				else showDialog("切断が行われました");												//ダイアログ表示
-				sendMessage(dataID.get("Finish")+",1");												//サーバに送信
+				if(!player.isStand()) {																//対局者の場合
+					sendMessage(dataID.get("Finish")+",1");										//サーバに送信
+					showDialog("対戦相手が切断しました");										//ダイアログ表示
+				}
+				else {																				//観戦者の場合
+					sendMessage(dataID.get("GetoutWatchroom"));									//サーバに送信
+					showDialog("切断が行われました");											//ダイアログ表示
+				}
 				panelID = 3;																		//メニュー画面へ
 				switchDisplay();																	//画面遷移
 				BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);												//BGMスタート
