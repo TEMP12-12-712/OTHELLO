@@ -47,6 +47,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	private JPanel tablePanel,playerPanel,reactPanel,logPanel,chatPanel;//盤面配置用パネル、対局者操作パネル、観戦者操作パネル、ログエリア表示パネル、チャット表示パネル
 	private ImageButton b11_1;							//パスボタン
 	private JTextArea logArea;						//ログエリア
+	private JScrollBar logBar;						//ログエリアのスクロールバー
 	private JTextField chatField;					//チャットフィールド
 	private JLabel label11_1,label11_2,label11_4,label11_5,label11_6,label11_7,label11_8;//対局情報表示ラベル
 	//素材
@@ -63,7 +64,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	//処理関連
 	private String Operation;												//実行中のオペレーション
 	private int panelID;													//画面パネルID
-	private boolean pathFlag;												//パスフラグ
+	private boolean passFlag;												//パスフラグ
 	private int minutes, seconds;											//対局用経過時間
 	private HashMap<String,String> dataID = new HashMap<String,String>(20);	//コマンド・データ対応表
 	{dataID.put("Register","0");
@@ -550,6 +551,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		logArea.setFont(new Font(Font.SANS_SERIF,Font.BOLD,10));
 		logArea.setEditable(false);
 		JScrollPane sp = new JScrollPane(logArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		logBar = sp.getVerticalScrollBar();
 		logPanel.setLayout(new FlowLayout());
 		logPanel.add(sp);
 		chatPanel = new JPanel();//チャット表示パネル
@@ -1090,14 +1092,12 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 					if(grids[i].equals("2")) grids[i] = "white";//白
 				}
 				othello.setGrids(grids);															//盤面更新
-				pathFlag = false;																	//パスフラグリセット
+				passFlag = false;																	//パスフラグリセット
 				othello.changeTurn();																//ターン変更
 				if(updateTable()) b11_1.setVisible(false);											//盤面反映
 				else b11_1.setVisible(true);														//置ける場所が無ければパスボタンを有効化
 				String log = info[2];																//ログ取得
-				logArea.setEditable(true);															//ログ反映
-				logArea.append("\n"+log);
-				logArea.setEditable(false);
+				addLog(log);																		//ログに表示
 				if(!player.isStand()) {
 					playerPanel.setVisible(true);													//操作有効化
 					resetTimer();																	//タイマーリセット
@@ -1140,15 +1140,16 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			else if(info[0].equals(dataID.get("Pass"))){
 				play(SE_pass);																		//効果音再生
 				playerPanel.setVisible(true);														//操作有効化
-				logArea.setEditable(true);															//ログに表示
-				if(player.getColor().equals("black")) logArea.append("\n後手がパスしました");
-				else logArea.append("\n先手がパスしました");
-				logArea.setEditable(false);
+				if(player.getColor().equals("black")) addLog("後手がパスしました");					//ログに表示
+				else addLog("先手がパスしました");
 				resetTimer();																		//タイマーリセット
 				timer.restart();																	//タイマーリスタート
 				othello.changeTurn();																//ターン変更
-				if(pathFlag == true){																//直前に自分もパスしていたら試合終了
-					pathFlag = false;
+				if(updateTable()) b11_1.setVisible(false);											//盤面反映
+				else b11_1.setVisible(true);														//置ける場所が無ければパスボタンを有効化
+				if(player.isStand()==true && passFlag==false) passFlag = true;						//観戦者の場合はパス受信でパスフラグを立てる
+				if(passFlag == true){																//パスが連続したら試合終了
+					passFlag = false;
 					sendMessage(dataID.get("Pass"));							//相手にも通知
 					if(timer.isRunning()) timer.stop();							//タイマーストップ
 					BGM_game.stop();											//BGMストップ
@@ -1196,17 +1197,13 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			else if(info[0].equals(dataID.get("Chat"))){
 				play(SE_chat);																		//効果音再生
 				String chat = info[1];																//チャット保存
-				logArea.setEditable(true);															//チャット反映
-				logArea.append("\n"+chat);
-				logArea.setEditable(false);
+				addLog(chat);																		//ログに表示
 			}
 			//リアクション受信
 			else if(info[0].equals(dataID.get("Reaction"))){
 				play(SE_reaction);																	//効果音再生
 				String reaction = info[1];															//リアクション保存
-				logArea.setEditable(true);															//リアクション反映
-				logArea.append("\n> "+reaction);
-				logArea.setEditable(false);
+				addLog("> "+reaction);																//ログに表示
 			}
 			//切断受信
 			else if(info[0].equals(dataID.get("Disconnected"))){
@@ -1246,54 +1243,6 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
-	//タイムリスナー
-	public void actionPerformed(ActionEvent e) {
-		seconds -= 1;													//一秒経過
-		if(seconds < 0){												//60秒たったら
-			seconds = 59;											//秒リセット
-			minutes -= 1;											//一分経過
-		}
-		if(minutes < 0){												//制限時間が経過したら
-			if(player.getColor()==othello.getTurn()){				//自分の番なら
-				String[] grids = othello.getGrids();			//盤面取得
-				for(int i=0;i<othello.getRow()*othello.getRow();i++){
-					if(grids[i].equals("canPut")){				//置ける場所があるなら
-						SE_put.start();						//効果音再生
-						Operation = "Table,"+i;				//石を置くオペレーション実行
-						acceptOperation(Operation);
-						return;
-					}
-				}												//置ける場所がないなら
-				Operation = "Pass,-1";						//パスオペレーション実行
-				acceptOperation(Operation);
-			}
-		}
-		else{															//まだ制限時間内なら
-			label11_6.setText("制限時間："+minutes+"分"+seconds+"秒");	//時間表示
-		}
-	}
-	//タイマーのリセット
-	public void resetTimer(){
-		minutes = player.getTime();								//分リセット
-		seconds = 0;											//秒リセット
-		label11_6.setText("制限時間：0分0秒");					//表示リセット
-	}
-	//オーディオリスナー
-	public void update(LineEvent e) {
-        if (e.getType() == LineEvent.Type.STOP) {	//効果音が再生し終えたら
-            Clip clip = (Clip) e.getSource();		//クリップ特定
-            clip.stop();							//再生停止
-            clip.setFramePosition(0); 				//再生位置を最初に戻す
-        }
-	}
-	//効果音の再生
-	public void play(Clip clip){
-		if(clip.isRunning()) {			//再生中なら
-			clip.stop();				//再生停止
-			clip.setFramePosition(0); 	//再生位置を最初に戻す
-		}
-		clip.start();					//再再生
-	}
 	//操作の受付・処理
 	public void acceptOperation(String operation){
 		System.out.println("実行：" +operation);//テスト出力
@@ -1383,9 +1332,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 						if(player.getColor().equals("white")){
 							log = "後手：("+CLM[grid%8]+"-"+ROW[grid/8]+")";
 						}
-						logArea.setEditable(true);												//ログ反映
-						logArea.append("\n"+log);
-						logArea.setEditable(false);
+						addLog(log);															//ログに表示
 						playerPanel.setVisible(false);											//操作無効化
 						resetTimer();															//タイマーリセット
 						timer.restart();														//タイマーリスタート
@@ -1422,11 +1369,9 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			case "Pass":
 				play(SE_pass);																				//BGMストップ
 				playerPanel.setVisible(false);																//操作無効化
-				pathFlag = true;																			//パスフラグを立てる
-				logArea.setEditable(true);																	//ログに表示
-				if(player.getColor().equals("black")) logArea.append("\n先手がパスしました");
-				else logArea.append("\n後手がパスしました");
-				logArea.setEditable(false);
+				passFlag = true;																			//パスフラグを立てる
+				if(player.getColor().equals("black")) addLog("先手がパスしました");							//ログに表示
+				else addLog("後手がパスしました");
 				resetTimer();																				//タイマーリセット
 				timer.restart();																			//タイマーリスタート
 				othello.changeTurn();																		//手番変更
@@ -1448,9 +1393,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			case "Chat":
 				play(SE_chat);																				//効果音再生
 				String str = player.getName()+": "+chatField.getText();										//チャット内容読み取り
-				logArea.setEditable(true);																	//チャット反映
-				logArea.append("\n"+str);
-				logArea.setEditable(false);
+				addLog(str);																				//ログに表示
 				chatField.setText("");																		//チャット入力欄リセット
 				sendMessage(dataID.get(command)+","+str);													//サーバへ送信
 				break;
@@ -1590,7 +1533,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		player.setTime(-1);					//制限時間リセット
 		player.setAssist(true);				//アシストの有無リセット
 		player.setShowlog(true);			//ログ表示の有無のリセット
-		pathFlag = false;					//パスフラグのリセット
+		passFlag = false;					//パスフラグのリセット
 		othello.resetGrids();				//盤面・ターンリセット
 		if(timer.isRunning()) timer.stop();	//タイマーストップ
 		resetTimer();						//タイマーリセット
@@ -1598,6 +1541,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		player.beStand(false);				//観戦モード終了
 		//画面の初期化
 		logArea.setText("");				//ログエリアリセット
+		logBar.setValue(0);					//スクロールバーの位置リセット
 		chatField.setText("");				//チャット入力欄リセット
 		playerPanel.setVisible(true);		//操作有効化
 		reactPanel.setVisible(true);		//リアクションパネル有効化
@@ -1624,6 +1568,53 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			return true;
 		}
 	}
+	//ログエリアへの表示
+	public void addLog(String str){
+		logArea.setEditable(true);
+		logArea.append(str+"\n");
+		logArea.setEditable(false);
+		logBar.setValue(logBar.getMaximum()-logBar.getVisibleAmount());
+	}
+	//タイムリスナー
+	public void actionPerformed(ActionEvent e) {
+		seconds -= 1;													//一秒経過
+		if(seconds < 0){												//60秒たったら
+			seconds = 59;											//秒リセット
+			minutes -= 1;											//一分経過
+		}
+		if(minutes < 0){												//制限時間が経過したら
+			if(player.getColor()==othello.getTurn()){				//自分の番なら
+				String[] grids = othello.getGrids();			//盤面取得
+				for(int i=0;i<othello.getRow()*othello.getRow();i++){
+					if(grids[i].equals("canPut")){				//置ける場所があるなら
+						SE_put.start();						//効果音再生
+						Operation = "Table,"+i;				//石を置くオペレーション実行
+						acceptOperation(Operation);
+						return;
+					}
+				}												//置ける場所がないなら
+				Operation = "Pass,-1";						//パスオペレーション実行
+				acceptOperation(Operation);
+			}
+		}
+		else{															//まだ制限時間内なら
+			label11_6.setText("制限時間："+minutes+"分"+seconds+"秒");	//時間表示
+		}
+	}
+	//タイマーのリセット
+	public void resetTimer(){
+		minutes = player.getTime();								//分リセット
+		seconds = 0;											//秒リセット
+		label11_6.setText("制限時間：0分0秒");					//表示リセット
+	}
+	//オーディオリスナー
+	public void update(LineEvent e) {
+        if (e.getType() == LineEvent.Type.STOP) {	//効果音が再生し終えたら
+            Clip clip = (Clip) e.getSource();		//クリップ特定
+            clip.stop();							//再生停止
+            clip.setFramePosition(0); 				//再生位置を最初に戻す
+        }
+	}
 	//効果音生成
 	public Clip createClip(String file, float vol) {
     	try {
@@ -1642,6 +1633,14 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
         	System.out.println("効果音のクリッピングに失敗しました："+e);
         	return null;
     	}
+	}
+	//効果音の再生
+	public void play(Clip clip){
+		if(clip.isRunning()) {			//再生中なら
+			clip.stop();				//再生停止
+			clip.setFramePosition(0); 	//再生位置を最初に戻す
+		}
+		clip.start();					//再再生
 	}
 	// 表示 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//画面の遷移・描画
