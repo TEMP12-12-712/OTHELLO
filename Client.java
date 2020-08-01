@@ -36,7 +36,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	};
 	private Container pane;							//コンテナ
 	private ImagePanel[] panel = new ImagePanel[19];//画面パネル
-	private ImagePanel listPanel9,listPanel12;		//鍵部屋リスト表示用パネル、観戦部屋リスト表示用パネル
+	private ScrollPanel listPanel9,listPanel12;		//リスト表示用パネル
 	private JLabel label1, label2, label7_5, label10_2, label16_2;	//入力情報照合結果表示ラベル
 	private JLabel label15_2, label15_4, label15_6, label15_8;//総合戦績表示ラベル
 	private JLabel label17_1, label17_2, label17_3, label17_4;//対人別戦績表示ラベル
@@ -92,6 +92,10 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	private DataOutputStream out;					//送信用ストリーム
 	private DataInputStream in;						//受信用ストリーム
 	private Receiver receiver;						//受信スレッド
+	private static int remotePort;
+	private static int localPort;
+	private static InetAddress remoteHost;
+	private static InetAddress localHost;
 	// コンストラクタ/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public Client() {
 		//オブジェクト生成
@@ -390,15 +394,13 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		panel[8].setLayout(null);
 		panel[8].add(b81);
 		//鍵部屋選択画面
-		listPanel9 = new ImagePanel(listImage);
-		listPanel9.setMinimumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		listPanel9 = new ScrollPanel(listImage);
 		listPanel9.setLayout(null);
 		ImageButton b91 = new ImageButton("戻る",buttonIcon1,20,false);
 		b91.setBounds(470,480,120,60);
 		b91.setActionCommand("Switch,6");
 		b91.addMouseListener(this);
 		JScrollPane sp9 = new JScrollPane(listPanel9,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		sp9.setMaximumSize(new Dimension(WIDTH-200,HEIGHT-200));
 		sp9.setBounds(100,50,WIDTH-200,HEIGHT-200);
 		panel[9] = new ImagePanel(backImage[9]);
 		panel[9].setSize(WIDTH,HEIGHT);
@@ -599,15 +601,13 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		panel[11].add(chatPanel);
 		othello.resetGrids();
 		//観戦部屋選択画面
-		listPanel12 = new ImagePanel(listImage);
-		listPanel12.setMinimumSize(new Dimension(WIDTH-200,HEIGHT-200));
+		listPanel12 = new ScrollPanel(listImage);
 		listPanel12.setLayout(null);
 		ImageButton b121 = new ImageButton("戻る",buttonIcon1,20,false);
 		b121.setBounds(470,480,120,60);
 		b121.setActionCommand("Switch,3");
 		b121.addMouseListener(this);
 		JScrollPane sp12 = new JScrollPane(listPanel12,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		sp12.setMaximumSize(new Dimension(WIDTH-200,HEIGHT-200));
 		sp12.setBounds(100,50,WIDTH-200,HEIGHT-200);
 		panel[12] = new ImagePanel(backImage[12]);
 		panel[12].setSize(WIDTH,HEIGHT);
@@ -769,10 +769,11 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	}
 	// 通信 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//サーバに接続
-	public void connectServer(String ipAddress, int port){
+	public void connectServer(){
 		Socket socket = null;
 		try {
-			socket = new Socket(ipAddress, port);					//サーバに接続要求を送信
+//			socket = new Socket(remoteHost, remotePort, localHost, localPort);//サーバに接続要求を送信
+			socket = new Socket("localhost",10000);//サーバに接続要求を送信
 			System.out.println("サーバと接続しました");
 			out = new DataOutputStream(socket.getOutputStream());	//出力ストリームを作成
 			receiver = new Receiver(socket);						//受信スレッドを作成
@@ -818,7 +819,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 							receiveMessage(inputLine);				//処理
 						}
 						catch (ArrayIndexOutOfBoundsException e){
-							System.out.println("受信データ処理中にエラーが発生しました: " + e);
+							System.err.println("受信データ処理中にエラーが発生しました: " + e);
 							panelID = 3;
 							switchDisplay();
 							resetRoom();
@@ -828,7 +829,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			}
 			catch (IOException e){
 				System.err.println("データ受信時にエラーが発生しました: " + e);
-				Client.this.connectServer("localhost",10000);	//再接続
+				Client.this.connectServer();					//再接続
 				sendMessage(dataID.get("Logout"));				//ログアウト
 				player.setName(null);							//プレイヤ名リセット
 				player.setPass(null);							//パスワードリセット
@@ -954,7 +955,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 					String[] keyroom = msg.split(",",0);
 					String[] info;	//部屋情報
 					String strchat;	//チャットの有無
-					listPanel9.removeAll();										//選択肢ボタンリセット
+					listPanel9.removeButton();									//選択肢ボタンリセット
 					for(int i=0;i<keyroom.length;i++){							//選択肢ボタン生成
 						info = keyroom[i].split(Pattern.quote("."),4);
 						if(info[2].equals("true")) strchat = "あり";
@@ -963,7 +964,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 						bi.setBounds(0,50*i,WIDTH-220,50);
 						bi.setActionCommand("SelectKeyroom,"+keyroom[i]);
 						bi.addMouseListener(this);
-						listPanel9.add(bi);
+						listPanel9.addButton(bi);
 					}
 					panelID = 9;												//鍵部屋リスト表示画面へ
 					switchDisplay();											//画面遷移
@@ -1010,14 +1011,14 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 					play(SE_switch);										//効果音再生
 					String[] room = msg.split(",",0);
 					String[] info;//部屋情報
-					listPanel12.removeAll();									//選択肢ボタンリセット
+					listPanel12.removeButton();									//選択肢ボタンリセット
 					for(int i=0;i<room.length;i++){								//選択肢ボタン生成
 						info = room[i].split(Pattern.quote("."),5);
 						ImageButton bi = new ImageButton("先手："+info[1]+" 後手："+info[2]+" 黒石："+info[3]+" 白石："+info[4],buttonIcon1,12,false);
 						bi.setBounds(0,50*i,WIDTH-220,50);
 						bi.setActionCommand("EnterWatchroom,"+room[i]);
 						bi.addMouseListener(this);
-						listPanel12.add(bi);
+						listPanel12.addButton(bi);
 					}
 					panelID = 12;												//観戦部屋リスト表示画面へ
 					switchDisplay();											//画面遷移
@@ -1150,29 +1151,38 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				if(player.isStand()==true && passFlag==false) passFlag = true;						//観戦者の場合はパス受信でパスフラグを立てる
 				if(passFlag == true){																//パスが連続したら試合終了
 					passFlag = false;
-					sendMessage(dataID.get("Pass"));							//相手にも通知
-					if(timer.isRunning()) timer.stop();							//タイマーストップ
-					BGM_game.stop();											//BGMストップ
-					String result = othello.checkWinner();						//勝敗確認
-					if(result.equals("draw")) {									//引き分け
-						sendMessage(dataID.get("Finish")+",3");					//サーバに送信
-						play(SE_draw);										//効果音再生
-						showDialog("引き分け");									//ダイアログ表示
+					sendMessage(dataID.get("Pass"));											//相手にも通知
+					if(timer.isRunning()) timer.stop();											//タイマーストップ
+					BGM_game.stop();															//BGMストップ
+					String result = othello.checkWinner();										//勝敗確認
+					if(!player.isStand()) {														//対局者の場合
+						if(result.equals("draw")) {								//引き分け
+							sendMessage(dataID.get("Finish")+",3");				//サーバに送信
+							play(SE_draw);										//効果音再生
+							showDialog("引き分け");								//ダイアログ表示
+						}
+						if(result.equals(player.getColor())) {					//勝ち
+							sendMessage(dataID.get("Finish")+",1");				//サーバに送信
+							play(SE_win);										//効果音再生
+							showDialog("あなたの勝ちです");						//ダイアログ表示
+						}
+						else{													//負け
+							sendMessage(dataID.get("Finish")+",2");				//サーバに送信
+							play(SE_lose);										//効果音再生
+							showDialog("あなたの負けです");						//ダイアログ表示
+						}
 					}
-					if(result.equals(player.getColor())) {						//勝ち
-						sendMessage(dataID.get("Finish")+",1");					//サーバに送信
-						play(SE_win);											//効果音再生
-						showDialog("あなたの勝ちです");							//ダイアログ表示
+					else{																	//観戦者の場合
+						sendMessage(dataID.get("GetoutWatchroom"));				//サーバに送信
+						play(SE_draw);											//効果音再生
+						if(result.equals("draw")) showDialog("引き分け");		//ダイアログ表示
+						if(result.equals("black")) showDialog(othello.getBlackName()+"の勝ちです");	//ダイアログ表示
+						else showDialog(othello.getWhiteName()+"の勝ちです");						//ダイアログ表示
 					}
-					else{														//負け
-						sendMessage(dataID.get("Finish")+",2");					//サーバに送信
-						play(SE_lose);											//効果音再生
-						showDialog("あなたの負けです");							//ダイアログ表示
-					}
-					panelID = 3;												//メニュー画面へ
-					switchDisplay();											//画面遷移
-					BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);						//BGMスタート
-					resetRoom();												//部屋情報リセット
+					panelID = 3;															//メニュー画面へ
+					switchDisplay();														//画面遷移
+					BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);									//BGMスタート
+					resetRoom();															//部屋情報リセット
 				}
 			}
 			//投了受信
@@ -1716,6 +1726,54 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		dialog.setBounds(getBounds().x+WIDTH/2-150,getBounds().y+HEIGHT/2-75,300+24,180+16);
 		dialog.setVisible(true);
 	}
+	//スクロールできるパネル
+	public class ScrollPanel extends ImagePanel implements Scrollable {
+		private int numB;
+		public ScrollPanel(File image) {
+			super(image);
+			setPreferredSize(new Dimension(WIDTH-200, 400));
+			numB = 0;
+		}
+		public Dimension getPreferredScrollableViewportSize() {
+			return getPreferredSize();
+		}
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+			if(orientation == SwingConstants.VERTICAL) {
+				if(direction < 0) return 25;
+				else return 25;
+			}
+			else {
+				if(direction < 0) return 25;
+				else return 25;
+			}
+		}
+		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+			if(orientation == SwingConstants.VERTICAL) {
+				if(direction < 0) return 50;
+				else return 50;
+			}
+			else {
+				if(direction < 0) return 50;
+				else return 50;
+			}
+		}
+		public boolean getScrollableTracksViewportWidth() {
+			return true;
+		}
+		public boolean getScrollableTracksViewportHeight() {
+			return false;
+		}
+		public void addButton(JButton b) {
+			numB++;
+			if(numB > 8) setPreferredSize(new Dimension(getWidth(), numB*50));
+			add(b);
+		}
+		public void removeButton() {
+			removeAll();
+			setPreferredSize(new Dimension(WIDTH-200, 400));
+			numB = 0;
+		}
+	}
 	//背景が描画できる拡張パネル
 	public class ImagePanel extends JPanel {
 		private BufferedImage image;
@@ -1799,9 +1857,22 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
     }
 	// メイン ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String args[]){
-		int port = 10000;
+		remotePort = 10000;
+		localPort = Integer.parseInt(args[1]);
+		try {
+			remoteHost = InetAddress.getByName(args[0]);
+			localHost = InetAddress.getLocalHost();
+		}
+		catch(ArrayIndexOutOfBoundsException e) {
+			System.err.println("接続先のホストを指定してください: " + e);
+			System.exit(-1);
+		}
+		catch(UnknownHostException e) {
+			System.err.println("指定したホストは存在しません: " + e);
+			System.exit(-1);
+		}
 		Client client = new Client();				//クライアント生成
 		client.setVisible(true);					//画面表示
-		client.connectServer("localhost", port);	//サーバに接続
+		client.connectServer();		//サーバに接続
 	}
 }
