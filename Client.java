@@ -96,6 +96,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	private static int localPort;
 	private static InetAddress remoteHost;
 	private static InetAddress localHost;
+	private static boolean isBind;
 	// コンストラクタ/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public Client() {
 		//オブジェクト生成
@@ -154,8 +155,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		BGM_menu = createClip("Space_Travel.wav",0.1f);
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		setSize(WIDTH+24, HEIGHT+48);
-		setSize(WIDTH, HEIGHT);
+		setSize(WIDTH+24, HEIGHT+48);
+//		setSize(WIDTH, HEIGHT);
 		setResizable(false);
 		//ペイン設定
 		pane = getContentPane();
@@ -769,11 +770,11 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 	}
 	// 通信 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//サーバに接続
-	public void connectServer(){
+	public void connectServer(boolean isBind){
 		Socket socket = null;
 		try {
-//			socket = new Socket(remoteHost, remotePort, localHost, localPort);//サーバに接続要求を送信
-			socket = new Socket("localhost",10000);//サーバに接続要求を送信
+			if(isBind) socket = new Socket(remoteHost, remotePort, localHost, localPort);//サーバに接続要求を送信
+			else socket = new Socket("localhost",10000);
 			System.out.println("サーバと接続しました");
 			out = new DataOutputStream(socket.getOutputStream());	//出力ストリームを作成
 			receiver = new Receiver(socket);						//受信スレッドを作成
@@ -829,7 +830,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			}
 			catch (IOException e){
 				System.err.println("データ受信時にエラーが発生しました: " + e);
-				Client.this.connectServer();					//再接続
+				Client.this.connectServer(isBind);				//再接続
 				sendMessage(dataID.get("Logout"));				//ログアウト
 				player.setName(null);							//プレイヤ名リセット
 				player.setPass(null);							//パスワードリセット
@@ -1857,22 +1858,29 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
     }
 	// メイン ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String args[]){
-		remotePort = 10000;
-		localPort = Integer.parseInt(args[1]);
-		try {
-			remoteHost = InetAddress.getByName(args[0]);
-			localHost = InetAddress.getLocalHost();
+		if(args.length == 0) {
+			isBind = false;
 		}
-		catch(ArrayIndexOutOfBoundsException e) {
-			System.err.println("接続先のホストを指定してください: " + e);
+		else if(args.length > 2) {
+			System.err.println("引数の数が多すぎます: " + "java Client remoteHost localPort");
 			System.exit(-1);
 		}
-		catch(UnknownHostException e) {
-			System.err.println("指定したホストは存在しません: " + e);
-			System.exit(-1);
+		else {
+			try {
+				localHost = InetAddress.getLocalHost();
+				remotePort = 10000;
+				remoteHost = InetAddress.getByName(args[0]);
+				if(args.length == 2) localPort = Integer.parseInt(args[1]);
+				else localPort = 10001;
+				isBind = true;
+			}
+			catch(UnknownHostException e) {
+				System.err.println("ホストが存在しません: " + e);
+				System.exit(-1);
+			}
 		}
-		Client client = new Client();				//クライアント生成
-		client.setVisible(true);					//画面表示
-		client.connectServer();		//サーバに接続
+		Client client = new Client();	//クライアント生成
+		client.setVisible(true);		//画面表示
+		client.connectServer(isBind);//サーバに接続
 	}
 }
