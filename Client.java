@@ -775,17 +775,17 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		try {
 			if(isBind) socket = new Socket(remoteHost, remotePort, localHost, localPort);//サーバに接続要求を送信
 			else socket = new Socket("localhost",10000);
-			System.out.println("サーバと接続しました");
+			showDialog("サーバと接続しました");
 			out = new DataOutputStream(socket.getOutputStream());	//出力ストリームを作成
 			receiver = new Receiver(socket);						//受信スレッドを作成
 			receiver.start();
 		}
 		catch (UnknownHostException e) {
-			System.err.println("ホストのIPアドレスが判定できません: " + e);
+			showDialog("ホストのIPアドレスが判定できません");
 			System.exit(-1);
 		}
 		catch (IOException e) {
-			System.err.println("サーバ接続時にエラーが発生しました: " + e);
+			showDialog("接続できませんでした");
 			System.exit(-1);
 		}
 	}
@@ -796,7 +796,18 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			System.out.println("送信：" +msg);	//テスト出力
 		}
 		catch (IOException e){
-			System.err.println("データ送信時にエラーが発生しました: " + e);
+			showDialog("通信が途切れました.再接続します.");
+			Client.this.connectServer(isBind);				//再接続
+			sendMessage(dataID.get("Logout"));				//ログアウト
+			player.setName(null);							//プレイヤ名リセット
+			player.setPass(null);							//パスワードリセット
+			if(BGM_game.isRunning()) BGM_game.stop();		//BGMストップ
+			if(BGM_menu.isRunning()) BGM_menu.stop();
+			if(BGM_wait.isRunning()) BGM_wait.stop();
+			BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);			//BGMスタート
+			panelID = 0;									//タイトル画面へ
+			switchDisplay();								//画面遷移
+			resetRoom();									//部屋情報リセット
 		}
 	}
 	//データの受信
@@ -806,7 +817,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				in = new DataInputStream(new BufferedInputStream(socket.getInputStream())); //入力ストリームを作成
 			}
 			catch (IOException e) {
-				System.err.println("サーバ接続時にエラーが発生しました: " + e);
+				showDialog("接続できませんでした");
 				System.exit(-1);
 			}
 		}
@@ -829,7 +840,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				}
 			}
 			catch (IOException e){
-				System.err.println("データ受信時にエラーが発生しました: " + e);
+				showDialog("通信が途切れました.再接続します.");
 				Client.this.connectServer(isBind);				//再接続
 				sendMessage(dataID.get("Logout"));				//ログアウト
 				player.setName(null);							//プレイヤ名リセット
@@ -998,6 +1009,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 					showDialog("入室に失敗しました");							//ダイアログの表示
 					panelID = 6;												//メニュー画面へ
 				}
+				passfield10.setText(" ");
+				label10_2.setText(" ");
 				switchDisplay();											//画面遷移
 			}
 			//観戦部屋リスト
@@ -1444,6 +1457,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 					BGM_wait.loop(Clip.LOOP_CONTINUOUSLY);						//BGMスタート
 					panelID = 8;											//相手の入室待機画面へ
 					switchDisplay();										//画面遷移
+					passfield7.setText(" ");
+					label7_5.setText(" ");
 					break;
 				}
 				break;
@@ -1659,7 +1674,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		pane.removeAll();								//パネル消去
 		setTitle(TITLE[panelID]);						//タイトル変更
 		pane.add(panel[panelID]);						//パネル設置
-		System.out.println("移動：画面" +panelID);	//テスト出力
+		System.out.println("移動：画面" +panelID);		//テスト出力
 		pane.revalidate();								//データ反映
 		pane.repaint();									//画面更新
 		return;
@@ -1721,9 +1736,75 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			dispose();
 		}
 	}
-	//ダイアログの表示
+	//メッセージダイアログの表示
 	public void showDialog(String message){
 		MessageDialog dialog = new MessageDialog(this,message);
+		dialog.setBounds(getBounds().x+WIDTH/2-150,getBounds().y+HEIGHT/2-75,300+24,180+16);
+		dialog.setVisible(true);
+	}
+	//IPアドレス入力ダイアログ
+	class AddressDialog extends JDialog implements ActionListener, WindowListener {
+		private boolean isOK = false;
+		private JTextField field;
+		public AddressDialog(JFrame mainframe) {
+			super(mainframe,"サーバへの接続",ModalityType.APPLICATION_MODAL);
+			this.setResizable(false);
+			ImagePanel panel = new ImagePanel(dialogImage);
+			panel.setSize(300,180);
+			panel.setBounds(0,0,300,150);
+			JLabel label = new JLabel("<html>サーバのIPアドレスを<br/>　　　　　入力してください</html>");
+			label.setForeground(Color.WHITE);
+			Font font = new Font("ヒラギノ明朝W６",Font.BOLD,18);
+			label.setFont(font);
+			FontMetrics fm = label.getFontMetrics(font);
+			label.setBounds(30,15,300,fm.getHeight()*2);
+			field = new JTextField(20);
+			field.setBounds(20,65,260,25);
+			ImageButton button = new ImageButton("OK",buttonIcon2,16,false);
+			button.setBounds(150-45,100,90,40);
+			button.addActionListener(this);
+			panel.setLayout(null);
+			panel.add(label);
+			panel.add(field);
+			panel.add(button);
+			this.setLayout(null);
+			this.add(panel);
+			this.addWindowListener(this);
+		}
+		public void actionPerformed(ActionEvent e) {
+			String address = field.getText();
+			if(address.equals("localhost")) {
+				isBind = false;
+			}
+			else {
+				try {
+					localPort = 10001;
+					localHost = InetAddress.getLocalHost();
+					remotePort = 10000;
+					remoteHost = remoteHost = InetAddress.getByName(address);
+					isBind = true;
+				}
+				catch(UnknownHostException exc) {
+					showDialog("指定されたホストは存在しません");
+					System.exit(-1);
+				}
+			}
+			isOK = true;
+			dispose();
+		}
+		public void windowClosing(WindowEvent e) {
+			if(!isOK) System.exit(-1);
+		}
+		public void windowClosed(WindowEvent e){}
+		public void windowOpened(WindowEvent e){}
+		public void windowIconified(WindowEvent e){}
+		public void windowDeiconified(WindowEvent e){}
+		public void windowActivated(WindowEvent e){}
+		public void windowDeactivated(WindowEvent e){}
+	}
+	//IPアドレス入力ダイアログの表示
+	public void showAddressDialog(){
+		AddressDialog dialog = new AddressDialog(this);
 		dialog.setBounds(getBounds().x+WIDTH/2-150,getBounds().y+HEIGHT/2-75,300+24,180+16);
 		dialog.setVisible(true);
 	}
@@ -1858,29 +1939,9 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
     }
 	// メイン ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String args[]){
-		if(args.length == 0) {
-			isBind = false;
-		}
-		else if(args.length > 2) {
-			System.err.println("引数の数が多すぎます: " + "java Client remoteHost localPort");
-			System.exit(-1);
-		}
-		else {
-			try {
-				localHost = InetAddress.getLocalHost();
-				remotePort = 10000;
-				remoteHost = InetAddress.getByName(args[0]);
-				if(args.length == 2) localPort = Integer.parseInt(args[1]);
-				else localPort = 10001;
-				isBind = true;
-			}
-			catch(UnknownHostException e) {
-				System.err.println("ホストが存在しません: " + e);
-				System.exit(-1);
-			}
-		}
 		Client client = new Client();	//クライアント生成
 		client.setVisible(true);		//画面表示
-		client.connectServer(isBind);//サーバに接続
+		client.showAddressDialog();		//アドレス入力ダイアログ表示
+		client.connectServer(isBind);	//サーバに接続
 	}
 }
