@@ -797,7 +797,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		}
 		catch (IOException e){
 			showDialog("通信が途切れました.再接続します.");
-			Client.this.connectServer(isBind);				//再接続
+			connectServer(isBind);							//再接続
 			sendMessage(dataID.get("Logout"));				//ログアウト
 			player.setName(null);							//プレイヤ名リセット
 			player.setPass(null);							//パスワードリセット
@@ -1548,7 +1548,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				break;
 		}
 	}
-	//部屋情報のリセット(投了時・投了受信時・対局終了時・観戦途中退出時)
+	//部屋情報のリセット(起動時・投了時・投了受信時・対局終了時・観戦途中退出時・再接続時)
 	public void resetRoom(){
 		//処理の初期化
 		othello.setRoomID(-1);				//部屋番号リセット
