@@ -1,5 +1,6 @@
 // パッケージのインポート
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.sound.sampled.*;
 import javax.imageio.*;
 import java.awt.*;
@@ -155,8 +156,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		BGM_menu = createClip("Space_Travel.wav",0.1f);
 		//フレーム設定
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(WIDTH+24, HEIGHT+48);
-//		setSize(WIDTH, HEIGHT);
+//		setSize(WIDTH+24, HEIGHT+48);
+		setSize(WIDTH, HEIGHT);
 		setResizable(false);
 		//ペイン設定
 		pane = getContentPane();
@@ -403,6 +404,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		b91.addMouseListener(this);
 		JScrollPane sp9 = new JScrollPane(listPanel9,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp9.setBounds(100,50,WIDTH-200,HEIGHT-200);
+		JScrollBar spBar9 = sp9.getVerticalScrollBar();
+		spBar9.setUI(new BasicScrollBarUI() {protected void configureScrollBarColors() {this.thumbColor = new Color(0.8f,0.8f,0.8f);}});
 		panel[9] = new ImagePanel(backImage[9]);
 		panel[9].setSize(WIDTH,HEIGHT);
 		panel[9].setLayout(null);
@@ -555,6 +558,7 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		logArea.setEditable(false);
 		JScrollPane sp = new JScrollPane(logArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		logBar = sp.getVerticalScrollBar();
+		logBar.setUI(new BasicScrollBarUI() {protected void configureScrollBarColors() {this.thumbColor = new Color(0.8f,0.8f,0.8f);}});
 		logPanel.setLayout(new FlowLayout());
 		logPanel.add(sp);
 		chatPanel = new JPanel();//チャット表示パネル
@@ -610,6 +614,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		b121.addMouseListener(this);
 		JScrollPane sp12 = new JScrollPane(listPanel12,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp12.setBounds(100,50,WIDTH-200,HEIGHT-200);
+		JScrollBar spBar12 = sp12.getVerticalScrollBar();
+		spBar12.setUI(new BasicScrollBarUI() {protected void configureScrollBarColors() {this.thumbColor = new Color(0.8f,0.8f,0.8f);}});
 		panel[12] = new ImagePanel(backImage[12]);
 		panel[12].setSize(WIDTH,HEIGHT);
 		panel[12].setLayout(null);
@@ -752,6 +758,8 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		ruleArea.setEditable(false);
 		JScrollPane sp18 = new JScrollPane(ruleArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp18.setBounds(50,50,WIDTH-100,400);
+		JScrollBar spBar18 = sp18.getVerticalScrollBar();
+		spBar18.setUI(new BasicScrollBarUI() {protected void configureScrollBarColors() {this.thumbColor = new Color(0.8f,0.8f,0.8f);}});
 		ImageButton b181 = new ImageButton("戻る",buttonIcon1,20,false);
 		b181.setBounds(470,480,120,60);
 		b181.setActionCommand("Switch,3");
@@ -796,14 +804,14 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 			System.out.println("送信：" +msg);	//テスト出力
 		}
 		catch (IOException e){
+			if(BGM_game.isRunning()) BGM_game.stop();		//BGMストップ
+			if(BGM_menu.isRunning()) BGM_menu.stop();
+			if(BGM_wait.isRunning()) BGM_wait.stop();
 			showDialog("通信が途切れました.再接続します.");
 			connectServer(isBind);							//再接続
 			sendMessage(dataID.get("Logout"));				//ログアウト
 			player.setName(null);							//プレイヤ名リセット
 			player.setPass(null);							//パスワードリセット
-			if(BGM_game.isRunning()) BGM_game.stop();		//BGMストップ
-			if(BGM_menu.isRunning()) BGM_menu.stop();
-			if(BGM_wait.isRunning()) BGM_wait.stop();
 			BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);			//BGMスタート
 			panelID = 0;									//タイトル画面へ
 			switchDisplay();								//画面遷移
@@ -840,14 +848,14 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 				}
 			}
 			catch (IOException e){
+				if(BGM_game.isRunning()) BGM_game.stop();		//BGMストップ
+				if(BGM_menu.isRunning()) BGM_menu.stop();
+				if(BGM_wait.isRunning()) BGM_wait.stop();
 				showDialog("通信が途切れました.再接続します.");
 				Client.this.connectServer(isBind);				//再接続
 				sendMessage(dataID.get("Logout"));				//ログアウト
 				player.setName(null);							//プレイヤ名リセット
 				player.setPass(null);							//パスワードリセット
-				if(BGM_game.isRunning()) BGM_game.stop();		//BGMストップ
-				if(BGM_menu.isRunning()) BGM_menu.stop();
-				if(BGM_wait.isRunning()) BGM_wait.stop();
 				BGM_menu.loop(Clip.LOOP_CONTINUOUSLY);			//BGMスタート
 				panelID = 0;									//タイトル画面へ
 				switchDisplay();								//画面遷移
@@ -1587,6 +1595,10 @@ public class Client extends JFrame implements MouseListener, ActionListener, Lin
 		}
 		else if(str.contains(",")){				//カンマが含まれる場合
 			label.setText(item+"にカンマは含められません");
+			return false;
+		}
+		else if(str.length() != str.getBytes().length){//全角文字が含まれる場合
+			label.setText(item+"に全角は含められません");
 			return false;
 		}
 		else{
