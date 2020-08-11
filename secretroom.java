@@ -11,7 +11,6 @@ public class secretroom{
 		timeflag = Timeflag;
 	}
 
-
 	private String pass;				//パスワード
 	private String PlayerName1 = null, PlayerName2 = null;
 	private DataOutputStream out1 = null, out2 = null;
@@ -45,37 +44,7 @@ public class secretroom{
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
-			/*
-			finally {
-				try {
-					if (out1 != null) {
-						socket1.close();
-					}else if(socket2 != null) {
-						socket2.close();
-					}
-				} catch (IOException e) {}
-				System.out.println("切断されました "
-	                         + socket1.getRemoteSocketAddress());
-			}
-		}else {
-			try {
-				DataOutputStream out2 = new DataOutputStream(s.getOutputStream());
-				out2.writeUTF("false");	//クライアントに失敗を送信
-				out2.close();
-			}catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					if (socket1 != null) {
-						socket1.close();
-					}else if(s != null) {
-						s.close();
-					}
-				} catch (IOException e) {}
-			}
-		*/
 		}
-
 	}
 
 	public String getPN1() {
@@ -145,7 +114,7 @@ public class secretroom{
 			}
 		}else {
 			try {
-				out2.writeUTF("23");	
+				out2.writeUTF("23");
 				System.out.println(PlayerName2 +"に「23」を送信");
 			}catch (IOException e) {
 				e.printStackTrace();

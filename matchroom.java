@@ -22,7 +22,6 @@ public class matchroom {
 	private DataOutputStream out1 = null, out2 = null;
 	private DataOutputStream[] watchdos = new DataOutputStream[10];
 	private int socketNo = 0;		//観戦者のソケット配列の数
-	int flag;						//手番
 
 	public void set1P(String PN1, DataOutputStream dos1) {//プレイヤー1が決まる
 		if(PlayerName1 == null) {
@@ -91,7 +90,6 @@ public class matchroom {
 				e.printStackTrace();
 			}
 		}else {
-			System.out.println("い");
 			try {
 				out2.writeUTF("21," + grids + "," +log);	//クライアントに失敗を送信
 				System.out.println(PlayerName2 + "に「21," + grids + "," + log + "」を送信");
@@ -220,7 +218,7 @@ public class matchroom {
 		return grids;
 	}
 
-	public int setwatcher(String PN, DataOutputStream dos) {
+	public int setwatcher(DataOutputStream dos) {
 		int flag = 0;
 		int watchNo = 0;
 		if(socketNo != 0 && flag == 0) {
@@ -271,7 +269,5 @@ public class matchroom {
 
 	public static void main(String[] args) {
 
-
 	}
-
 }

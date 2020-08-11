@@ -49,13 +49,12 @@ class EchoThread extends Thread {
   private String PlayerData = "D:\\PL\\java\\OTHELLO\\src\\PlayerData.txt";
   private Socket socket;
   private String PlayerName = null;
-  private int myroomNo = 1001;
-  private int myroom = 0;	//0なら対戦してない、１ならマッチ、２なら鍵部屋マッチ
-  private int watchNo = 1001;	//観戦しているときの番号
-  private boolean runflag = true;
+  public int myroomNo = 1001;
+  public int myroom = 0;	//0なら対戦してない、１ならマッチ、２なら鍵部屋マッチ
+  public int watchNo = 1001;	//観戦しているときの番号
+  public boolean runflag = true;
   DataInputStream in;
   DataOutputStream out;
-
 
   public EchoThread(Socket socket) {
     this.socket = socket;
@@ -485,7 +484,6 @@ class EchoThread extends Thread {
 
 	//6:鍵部屋からプレイヤーネームを削除
 	public void delete() {
-		System.out.println("delete called");
 		Server.sr[myroomNo].deletePN1();
 		myroom = 0;
 		myroomNo = 1001;
@@ -515,7 +513,6 @@ class EchoThread extends Thread {
 	public void enterroom(String roomNo, String pass) {
 		int No = Integer.parseInt(roomNo);
 		String password = Server.sr[No].getpass();
-		System.out.println(password +","+ pass);
 		if(pass.equals(password) && Server.sr[No].getPN1() != null) {
 			myroomNo = No;
 			Server.sr[myroomNo].set2P(PlayerName, out);
@@ -563,7 +560,7 @@ class EchoThread extends Thread {
 	public String watch(String roomNumber) {
 		String re = null;
 		if(Server.mr[Integer.valueOf(roomNumber)].getPN2() != null) {
-			watchNo = Server.mr[Integer.valueOf(roomNumber)].setwatcher(PlayerName, out);
+			watchNo = Server.mr[Integer.valueOf(roomNumber)].setwatcher(out);
 			myroomNo = Integer.parseInt(roomNumber);
 			myroom = 1;
 		}else {
